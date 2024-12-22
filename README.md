@@ -16,5 +16,6 @@
 1. Set up routing using React Router to handle navigation between pages.
 2. Create components and pages for nurse and patient functionality.
 3. Manage user authentication and state locally for simplicity.
+4. Use hooks for managing component state and side effects.
 
 Make sure to follow the code conventions set up in the `README.md` file for consistency.
