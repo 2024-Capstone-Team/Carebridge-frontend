@@ -1,15 +1,16 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
-import PreLoginPage from './pages/PreLoginPage';
+import PreLoginPage from "./pages/PreLoginPage";
 
 /* Nurse Pages */
-import NurseLoginPage from './pages/nurse/NurseLoginPage';
-import NurseMainPage from './pages/nurse/NurseMainPage';
+import NurseLoginPage from "./pages/nurse/NurseLoginPage";
+import NurseMainPage from "./pages/nurse/NurseMainPage";
 
 /* Patient Pages */
-import PatientLoginPage from './pages/patient/PatientLoginPage';
-import PatientMainPage from './pages/patient/PatientMainPage';
+import PatientLoginPage from "./pages/patient/PatientLoginPage";
+import PatientMainPage from "./pages/patient/PatientMainPage";
+import ChoosePatientType from "./pages/patient/ChoosePatientType";
 
 const App: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const App: React.FC = () => {
         <Route path="/patient-login" element={<PatientLoginPage />} />
         <Route path="/nurse-main" element={<NurseMainPage />} />
         <Route path="/patient-main" element={<PatientMainPage />} />
+        <Route path="/choose-patient-type" element={<ChoosePatientType />} />
       </Routes>
     </Router>
   );

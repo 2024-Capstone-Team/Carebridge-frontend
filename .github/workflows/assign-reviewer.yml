@@ -1,0 +1,26 @@
+name: Assign Reviewer Workflow
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+
+permissions:
+  pull-requests: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set team as reviewer
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }} # Use the PAT stored as a secret
+          script: |
+            github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              team_reviewers: ["frontend"]
+            });
