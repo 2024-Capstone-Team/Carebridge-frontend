@@ -23,6 +23,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -42,32 +43,44 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+  position: center;
+  width: 110;
+  height: 40;
+  border-radius: 20px;
+  border: 1px solid #688fb6;
+
+  font-size: 13px;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-family: 'TAEBAEKfont';
+  background-color: #98B3C8 !important;
   cursor: pointer;
   transition: border-color 0.25s;
+
 }
+
 button:hover {
-  border-color: #646cff;
+  border-color: #5b84ad;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+
+
+
 
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
@@ -75,15 +88,18 @@ button:focus-visible {
 
 /* Added custom defaults */
 #root {
-  width: 100%;  /* Ensure #root div takes up full width */
-  height: 100%; /* Ensure #root div takes up full height */
+  width: 100%;
+  /* Ensure #root div takes up full width */
+  height: 100%;
+  /* Ensure #root div takes up full height */
 }
 
 .message {
-  @apply text-message font-sans; 
+  @apply text-message font-sans;
 }
+
 .message-time {
-  @apply text-time text-gray-500; 
+  @apply text-time text-gray-500;
 }
 
 .centered-container {
