@@ -5,8 +5,10 @@
     "start_url": ".",
     "display_override": ["window-control-overlay", "minimal-ui"],
     "display": "standalone",
+    "scope": "/",  
     "background_color": "#ffffff",
     "theme_color": "#4CAF50",
+    "orientation": "portrait-primary",
     "icons": [
       {
         "src": "icons/icon-192x192.png",
