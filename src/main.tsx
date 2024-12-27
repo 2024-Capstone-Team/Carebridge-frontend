@@ -1,24 +1,24 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App.tsx';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>
 );
 
 // Register the service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register('/service-worker.js')
+      .register("/service-worker.js")
       .then((registration) => {
-        console.log('Service Worker registered:', registration);
+        console.log("Service Worker registered:", registration);
       })
       .catch((error) => {
-        console.log('Service Worker registration failed:', error);
+        console.log("Service Worker registration failed:", error);
       });
   });
 }
@@ -27,13 +27,13 @@ if ('serviceWorker' in navigator) {
 const requestNotificationPermission = async () => {
   try {
     const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      console.log('Notification permission granted');
+    if (permission === "granted") {
+      console.log("Notification permission granted");
     } else {
-      console.log('Notification permission denied');
+      console.log("Notification permission denied");
     }
   } catch (err) {
-    console.error('Error requesting notification permission:', err);
+    console.error("Error requesting notification permission:", err);
   }
 };
 
