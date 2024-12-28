@@ -8,8 +8,14 @@ module.exports = {
         time: '0.875rem', // For message timestamps
       },
       colors: {
-        primary: '#646cff',  // Color (to be changed)
-        secondary: '#535bf2',  // Secondary Color (to be changed)
+        primary: {
+          DEFAULT: '#6990B6',  
+          50: 'F0F4FA',
+          100: 'DFE6EC',
+          200: '98B3C8',
+          300: '6990B6',
+        },
+        secondary: '#535bf2', 
       },
     },
   },
