@@ -42,7 +42,7 @@ h1 {
   line-height: 1.1;
 }
 
-button {
+/*button {
   position: center;
   width: 110;
   height: 40;
@@ -65,7 +65,7 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+}*/
 
 
 
