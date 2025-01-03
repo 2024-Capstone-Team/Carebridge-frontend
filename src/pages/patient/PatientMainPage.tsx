@@ -1,6 +1,6 @@
 import React from "react";
 import * as Separator from "@radix-ui/react-separator";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const PatientMainPage: React.FC = () => {
   return (
@@ -22,13 +22,13 @@ const PatientMainPage: React.FC = () => {
           {/* Row 1 */}
           <div className="flex flex-col items-center py-4">
             <div className="w-1/4 flex flex-col items-center">
-            <Link to="/patient-chat">
-              <img
-                src="/icons/callbell-icon.png"
-                alt="콜벨 서비스"
-                className="w-12 h-12"
-              />
-            </Link>
+              <Link to="/patient-chat">
+                <img
+                  src="/icons/callbell-icon.png"
+                  alt="콜벨 서비스"
+                  className="w-12 h-12"
+                />
+              </Link>
               <p className="text-sm mt-1">콜벨 서비스</p>
             </div>
             <ul className="text-sm text-gray-700 text-center mt-2">
@@ -73,7 +73,6 @@ const PatientMainPage: React.FC = () => {
         </div>
       </div>
       {/* Logout Button */}
-      
     </div>
   );
 };

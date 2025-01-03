@@ -1,43 +1,59 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+
+// import BackButton from "../../components/common/BackButton";
 
 const ChoosePatientType: React.FC = () => {
+  const navigate = useNavigate();
+
+  const goMainpage = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate("/patient-mainpage");
+  };
+
   return (
-    <main className="centered-container">
+    <main className="flex items-center justify-center min-h-screen bg-gray-100">
       <div
-        className="flex items-center justify-center min-h-screen bg-gray-100"
-        style={{ padding: 40 }}
+        className="bg-white p-4 rounded-lg shadow-lg w-80 flex flex-col items-center"
+        style={{
+          minHeight: "90vh",
+        }}
       >
-        <div
-          className="bg-white p-3 rounded-lg shadow-lg w-80 flex-col flex items-center"
-          style={{
-            minHeight: "90vh",
-          }}
-        >
+        <div className="relative w-full">
+          {/* <BackButton className="absolute top-0 left-0 m-4" /> */}
+        </div>
+        <div className="flex flex-col items-center">
+          {/* 이미지 */}
           <img
-            src="public\icons\icon-192x192.png"
-            className="w-[80%] h-auto object-cover"
-            style={{ padding: 1 }}
-          ></img>
+            src="public/icons/icon-fit.png"
+            className="w-[60%] h-auto object-cover mt-16 mb-4"
+          />
+
+          {/* 안내 텍스트 */}
           <h1
-            className="font-bold text-center mb-6"
-            style={{ fontSize: 13, fontFamily: "TAEBAEKfont" }}
+            className="font-bold text-center mt-[40px] mb-[100px] text-[15px]"
+            style={{ fontFamily: "TAEBAEKfont" }}
           >
-            <div style={{ lineHeight: "1.8", fontSize: 15 }}>
-              OOO님, 환영합니다. <br></br>
+            <div className="leading-relaxed text-base">
+              OOO님, 환영합니다. <br />
               서비스를 이용하는 대상을 골라주세요.
             </div>
           </h1>
+
+          {/* 환자 버튼 */}
           <button
+            onClick={goMainpage}
             type="submit"
-            className="patienttype1"
-            style={{ width: 260, height: 45, fontSize: 16, marginTop: 20 }}
+            className="w-64 h-11 bg-black text-white font-semibold text-[16px] rounded-lg hover:bg-primary-dark transition-colors mb-4"
           >
             환자
           </button>
+
+          {/* 보호자 버튼 */}
           <button
+            onClick={goMainpage}
             type="submit"
-            className="patienttype2"
-            style={{ width: 260, height: 45, fontSize: 16, margin: 20 }}
+            className="w-64 h-11 bg-black text-white font-semibold text-[16px] rounded-lg hover:bg-primary-dark transition-colors"
           >
             보호자
           </button>

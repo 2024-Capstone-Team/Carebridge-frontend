@@ -16,11 +16,18 @@ const PatientLoginPage: React.FC = () => {
     }
   };
 
+  const getAuthorizeNum = (e: React.FormEvent) => {
+    e.preventDefault();
+    return null;
+  };
+
+  const goSignUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate("/sign-up");
+  };
+
   return (
-    <div
-      className="flex items-center justify-center min-h-screen bg-gray-100"
-      style={{ padding: 40 }}
-    >
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-3">
       <div
         className="bg-white p-3 rounded-lg shadow-lg w-80 flex-col flex items-center"
         style={{
@@ -32,40 +39,23 @@ const PatientLoginPage: React.FC = () => {
           className="w-[80%] h-auto object-cover"
           style={{ padding: 1 }}
         ></img>
-        <h1
-          className="font-bold text-center mb-6"
-          style={{ fontSize: 13, fontFamily: "TAEBAEKfont", marginTop: -70 }}
-        >
+        <h1 className="font-bold text-center mb-6 text-[13px] font-[TAEBAEKfont] mt-[-70px]">
           환자&보호자용 로그인
         </h1>
         <form
-          className="space-y-4 flex flex-col items-center"
+          className="space-y-4 flex flex-col items-center m-[80px] w-[250px]"
           onSubmit={handleLogin}
-          style={{ margin: 80, width: 250 }}
         >
-          <div
-            className="flex items-center"
-            style={{ display: "flex", alignItems: "center", gap: "10px" }}
-          >
+          <div className="flex items-center gap-[10px]">
             <div
-              className="phone-container w-[110%] px-2 py-2"
-              style={{
-                display: "flex",
-                fontSize: 13,
-                borderRadius: 10,
-                border: "1.5px solid #000000",
-                marginLeft: 0,
-                height: 40,
-                width: 180,
-              }}
+              className="
+            flex items-center m-1
+            gap-3 rounded-[10px] w-[70%] h-[40px]
+            border border-black border-solid"
             >
               <label
-                htmlFor="phone-number"
-                style={{
-                  fontWeight: "bold",
-                  whiteSpace: "nowrap",
-                  marginLeft: 5,
-                }}
+                htmlFor="auth-num"
+                className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
               >
                 전화번호
               </label>
@@ -74,105 +64,56 @@ const PatientLoginPage: React.FC = () => {
                 id="phone-number"
                 value={phone_num}
                 onChange={(e) => setPhoneNum(e.target.value)}
-                className="px-2 py-2"
-                style={{
-                  marginLeft: 10,
-                  marginTop: -2,
-                  fontSize: 13,
-                  borderRadius: 30,
-                  height: 25,
-                  width: 100,
-                }}
+                className="ml-[10px] mt-[-2px] text-[13px] rounded-[10px] h-[25px] w-[100px] px-2 py-1 "
               />
             </div>
             <button
-              style={{
-                whiteSpace: "nowrap",
-                fontSize: 13,
-                height: 40,
-                width: 85,
-                fontFamily: "SUITE-Regular",
-                fontWeight: "bold",
-              }}
+              className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]"
+              onClick={getAuthorizeNum}
             >
               인증받기
             </button>
           </div>
 
+          {/* 인증번호 */}
           <div
-            className="authorize-password px-2 py-2"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              fontSize: 13,
-              borderRadius: 10,
-              border: "1.5px solid #000000",
-              marginLeft: 0,
-              height: 40,
-              width: 275,
-            }}
+            className="
+            flex items-center m-1
+            gap-3 rounded-[10px] w-[110%] h-[40px]
+            border border-black border-solid"
           >
             <label
-              htmlFor="phone-number"
-              style={{
-                fontWeight: "bold",
-                whiteSpace: "nowrap",
-                marginLeft: 5,
-                fontFamily: "TAEBAEKfont",
-              }}
+              htmlFor="auth-num"
+              className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
             >
               인증번호
             </label>
-            <input
-              style={{
-                width: 200,
-                marginLeft: 10,
-                marginTop: -2,
-                fontSize: 13,
-                borderRadius: 30,
-                height: 25,
-              }}
-            ></input>
+            <input className="ml-2 w-[65%] h-[25px] text-[13px] "></input>
           </div>
 
           <button
+            onClick={handleLogin}
             type="submit"
-            style={{ width: 90, height: 40, fontWeight: "bold" }}
+            className=" w-[90px] h-10 font-bold font-[TAEBAEKfont] bg-primary-200 rounded-[10px] font-[SUITE-Regular]"
           >
             LOG IN
           </button>
         </form>
 
         <div
-          style={{
-            fontSize: 12,
-            marginTop: -60,
-            color: "#BDBDBD",
-            textDecoration: "underline",
-            textDecorationColor: "#BDBDBD",
-          }}
+          onClick={goSignUp}
+          className="text-[12px] mt-[-60px] text-gray-400 underline"
         >
           회원가입
         </div>
 
-        <hr
-          style={{
-            border: "1px solid #BDBDBD",
-            width: "90%",
-            marginTop: "120px",
-            marginBottom: 30,
-          }}
-        />
-        <form style={{ display: "flex", justifyContent: "center" }}>
-          <div style={{ fontSize: 12, marginTop: 8 }}>소셜 로그인</div>
+        <hr className="border-gray-400 w-[90%] mt-[120px] mb-[30px]" />
+        <form className="flex justify-center items-center">
+          <div className="text-[12px] mt-[8px] ">소셜 로그인</div>
           <img
-            src="public\icons\kakaotalk-icon.png"
-            className="w-[12%] h-auto object-cover"
-            style={{
-              marginLeft: 20,
-              borderRadius: 10,
-            }}
-          ></img>
+            src="public/icons/kakaotalk-icon.png"
+            className="w-[12%] h-auto object-cover ml-[20px] rounded-[10px]"
+          />
         </form>
       </div>
     </div>
