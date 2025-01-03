@@ -42,7 +42,11 @@ h1 {
   line-height: 1.1;
 }
 
+<<<<<<< HEAD
+button {
+=======
 /*button {
+>>>>>>> 8daafd63bc6559c380d1ebd57126cf1534d69f08
   position: center;
   width: 110;
   height: 40;
@@ -66,6 +70,10 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }*/
+
+
+
+
 
 
 
