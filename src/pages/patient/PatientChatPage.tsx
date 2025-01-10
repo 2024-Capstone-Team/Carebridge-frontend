@@ -150,7 +150,7 @@ const PatientChatPage: React.FC = () => {
       {/* Chat Section */}
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
         {/* Chat Messages */}
-        <ChatMessages chatMessages={chatMessages} />
+        <ChatMessages chatMessages={chatMessages} isPatient={true}/>
       </div>
 
       {/* Categories Section */}
