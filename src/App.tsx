@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import './index.css'
 
+import { UserProvider } from "./context/UserContext";  // Import the UserProvider
+
 import PreLoginPage from "./pages/PreLoginPage";
 
 /* Nurse Pages */
@@ -19,35 +21,47 @@ import CustomRequestPage from "./pages/patient/CustomRequestPage";
 /* Context */
 import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
 
+import HospitalInfoPage from './components/HospitalInfoPage';
+
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<PreLoginPage />} />
-        <Route path="/nurse-login" element={<NurseLoginPage />} />
-        <Route path="/patient-login" element={<PatientLoginPage />} />
-        <Route path="/nurse-main" element={<NurseMainPage />} />
-        <Route path="/patient-main" element={<PatientMainPage />} />
-        <Route path="/choose-patient-type" element={<ChoosePatientType />} />
-        <Route
-          path="/patient-chat"
-          element={
-            <FavoriteRequestsProvider>
-              <PatientChatPage />
-            </FavoriteRequestsProvider>
-          }
-        />
-        <Route
-          path="/patient-chat-categories"
-          element={
-            <FavoriteRequestsProvider>
-              <PatientChatCategories />
-            </FavoriteRequestsProvider>
-          }
-        />
-        <Route path="/custom-request" element={<CustomRequestPage />}/>
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<PreLoginPage />} />
+
+          {/* Nurse Pages */}
+          <Route path="/nurse-login" element={<NurseLoginPage />} />
+          <Route path="/nurse-main" element={<NurseMainPage />} />
+
+          
+          {/* Patient Pages */}
+          <Route path="/patient-login" element={<PatientLoginPage />} />
+          <Route path="/patient-main" element={<PatientMainPage />} />
+          <Route path="/choose-patient-type" element={<ChoosePatientType />} />
+          <Route
+            path="/patient-chat"
+            element={
+              <FavoriteRequestsProvider>
+                <PatientChatPage />
+              </FavoriteRequestsProvider>
+            }
+          />
+          <Route
+            path="/patient-chat-categories"
+            element={
+              <FavoriteRequestsProvider>
+                <PatientChatCategories />
+              </FavoriteRequestsProvider>
+            }
+          />
+          <Route path="/custom-request" element={<CustomRequestPage />}/>
+          
+
+          <Route path='/test' element={<HospitalInfoPage />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 };
 
