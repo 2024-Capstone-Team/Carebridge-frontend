@@ -1,15 +1,19 @@
 // src/pages/PatientLoginPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../../context/UserContext";
 
 const PatientLoginPage: React.FC = () => {
   const [phone_num, setPhoneNum] = useState("");
   const navigate = useNavigate();
+  const { setUserId } = useUserContext();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (phone_num === "") {
+      const userData = { id: "patient123"}; // temp user id for testing, will need to call api later
+      setUserId(userData.id); // set userID context
       navigate("/choose-patient-type");
     } else {
       alert("등록된 전화번호가 아닙니다.");
