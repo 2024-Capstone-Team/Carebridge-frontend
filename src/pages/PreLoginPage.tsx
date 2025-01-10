@@ -7,7 +7,7 @@ const PreLoginPage: React.FC = () => {
       <div className="card-container">
         <h1 className="text-3xl font-bold text-center mb-6">Welcome to CareBridge</h1>
         <div className="flex flex-col space-y-4">
-          <Link to="/nurse-login">
+          <Link to="/nurse-main">
             <button className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
               Nurse Login
             </button>
