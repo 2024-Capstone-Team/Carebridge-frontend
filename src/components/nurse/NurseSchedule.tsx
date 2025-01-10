@@ -43,13 +43,16 @@ const NurseSchedule: React.FC = () => {
   const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
 
   return (
+    /*스케줄러 전체 영역*/
     <div className="schedule-container bg-[#DFE6EC] rounded-lg p-4 h-full overflow-y-auto cursor-pointer relative" onClick={handleNavigate}>
-      <div className="flex justify-between items-center mb-4 absolute -translate-x-4 -translate-y-6">
+      
+      {/*스케줄, + 아이콘 영역*/}
+      <div className="flex items-center mb-4 absolute -translate-x-4 -translate-y-6">
         <h2 className="schedule-title text-lg font-semibold text-gray-800">스케줄</h2>
         <button className="add-button bg-transparent text-black px-4 py-2"  style={{  }} onClick={handleAddSchedule}>+</button>
-        </div>
-        
-        <div className="text-sm text-black mb-4 font-semibold absolute -translate-x-4 translate-y-5">{formattedDate}</div>
+      </div>
+
+      <div className="text-sm text-black mb-4 font-semibold absolute -translate-x-4 translate-y-5">{formattedDate}</div>
         <ul className="space-y-4 w-full absolute -translate-x-4 translate-y-11" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           {scheduleData.map((schedule, index) => (
             <li key={index} className="schedule-item flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">

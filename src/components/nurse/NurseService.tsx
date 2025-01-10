@@ -65,8 +65,8 @@ const NurseService: React.FC = () => {
     <div className="w-full h-full bg-[#F0F4FA] p-4 border-gray-300">
 
       <div className=''>
-        <button className="bg-[#98B3C8] px-1 w-1/2 text-[12px] text-black font-semibold rounded-none rounded-t-lg">서비스 진행 중(5)</button>
-        <button className="bg-gray-300 w-1/2 text-[12px] text-black font-semibold rounded-none rounded-t-lg">서비스 완료(0)</button>
+        <button className="bg-[#98B3C8] px-1 w-1/2 h-[30px] text-[12px] text-black font-semibold rounded-none rounded-t-lg">서비스 진행 중(5)</button>
+        <button className="bg-gray-300 w-1/2 h-[30px] text-[12px] text-black font-semibold rounded-none rounded-t-lg">서비스 완료(0)</button>
         <div className="bg-[#98B3C8] w-full pl-20 pr-3">
           <select value={selectedStatus} onChange={handleStatusChange} className="w-full border m-1.5 rounded">
           <option value="전체">전체</option>

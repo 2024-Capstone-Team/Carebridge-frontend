@@ -25,6 +25,7 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<PreLoginPage />} /> 
+        <Route path="/nurse-login" element={<NurseLoginPage />} /> 
         <Route path="/nurse-main" element={<NurseMainPage />} />
         <Route path="/nurse-schedule" element={<NurseSchedulePage />} />
         <Route path="/patient-login" element={<PatientLoginPage />} />

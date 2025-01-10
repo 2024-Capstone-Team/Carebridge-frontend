@@ -20,7 +20,7 @@ const NurseMainPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
-    navigate('/');
+    navigate('/nurse-main');
   };
 
   const currentDate = new Date();
@@ -97,7 +97,7 @@ const NurseMainPage: React.FC = () => {
         </div>
 
         {/*스케줄러 영역*/}
-        <div className="schedule-content w-full bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-hidden">
+        <div className="schedule-content w-full h-full bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-hidden">
           <NurseSchedule />
         </div>
 

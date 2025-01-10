@@ -22,13 +22,15 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId }) => {
   };
 
   return (
-    <div className="w-2/3">
+    /*스케줄 수정 전체 창*/
+    <div className="w-full bg-white rounded-lg overflow-hidden">
       
-      <h2 className="font-semibold text-lg mb-4">스케줄 수정</h2>
+      <h2 className="font-semibold text-lg mb-4 pt-2">스케줄 수정</h2>
       <hr className="mb-4"></hr>
 
-      <div className="pt-2 mb-2">
-        <label className="pr-2 font-semibold">대상</label>
+      {/*수정 영역*/}
+      <div className="mb-4">
+        <label className="pr-2 font-semibold mb-1">대상</label>
         <input type="text" className="border" value={schedule.target} onChange={(e) => setSchedule({ ...schedule, target: e.target.value })}/>
       </div>
       
@@ -53,9 +55,9 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId }) => {
         </select>
       </div>
 
-      <div className="flex justify-center p-4">
-        <button className="bg-white border shadow-lg rounded-lg" onClick={handleCancel}>취소</button>
-        <button className="bg-[#6990B6] border shadow-lg text-white rounded-lg" onClick={handleSave}>저장</button>
+      <div className="flex justify-center p-4 mt-10">
+        <button className="bg-white border shadow-lg text-lg rounded-md px-2 mx-1 w-[60px] h-[35px]" onClick={handleCancel}>취소</button>
+        <button className="bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 w-[60px] h-[35px]" onClick={handleSave}>저장</button>
       </div>
     </div>
   );
