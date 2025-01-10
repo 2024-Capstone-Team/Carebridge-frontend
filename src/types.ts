@@ -8,10 +8,10 @@ export interface ChatMessage {
   conversationId?: string; 
 }
 
-  export interface HospitalInfo { // temporary for testing
-    id: number;
-    hospitalId: number;
-    category: string;
-    title: string;
-    information: string;
-  }
+export interface HospitalInfo { // temporary for testing
+  id: number;
+  hospitalId: number;
+  category: string;
+  title: string;
+  information: string;
+}
