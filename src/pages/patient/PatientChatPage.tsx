@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChatMessage } from '../../types';
+import { useUserContext } from '../../context/UserContext.tsx';
 import CategoryComponent from '../../components/patient/ChatCategoryComponent.tsx';
 import InputSection from '../../components/patient/InputSection.tsx';
 import ChatMessages from "../../components/patient/ChatMessages.tsx";
@@ -7,34 +8,129 @@ import PatientChatHeader from "../../components/patient/PatientChatHeader.tsx";
 import FavoriteRequests from "../../components/patient/FavoriteRequests.tsx";
 
 const PatientChatPage: React.FC = () => {
+
+  const { userId, nurseId } = useUserContext();
+
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number>(0); // Track selected category
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    { text: "안녕하세요, 무엇을 도와드릴까요?", time: "10:00 AM", sender: "nurse" },
-    { text: "물 좀 가져다 주세요.", time: "10:01 AM", sender: "user" },
-    { text: "알겠습니다. 잠시만 기다려 주세요.", time: "10:02 AM", sender: "nurse" },
-    { text: "물통이 어디 있나요?", time: "10:03 AM", sender: "user" },
-    { text: "병실의 물통은 옆 선반에 있습니다.", time: "10:04 AM", sender: "nurse" },
-    { text: "알겠습니다. 감사합니다.", time: "10:05 AM", sender: "user" },
-    { text: "다음에 또 필요한 것이 있으면 말씀해 주세요.", time: "10:06 AM", sender: "nurse" },
-    { text: "혹시 커피도 주실 수 있나요?", time: "10:07 AM", sender: "user" },
-    { text: "커피는 제공되지 않지만, 차는 준비할 수 있습니다.", time: "10:08 AM", sender: "nurse" },
-    { text: "차도 좋습니다. 부탁드립니다.", time: "10:09 AM", sender: "user" },
-    { text: "차는 5분 이내에 가져다 드리겠습니다.", time: "10:10 AM", sender: "nurse" },
-    { text: "8분 이내 도착 예정입니다.", time: "10:11 AM", sender: "nurse" },
-    { text: "간호간병서비스를 제공하는 병실은 18층과 19층에 있습니다.", time: "10:12 AM", sender: "nurse" },
-    { text: "잠시만 기다려 주세요. 5분 내로 도착 예정입니다.", time: "10:13 AM", sender: "nurse" },
-    { text: "저희 병실은 18층과 19층에서 간호간병서비스를 제공하고 있습니다.", time: "10:14 AM", sender: "nurse" },
-    { text: "아, 그렇군요. 고맙습니다.", time: "10:15 AM", sender: "user" },
-    { text: "곧 도착할 예정이에요.", time: "10:16 AM", sender: "nurse" },
-    { text: "감사합니다!", time: "10:17 AM", sender: "user" },
-    { text: "다시 한 번 말씀드리지만, 18층과 19층에서 서비스가 제공됩니다.", time: "10:18 AM", sender: "nurse" },
-    { text: "알겠습니다. 고맙습니다.", time: "10:19 AM", sender: "user" },
-    { text: "산책하고 싶어요.", time: "10:20 AM", sender: "user" },
-    { text: "산책은 안전하게 하셔야 합니다. 잠시만 기다려 주세요.", time: "10:21 AM", sender: "nurse" },
-    { text: "네, 기다릴게요.", time: "10:22 AM", sender: "user" },
-    { text: "곧 준비해 드리겠습니다. 10분 내로 도착예정입니다.", time: "10:23 AM", sender: "nurse" },
-    { text: "감사합니다!", time: "10:24 AM", sender: "user" },
+    {
+      messageId: "1",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "안녕하세요, 무엇을 도와드릴까요?",
+      timestamp: "10:00 AM",
+      readStatus: true,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "2",
+      senderId: "patient_id",
+      receiverId: "nurse_id",
+      messageContent: "물 좀 가져다 주세요.",
+      timestamp: "10:01 AM",
+      readStatus: false,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "3",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "알겠습니다. 잠시만 기다려 주세요.",
+      timestamp: "10:02 AM",
+      readStatus: false,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "4",
+      senderId: "patient_id",
+      receiverId: "nurse_id",
+      messageContent: "화장실을 좀 가고 싶어요.",
+      timestamp: "10:05 AM",
+      readStatus: true,
+      conversationId: "conversation_2",
+    },
+    {
+      messageId: "5",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "지금 간호사 호출을 보내고 있어요. 잠시만 기다리세요.",
+      timestamp: "10:06 AM",
+      readStatus: false,
+      conversationId: "conversation_2",
+    },
+    {
+      messageId: "6",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "제가 좀 전에 드린 약을 복용했나요?",
+      timestamp: "10:10 AM",
+      readStatus: false,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "7",
+      senderId: "patient_id",
+      receiverId: "nurse_id",
+      messageContent: "네, 약을 복용했어요.",
+      timestamp: "10:12 AM",
+      readStatus: true,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "8",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "좋습니다. 혹시 다른 증상은 없으신가요?",
+      timestamp: "10:15 AM",
+      readStatus: true,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "9",
+      senderId: "patient_id",
+      receiverId: "nurse_id",
+      messageContent: "조금 배가 아파요.",
+      timestamp: "10:18 AM",
+      readStatus: false,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "10",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "알겠습니다. 의사 선생님을 호출하겠습니다.",
+      timestamp: "10:20 AM",
+      readStatus: false,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "11",
+      senderId: "patient_id",
+      receiverId: "nurse_id",
+      messageContent: "감사합니다.",
+      timestamp: "10:22 AM",
+      readStatus: true,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "12",
+      senderId: "nurse_id",
+      receiverId: "patient_id",
+      messageContent: "괜찮으세요?",
+      timestamp: "10:25 AM",
+      readStatus: true,
+      conversationId: "conversation_1",
+    },
+    {
+      messageId: "13",
+      senderId: "patient_id",
+      receiverId: "nurse_id",
+      messageContent: "네, 이제 조금 나아졌어요.",
+      timestamp: "10:27 AM",
+      readStatus: true,
+      conversationId: "conversation_1",
+    },
   ]);
   const [inputText, setInputText] = useState<string>("");
   const [favoriteRequests, setFavoriteRequests] = useState<string[]>(["환자복 교체", "물 주세요", "몸이 너무 아파요", "몸이 너무 아파요", "몸이 너무 아파요"]);
@@ -86,19 +182,38 @@ const PatientChatPage: React.FC = () => {
     }
   };
 
+  const fetchConversationId = async (userId: string, nurseId: string) => {
+    try {
+      const response = await fetch(`/api/conversations/${userId}/${nurseId}`);
+      const data = await response.json();
+      return data.conversationId;  // Return the conversationId
+    } catch (error) {
+      console.error('Error fetching conversationId:', error);
+      return null;
+    }
+  };
+
   const handleSendMessage = (): void => {
-    if (inputText.trim()) {
+    if (inputText.trim() && userId && nurseId) {  // Ensure userId and nurseId are available
       const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // No seconds
+
+      // Generate a unique messageId (you might want to use a proper UUID or some other method in production)
+      const newMessageId = Math.random().toString(36).substring(2, 9);
+
       setChatMessages((prev) => [
         ...prev,
         { 
-          text: inputText, 
-          time: currentTime, 
-          sender: "user" 
+          messageId: newMessageId,                // Unique message ID
+          senderId: userId,                       // Dynamically assigned senderId
+          receiverId: nurseId,                    // Dynamically assigned receiverId
+          messageContent: inputText,              // Message content
+          timestamp: currentTime,                 // Timestamp
+          readStatus: false,                      // Initially unread
+          conversationId: `${userId}_${nurseId}`, // Dynamically generated conversationId
         },
       ]);
-      setInputText("");
-      setCategories([]);
+
+      setInputText("");  // Clear input field
     }
   };
 
@@ -115,16 +230,33 @@ const PatientChatPage: React.FC = () => {
     }
   };
 
-  const sendFavoriteRequest = (request: string) => {
-    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setChatMessages((prev) => [
-      ...prev,
-      { 
-        text: request, 
-        time: currentTime, 
-        sender: "user" 
-      },
-    ]);
+  const sendFavoriteRequest = async (request: string) => {
+    if (request.trim() && userId && nurseId) { // Ensure userId and nurseId are available
+      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Fetch conversationId from the backend
+      const conversationId = await fetchConversationId(userId, nurseId);
+
+      // Generate a unique messageId
+      const newMessageId = Math.random().toString(36).substring(2, 9);
+
+      if (conversationId) {
+        setChatMessages((prev) => [
+          ...prev,
+          { 
+            messageId: newMessageId,
+            senderId: userId,                    // Dynamically assigned senderId
+            receiverId: nurseId,                 // Dynamically assigned receiverId
+            messageContent: request,             // Message content
+            timestamp: currentTime,              // Timestamp
+            readStatus: false,                   // Initially unread
+            conversationId: conversationId,     // Dynamically fetched conversationId
+          },
+        ]);
+      } else {
+        console.error('Failed to fetch conversationId');
+      }
+    }
   };
 
   const handleCategoryClick = (index: number) => {
@@ -150,7 +282,7 @@ const PatientChatPage: React.FC = () => {
       {/* Chat Section */}
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
         {/* Chat Messages */}
-        <ChatMessages chatMessages={chatMessages} />
+        <ChatMessages chatMessages={chatMessages} currentUserId={""}/>
       </div>
 
       {/* Categories Section */}

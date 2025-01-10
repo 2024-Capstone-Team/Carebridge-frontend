@@ -10,7 +10,7 @@ import bar from "../../assets/hamburger bar.png";
 import home from "../../assets/home.png";
 import scheduler from "../../assets/scheduler.png";
 import dbarrows from "../../assets/double arrows.png";
-
+import NurseMessaging from '../../components/nurse/NurseMessaging'; 
 
 
 
@@ -78,13 +78,8 @@ const NurseMainPage: React.FC = () => {
 
       </div>
 
-      {/*채팅 목록*/}
-      <div className="chat-content flex-1 bg-white rounded-tl-lg rounded-bl-lg shadow-lg p-6">
-      </div>
-
-      {/*채팅*/}
-      <div className="chatting-content flex-1 bg-white rounded-tr-lg rounded-br-lg shadow-lg p-6 mr-3">
-      </div>
+      {/* Chat Application */}
+      <NurseMessaging />
 
       {/*환자 정보 영역*/}
       <div className="patientinfo-content w-1/5 flex flex-col space-y-6">
