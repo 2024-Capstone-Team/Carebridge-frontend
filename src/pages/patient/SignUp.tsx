@@ -16,6 +16,7 @@ const SignUp: React.FC = () => {
     e.preventDefault();
     navigate("/patient-login");
   };
+
   return (
     <main className="centered-container">
       <div
@@ -32,10 +33,10 @@ const SignUp: React.FC = () => {
 
         <div className="flex flex-col items-center">
           <img
-            src="\icons\icon-fit.png"
-            className="place-content-center grid mt-[100px] pb-4
-            w-[95%]"
-          ></img>
+            src="icons/main-page-logo.png"
+            alt="Main Logo"
+            className="w-[233px] h-[133px] mt-10"
+          />
         </div>
         <div>
           <div className="font-bold text-centered">회원가입</div>
@@ -82,6 +83,25 @@ const SignUp: React.FC = () => {
             ></input>
           </div>
 
+          {/* 생일 */}
+          <div
+            className="
+            flex items-center m-1
+            gap-3 rounded-[10px] w-[95%] h-[40px]
+            border border-black border-solid"
+          >
+            <label
+              htmlFor="birth-date"
+              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
+            >
+              생일
+            </label>
+            <input
+              className="ml-2 w-[65%] h-[25px] text-[13px]"
+              placeholder="8자리로 입력해주세요."
+            ></input>
+          </div>
+
           {/* 전화번호 */}
           <div className="flex items-center">
             <div
@@ -103,7 +123,7 @@ const SignUp: React.FC = () => {
             </div>
             <button
               type="submit"
-              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px]"
+              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px] text-[13px]"
             >
               인증하기
             </button>
@@ -126,25 +146,6 @@ const SignUp: React.FC = () => {
             <label>남은 시간</label>
           </div>
 
-          {/* 생일 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[95%] h-[40px]
-            border border-black border-solid"
-          >
-            <label
-              htmlFor="birth-date"
-              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
-            >
-              생일
-            </label>
-            <input
-              className="ml-2 w-[65%] h-[25px] text-[13px]"
-              placeholder="8자리로 입력해주세요."
-            ></input>
-          </div>
-
           {/* 성별 */}
           <div className="flex items-center w-[95%]">
             <div
@@ -164,10 +165,10 @@ const SignUp: React.FC = () => {
             {/* 여성 */}
             <button
               onClick={() => handleGenderSelect("female")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3
+              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3 text-[13px]
               ${
                 selectedGender === "female"
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-black"
                   : "bg-primary-200 text-black"
               }`}
             >
@@ -177,7 +178,7 @@ const SignUp: React.FC = () => {
             {/* 남성 */}
             <button
               onClick={() => handleGenderSelect("male")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2
+              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2 text-[13px]
               ${
                 selectedGender === "male"
                   ? "bg-primary text-black"
@@ -192,7 +193,7 @@ const SignUp: React.FC = () => {
           <button
             onClick={goLogIn}
             type="submit"
-            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px]"
+            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
           >
             회원가입
           </button>

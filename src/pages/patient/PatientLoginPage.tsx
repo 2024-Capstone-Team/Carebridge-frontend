@@ -94,7 +94,9 @@ const PatientLoginPage: React.FC = () => {
           <button
             onClick={handleLogin}
             type="submit"
-            className=" w-[90px] h-10 font-bold font-[TAEBAEKfont] bg-primary-200 rounded-[10px] font-[SUITE-Regular]"
+            className=" w-20 h-10 
+            font-bold font-[TAEBAEKfont] text-[13px]
+            bg-primary-200 rounded-[10px]"
           >
             LOG IN
           </button>
