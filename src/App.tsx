@@ -7,6 +7,7 @@ import PreLoginPage from "./pages/PreLoginPage";
 /* Nurse Pages */
 import NurseLoginPage from "./pages/nurse/NurseLoginPage";
 import NurseMainPage from "./pages/nurse/NurseMainPage";
+// import NurseSchedulePage from "./pages/nurse/NurseSchedulePage";
 
 /* Patient Pages */
 import PatientLoginPage from "./pages/patient/PatientLoginPage";
@@ -21,18 +22,21 @@ import ScheduleToday from "./pages/patient/ScheduleToday";
 /* Context */
 import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
 import SignUp from "./pages/patient/SignUp";
+import SignUpCheck from "./pages/patient/SignUpCheck";
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<PreLoginPage />} />
-        <Route path="/nurse-login" element={<NurseLoginPage />} />
-        <Route path="/patient-login" element={<PatientLoginPage />} />
+        <Route path="/" element={<PreLoginPage />} /> 
+        <Route path="/nurse-login" element={<NurseLoginPage />} /> 
         <Route path="/nurse-main" element={<NurseMainPage />} />
+        {/* <Route path="/nurse-schedule" element={<NurseSchedulePage />} /> */}
+        <Route path="/patient-login" element={<PatientLoginPage />} />
         <Route path="/patient-main" element={<PatientMainPage />} />
         <Route path="/choose-patient-type" element={<ChoosePatientType />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/sign-up-check" element={<SignUpCheck />} />
         <Route path="/patient-schedular" element={<PatientSchedular />} />
         <Route
           path="/schedule-today"
