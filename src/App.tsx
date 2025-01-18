@@ -7,7 +7,6 @@ import PreLoginPage from "./pages/PreLoginPage";
 /* Nurse Pages */
 import NurseLoginPage from "./pages/nurse/NurseLoginPage";
 import NurseMainPage from "./pages/nurse/NurseMainPage";
-// import NurseSchedulePage from "./pages/nurse/NurseSchedulePage";
 
 /* Patient Pages */
 import PatientLoginPage from "./pages/patient/PatientLoginPage";
@@ -31,7 +30,6 @@ const App: React.FC = () => {
         <Route path="/" element={<PreLoginPage />} /> 
         <Route path="/nurse-login" element={<NurseLoginPage />} /> 
         <Route path="/nurse-main" element={<NurseMainPage />} />
-        {/* <Route path="/nurse-schedule" element={<NurseSchedulePage />} /> */}
         <Route path="/patient-login" element={<PatientLoginPage />} />
         <Route path="/patient-main" element={<PatientMainPage />} />
         <Route path="/choose-patient-type" element={<ChoosePatientType />} />
