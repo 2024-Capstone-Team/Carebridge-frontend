@@ -19,6 +19,7 @@ import CustomRequestPage from "./pages/patient/CustomRequestPage";
 import PatientSchedular from "./pages/patient/PatientSchedular";
 import ScheduleToday from "./pages/patient/ScheduleToday";
 import SignUp from "./pages/patient/SignUp";
+import SignUpCheck from "./pages/patient/SignUpCheck";
 
 /* Context */
 import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
@@ -32,7 +33,6 @@ const App: React.FC = () => {
     <UserProvider>
       <Router>
         <Routes>
-
           <Route path="/" element={<PreLoginPage />} /> 
 
           {/* Nurse Pages */}
@@ -45,6 +45,7 @@ const App: React.FC = () => {
           <Route path="/patient-main" element={<PatientMainPage />} />
           <Route path="/choose-patient-type" element={<ChoosePatientType />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/sign-up-check" element={<SignUpCheck />} />
           <Route path="/patient-schedular" element={<PatientSchedular />} />
           <Route
             path="/schedule-today"
@@ -79,7 +80,7 @@ const App: React.FC = () => {
           />
           <Route path="/custom-request" element={<CustomRequestPage />} />
 
-          { /* Test */}
+          {/* Test */}
           <Route path='/test' element={<HospitalInfoPage />} />
           
         </Routes>
