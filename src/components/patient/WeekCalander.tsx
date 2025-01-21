@@ -28,7 +28,7 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
       <div className="flex justify-between w-full mb-2 text-gray-500 text-sm">
         {weekDays.map((date) => (
           <div key={date} className="flex-1 text-center">
-            {dayjs(date).format("dd")} {/* 요일 (일, 월, 화, ...) */}
+            {dayjs(date).format("ddd")} {/* 요일 (일, 월, 화, ...) */}
           </div>
         ))}
       </div>
