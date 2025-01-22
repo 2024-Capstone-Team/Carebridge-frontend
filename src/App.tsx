@@ -21,6 +21,13 @@ import ScheduleToday from "./pages/patient/ScheduleToday";
 import SignUp from "./pages/patient/SignUp";
 import SignUpCheck from "./pages/patient/SignUpCheck";
 
+import PatientSettingPage from "./pages/patient/setting/PatientSettingPage";
+import ChangePhoneNum from "./pages/patient/setting/ChangePhoneNum";
+import ChangeHospital from "./pages/patient/setting/ChangeHospital";
+import ManagePatient from "./pages/patient/setting/ManagePatient";
+import ManageGuardian from "./pages/patient/setting/ManageGuardian";
+
+
 /* Context */
 import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
 import { UserProvider } from "./context/UserContext";  
@@ -47,6 +54,11 @@ const App: React.FC = () => {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-up-check" element={<SignUpCheck />} />
           <Route path="/patient-schedular" element={<PatientSchedular />} />
+          <Route path="/patient-setting" element={<PatientSettingPage/>} />
+          <Route path="/change-phonenum" element={<ChangePhoneNum/>} />
+          <Route path="/change-hospital" element={<ChangeHospital/>} />
+          <Route path="/manage-patient" element={<ManagePatient/>} />
+          <Route path="/manage-guardian" element={<ManageGuardian/>} />
           <Route
             path="/schedule-today"
             element={

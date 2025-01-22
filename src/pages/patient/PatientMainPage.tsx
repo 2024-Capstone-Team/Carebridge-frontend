@@ -15,6 +15,11 @@ const PatientMainPage: React.FC = () => {
     navigate("/patient-schedular");
   };
 
+  const setting = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate("/patient-setting");
+  };
+
   return (
     <div className="relative flex flex-col justify-center items-center h-screen bg-white">
       {/* Main Logo */}
@@ -91,8 +96,8 @@ const PatientMainPage: React.FC = () => {
               <button
                 className="flex flex-col items-center justify-center
               w-[100px] h-[100px] border-2 border-primary-300 rounded-[10px]
-              bg-primary-100
-              "
+              bg-primary-100"
+              onClick={setting}
               >
                 <img src="/icons/user-icon.png" className="w-[60%] h-[60%]" />
                 <p className="mt-1 font-bold font-[TAEBAEKfont] text-[15px]">
