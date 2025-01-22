@@ -26,6 +26,7 @@ import { UserProvider } from "./context/UserContext";
 
 /* Test */
 import HospitalInfoPage from './pages/HospitalInfoPage';
+import NurseChatPage from "./components/nurse/NurseMessaging";
 
 const App: React.FC = () => {
   return (
@@ -80,7 +81,7 @@ const App: React.FC = () => {
           <Route path="/custom-request" element={<CustomRequestPage />} />
 
           { /* Test */}
-          <Route path='/test' element={<HospitalInfoPage />} />
+          <Route path='/test' element={<NurseChatPage />} />
           
         </Routes>
       </Router>
