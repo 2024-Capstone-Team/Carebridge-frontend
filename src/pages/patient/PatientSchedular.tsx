@@ -7,11 +7,11 @@ import axios from "axios";
 
 interface Schedule {
   id: number;
-  patientPhone: string;
+  patientId: string;
   medicalStaffId: number;
   scheduleDate: string;
   details: string;
-  code: string;
+  category: string;
 }
 
 const PatientSchedular: React.FC = () => {
@@ -24,15 +24,16 @@ const PatientSchedular: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
   // API 호출
   useEffect(() => {
     const fetchSchedules = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get("http://localhost:8080/api/schedule/patient/01012345678"
-
-        );
+        const patientId = "1098765432";
+        const response = await axios.get(`http://localhost:8080/api/schedule/patient/${patientId}`);
+        
         console.log("API 응답 데이터:", response.data);
         setScheduleData(response.data);
       } catch (err) {
@@ -49,11 +50,11 @@ const PatientSchedular: React.FC = () => {
   // 날짜별로 그룹화된 일정 데이터
   const groupedSchedules = scheduleData.reduce(
     (groups: { [date: string]: Schedule[] }, schedule) => {
-      const { scheduleDate } = schedule; // scheduleDate로 매핑
-      if (!groups[scheduleDate]) {
-        groups[scheduleDate] = [];
+      const scheduleDateOnly = dayjs(schedule.scheduleDate).format("YYYY-MM-DD");
+      if (!groups[scheduleDateOnly]) {
+        groups[scheduleDateOnly] = [];
       }
-      groups[scheduleDate].push(schedule);
+      groups[scheduleDateOnly].push(schedule);
       return groups;
     },
     {}
@@ -61,7 +62,7 @@ const PatientSchedular: React.FC = () => {
 
   // 일정이 있는 날짜 표시 준비
   const scheduleDates = scheduleData.map((schedule) => ({
-    date: schedule.scheduleDate,
+    date: dayjs(schedule.scheduleDate).format("YYYY-MM-DD"),
     hasSchedule: true,
   }));
 
@@ -98,9 +99,7 @@ const PatientSchedular: React.FC = () => {
           .map(([date, schedules]) => (
             <div
               key={date}
-              className={`flex flex-col space-y-4 border rounded-lg p-4 bg-white shadow-md ${
-                date === selectedDate ? "border-blue-500" : ""
-              }`}
+              className={`flex flex-col space-y-4 border rounded-lg p-4 bg-white shadow-md}`}
             >
               {/* 날짜 표시 */}
               <div className="flex flex-col items-center justify-center mr-6">
@@ -110,6 +109,7 @@ const PatientSchedular: React.FC = () => {
                 <p className="text-[16px] text-gray-500">
                   {new Date(date).toLocaleDateString("ko-KR", { weekday: "short" })}
                 </p>
+                
               </div>
 
               {/* 일정 아이템 */}
@@ -118,22 +118,24 @@ const PatientSchedular: React.FC = () => {
                   <div className="flex justify-between items-center py-2">
                     <div>
                       <p className="text-[16px] font-bold text-gray-800">
-                        {schedule.details} {/* details로 매핑 */}
+                        {schedule.details}
                       </p>
-                      <p className="text-[13px] text-gray-600">{schedule.patientPhone}</p>
+                      <p className="text-[13px] text-gray-600">
+                        {dayjs(schedule.scheduleDate).format("YYYY-MM-DD HH시 mm분")}
+                      </p>
                     </div>
 
                     {/* 태그 버튼 */}
                     <button
                       className={`px-3 py-1 text-sm rounded-full text-white ${
-                        schedule.code === "진료"
+                        schedule.category === "진료"
                           ? "bg-primary-200"
-                          : schedule.code === "재활"
+                          : schedule.category === "재활"
                           ? "bg-primary-300"
                           : "bg-primary-400"
                       }`}
                     >
-                      #{schedule.code}
+                      #{schedule.category}
                     </button>
                   </div>
                   {index < schedules.length - 1 && <hr className="border-t border-gray-300 my-2" />}

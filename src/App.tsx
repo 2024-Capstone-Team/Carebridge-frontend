@@ -27,6 +27,7 @@ import { UserProvider } from "./context/UserContext";
 
 /* Test */
 import HospitalInfoPage from './pages/HospitalInfoPage';
+import ScheduleTest from "./pages/patient/ScheduleTest";
 
 const App: React.FC = () => {
   return (
@@ -82,6 +83,7 @@ const App: React.FC = () => {
 
           {/* Test */}
           <Route path='/test' element={<HospitalInfoPage />} />
+          <Route path='/test-schedule' element={<ScheduleTest />} />
           
         </Routes>
       </Router>
