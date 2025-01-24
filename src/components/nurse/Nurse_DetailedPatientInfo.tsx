@@ -28,7 +28,7 @@ const NurseDetailedPatientInfo: React.FC<Nurse_DetailedPatientInfoProps> = ({ pa
             {/*환자 인적사항(이름 포함)*/}    
             <div className="overflow-y-auto h-[350px]">
                 <div className="mb-1">
-                    <h2 className="text-lg  font-semibold">홍길동 환자</h2>
+                    <h2 className="text-lg  font-semibold">김길동 환자</h2>
                     
                     {/*환자 인적사항(이름 미포함)*/} 
                     <div className="flex justify-between text-gray-500 my-1">

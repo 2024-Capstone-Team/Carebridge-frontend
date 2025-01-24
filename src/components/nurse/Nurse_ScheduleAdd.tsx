@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-interface ScheduleEditFormProps {
+interface ScheduleAddProps {
   scheduleId?: string;
   onCancel: () => void;
 }
 
-const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCancel }) => {
+const ScheduleAdd: React.FC<ScheduleAddProps> = ({ scheduleId, onCancel }) => {
   const [schedule, setSchedule] = useState({
     target: "홍길동",
     description: "일정의 내용을 입력해주세요.",
@@ -23,7 +23,7 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
     /*스케줄 수정 전체 창*/
     <div className="w-full bg-white rounded-lg overflow-hidden">
       
-      <h2 className="font-semibold text-lg mb-4 pt-2">스케줄 수정</h2>
+      <h2 className="font-semibold text-lg mb-4 pt-2">스케줄 추가</h2>
       <hr className="mb-4"></hr>
 
       {/*수정 영역*/}
@@ -61,4 +61,4 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
   );
 };
 
-export default ScheduleEditForm;
+export default ScheduleAdd;

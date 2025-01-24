@@ -44,7 +44,7 @@ const NurseSchedule: React.FC = () => {
 
   return (
     /*스케줄러 전체 영역*/
-    <div className="schedule-container bg-[#DFE6EC] rounded-lg p-4 h-full overflow-y-auto cursor-pointer relative" onClick={handleNavigate}>
+    <div className="bg-[#DFE6EC] rounded-lg p-4 h-full cursor-pointer relative overflow-hidden" onClick={handleNavigate}>
       
       {/*스케줄, + 아이콘 영역*/}
       <div className="flex items-center mb-4 absolute -translate-x-4 -translate-y-6">
@@ -52,7 +52,7 @@ const NurseSchedule: React.FC = () => {
         <button className="add-button bg-transparent text-black px-4 py-2"  style={{  }} onClick={handleAddSchedule}>+</button>
       </div>
 
-      <div className="text-sm text-black mb-4 font-semibold absolute -translate-x-4 translate-y-5">{formattedDate}</div>
+      <div className="text-sm text-black mb-4 font-semibold absolute -translate-x-4 translate-y-5 overflow-y-auto">{formattedDate}</div>
         <ul className="space-y-4 w-full absolute -translate-x-4 translate-y-11" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           {scheduleData.map((schedule, index) => (
             <li key={index} className="schedule-item flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
@@ -61,7 +61,7 @@ const NurseSchedule: React.FC = () => {
                 <div className="schedule-time text-sm text-gray-600">{schedule.time}</div>
                 <div className="schedule-patient text-sm text-gray-500">{schedule.patientName} 환자</div>
               </div>
-              <button className="edit-button bg-gray-100 text-[11px] text-gray-500 px-3 py-1 rounded">수정</button>
+              <button className="bg-gray-100 text-[11px] text-gray-500 px-3 py-1 rounded">수정</button>
               {isTooltipVisible && (
               <div className="absolute top-12 left-0 bg-gray-100 p-4 rounded shadow-lg z-10 w-64">
                 <div className="font-semibold text-[17px]">{schedule.outline}</div>

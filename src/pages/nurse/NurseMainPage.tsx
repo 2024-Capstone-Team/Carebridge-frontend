@@ -5,17 +5,18 @@ import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/Nurse_PatientInfo";
 import Nurse_DetailedPatientInfo from '../../components/nurse/Nurse_DetailedPatientInfo';
 import NurseService from '../../components/nurse/NurseService';
+import NurseMacro from '../../components/nurse/NurseMacro';
 import logo from "../../assets/carebridge_logo.png";
 import bar from "../../assets/hamburger bar.png";
 import home from "../../assets/home.png";
 import scheduler from "../../assets/scheduler.png";
 import dbarrows from "../../assets/double arrows.png";
-
-
+import macro from "../../assets/macro.png";
 
 
 const NurseMainPage: React.FC = () => {
-  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isMacroMode, setIsMacroMode] = useState(false); // 매크로 설정 화면 여부
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null); //환자 정보 선택 상태
   const navigate = useNavigate();
 
@@ -34,16 +35,28 @@ const NurseMainPage: React.FC = () => {
     minute: '2-digit',
   });
 
+  const handleMacroClick = () => {
+    setIsMacroMode(true); // 매크로 설정 화면 활성화
+  };
+
+  const handleMainScreenClick = () => {
+    setIsMacroMode(false); // 메인 화면으로 복귀
+  };
+
   const handleEditClick = (scheduleId: string) => {
     navigate(`/schedule/${scheduleId}`, { state: { editMode: true } }); // 수정 버튼 클릭 시 상태 전달
   };
 
   const handleMouseEnter = () => {
-    setIsTooltipVisible(true); // 팝업 자세히 알림
+    setIsDropdownVisible(true); // 팝업 자세히 알림
   };
 
   const handleMouseLeave = () => {
-    setIsTooltipVisible(false);
+    setIsDropdownVisible(false);
+  };
+
+  const handleMenuClick = (path: string) => {
+    navigate(path);
   };
 
   const handlePatientClick = (patientName: string) => {
@@ -56,13 +69,38 @@ const NurseMainPage: React.FC = () => {
 
 
   return (
-    /*전체 창창*/
+    /*전체 창*/
     <div className="flex h-screen bg-gray-100 p-6">
-      <div className="h-full p-6 mr-4 border-r rounded-lg overflow-hidden bg-[#F0F4FA]">
+      <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
         
         {/*로고 영역*/}
         <div className="flex items-center mb-4" style={{ marginTop: '-60px' }}>
-          <img src={bar} alt="hamburger bar" className="w-[1.7em] h-[1.7em] mr-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} />
+          <img src={bar} alt="hamburger bar" className="relative w-[1.7em] h-[1.7em] mr-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} />
+          {isDropdownVisible && (
+          <div className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
+            <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">일반외과 병동</p>
+            <hr className="bg-gray-600"></hr>
+
+            <ul className="py-2">
+              <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-main")}>
+                <img src={home} alt="home" className="w-4 h-4 mr-2" />메인 화면</li>
+
+              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
+                <img src={scheduler} alt="scheduler" className="w-4 h-4 mr-2" />스케줄러</li>
+
+                <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={handleMacroClick}>
+                <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정</li>
+
+                <hr className="bg-gray-600"></hr>
+
+              <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/change-ward")}>병동 변경</li>
+              <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/reset-password")}>비밀번호 재설정</li>
+              <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/nurse-login")}>로그아웃</li>
+            </ul>
+          </div>
+        )}
+
           <img src={logo} alt="CareBridge 로고" className="w-[7.5em] h-[7.5em] cursor-pointer" onClick={handleLogoClick} />
         </div>
         
@@ -78,6 +116,7 @@ const NurseMainPage: React.FC = () => {
 
       </div>
 
+      
       {/*채팅 목록*/}
       <div className="chat-content flex-1 bg-white rounded-tl-lg rounded-bl-lg shadow-lg p-6">
       </div>
@@ -97,10 +136,15 @@ const NurseMainPage: React.FC = () => {
         </div>
 
         {/*스케줄러 영역*/}
-        <div className="schedule-content w-full h-full bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-hidden">
+        <div className="schedule-content w-full h-full bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1">
           <NurseSchedule />
         </div>
 
+        {isMacroMode && (
+          <div className="absolute inset-0 flex justify-center ml-9 mr-6 items-center z-50">
+            <NurseMacro onClose={handleMainScreenClick} />
+          </div>
+        )}
       </div>
     </div>
   );
