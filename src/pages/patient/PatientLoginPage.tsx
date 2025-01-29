@@ -1,7 +1,7 @@
-// src/pages/PatientLoginPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
+import axios from "axios";
 
 const PatientLoginPage: React.FC = () => {
   const [phone_num, setPhoneNum] = useState("");
@@ -12,7 +12,7 @@ const PatientLoginPage: React.FC = () => {
     e.preventDefault();
 
     if (phone_num === "") {
-      const userData = { id: "patient123"};
+      const userData = { id: "patient123" }; {/* 수정 예정... */}
       setUserId(userData.id);
       navigate("/choose-patient-type");
     } else {
@@ -30,6 +30,24 @@ const PatientLoginPage: React.FC = () => {
     navigate("/sign-up");
   };
 
+  const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
+  const KAKAO_REDIRECT_URL = import.meta.env.VITE_KAKAO_REDIRECT_URL;
+
+  console.log("KAKAO_CLIENT_ID:", KAKAO_CLIENT_ID);
+  console.log("KAKAO_REDIRECT_URL:", KAKAO_REDIRECT_URL);
+
+  const handleKakaoLogin = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
+      console.log("카카오 로그인 URL:", response.data);
+      const kakaoAuthUrl = response.data;
+  
+      window.location.assign(kakaoAuthUrl);
+    } catch (error) {
+      console.error("카카오 로그인 URL 요청 실패:", error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-3">
       <div
@@ -39,10 +57,11 @@ const PatientLoginPage: React.FC = () => {
         }}
       >
         <img
-          src="public\icons\icon-192x192.png"
+          src="/icons/icon-192x192.png"
+          alt="앱 아이콘"
           className="w-[80%] h-auto object-cover"
           style={{ padding: 1 }}
-        ></img>
+        />
         <h1 className="font-bold text-center mb-6 text-[13px] font-[TAEBAEKfont] mt-[-70px]">
           환자&보호자용 로그인
         </h1>
@@ -50,15 +69,13 @@ const PatientLoginPage: React.FC = () => {
           className="space-y-4 flex flex-col items-center m-[80px] w-[250px]"
           onSubmit={handleLogin}
         >
+          {/* 전화번호 입력 */}
           <div className="flex items-center gap-[10px]">
             <div
-              className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[70%] h-[40px]
-            border border-black border-solid"
+              className="flex items-center m-1 gap-3 rounded-[10px] w-[70%] h-[40px] border border-black border-solid"
             >
               <label
-                htmlFor="auth-num"
+                htmlFor="phone-number"
                 className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
               >
                 전화번호
@@ -79,28 +96,25 @@ const PatientLoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 인증번호 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[110%] h-[40px]
-            border border-black border-solid"
-          >
+          {/* 인증번호 입력 */}
+          <div className="flex items-center m-1 gap-3 rounded-[10px] w-[110%] h-[40px] border border-black border-solid">
             <label
-              htmlFor="auth-num"
+              htmlFor="auth-code"
               className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
             >
               인증번호
             </label>
-            <input className="ml-2 w-[65%] h-[25px] text-[13px] "></input>
+            <input
+              type="text"
+              id="auth-code"
+              className="ml-2 w-[65%] h-[25px] text-[13px]"
+            />
           </div>
 
           <button
             onClick={handleLogin}
             type="submit"
-            className=" w-20 h-10 
-            font-bold font-[TAEBAEKfont] text-[13px]
-            bg-primary-200 rounded-[10px]"
+            className="w-20 h-10 font-bold font-[TAEBAEKfont] text-[13px] bg-primary-200 rounded-[10px]"
           >
             LOG IN
           </button>
@@ -108,7 +122,7 @@ const PatientLoginPage: React.FC = () => {
 
         <div
           onClick={goSignUp}
-          className="text-[12px] mt-[-60px] text-gray-400 underline"
+          className="text-[12px] mt-[-60px] text-gray-400 underline cursor-pointer"
         >
           회원가입
         </div>
@@ -116,10 +130,13 @@ const PatientLoginPage: React.FC = () => {
         <hr className="border-gray-400 w-[90%] mt-[120px] mb-[30px]" />
         <form className="flex justify-center items-center">
           <div className="text-[12px] mt-[8px] ">소셜 로그인</div>
-          <img
-            src="public/icons/kakaotalk-icon.png"
-            className="w-[12%] h-auto object-cover ml-[20px] rounded-[10px]"
-          />
+          <button onClick={handleKakaoLogin} className="ml-[20px] rounded-[10px]">
+            <img
+              src="/icons/kakaotalk-icon.png"
+              alt="카카오 로그인"
+              className="w-[36px] h-auto object-cover rounded-[10px]"
+            />
+          </button>
         </form>
       </div>
     </div>
