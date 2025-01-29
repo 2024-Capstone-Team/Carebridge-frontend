@@ -12,8 +12,8 @@ const PatientLoginPage: React.FC = () => {
     e.preventDefault();
 
     if (phone_num === "") {
-      const userData = { id: "patient123"}; // temp user id for testing, will need to call api later
-      setUserId(userData.id); // set userID context
+      const userData = { id: "patient123"};
+      setUserId(userData.id);
       navigate("/choose-patient-type");
     } else {
       alert("등록된 전화번호가 아닙니다.");

@@ -31,7 +31,7 @@ const PatientSchedular: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const patientId = "1098765432";
+        const patientId = "8"; //temp id
         const response = await axios.get(`http://localhost:8080/api/schedule/patient/${patientId}`);
         
         console.log("API 응답 데이터:", response.data);
