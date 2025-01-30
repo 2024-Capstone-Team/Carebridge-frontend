@@ -30,24 +30,20 @@ const PatientLoginPage: React.FC = () => {
     navigate("/sign-up");
   };
 
-  const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
-  const KAKAO_REDIRECT_URL = import.meta.env.VITE_KAKAO_REDIRECT_URL;
-
-  console.log("KAKAO_CLIENT_ID:", KAKAO_CLIENT_ID);
-  console.log("KAKAO_REDIRECT_URL:", KAKAO_REDIRECT_URL);
-
   const handleKakaoLogin = async () => {
     try {
       const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
       console.log("카카오 로그인 URL:", response.data);
       const kakaoAuthUrl = response.data;
   
-      window.location.assign(kakaoAuthUrl);
+      // window.location.assign(kakaoAuthUrl);
+      window.location.href = kakaoAuthUrl;
     } catch (error) {
       console.error("카카오 로그인 URL 요청 실패:", error);
     }
   };
 
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-3">
       <div
