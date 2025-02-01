@@ -4,32 +4,65 @@ import { useUserContext } from "../../context/UserContext";
 import axios from "axios";
 
 const PatientLoginPage: React.FC = () => {
-  const [phone_num, setPhoneNum] = useState("");
+  const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
   const { setUserId } = useUserContext();
+  const [authCode, setAuthCode] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (phone_num === "") {
-      const userData = { id: "patient123" }; {/* 수정 예정... */}
-      setUserId(userData.id);
+    if (!phone || !authCode) {
+      alert("전화번호와 인증번호를 입력해주세요.");
+      return;
+    }
+
+    try {
+      const verifyResponse = await axios.post("http://localhost:8080/api/users/verify-otp", {
+        phone,
+        otp: authCode,
+      });
+
+      if (!verifyResponse.data.success) {
+        alert("인증번호가 올바르지 않습니다.");
+        return;
+      }
+
+      const loginResponse = await axios.post("http://localhost:8080/api/users/login", { phone });
+      setUserId(loginResponse.data.id);
       navigate("/choose-patient-type");
-    } else {
-      alert("등록된 전화번호가 아닙니다.");
+    } catch (error) {
+      console.error("로그인 실패:", error);
+      alert("로그인에 실패했습니다. 다시 시도해주세요.");
     }
   };
+  
 
-  const getAuthorizeNum = (e: React.FormEvent) => {
+  {/* 인증번호 전송 API */}
+  const getAuthorizeNum = async (e: React.FormEvent) => {
     e.preventDefault();
-    return null;
+    if (!phone) {
+      alert("전화번호를 입력해주세요.");
+      return;
+    }
+    try {
+      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}`);
+      console.log("인증번호 전송 성공:", response.data);
+      alert("인증번호가 전송되었습니다.");
+    } catch (error) {
+      console.error("인증번호 전송 실패:", error);
+      alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
+    }
   };
+ 
 
   const goSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     navigate("/sign-up");
   };
 
+  {/* 카카오톡 로그인 API */}
   const handleKakaoLogin = async () => {
     try {
       const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
@@ -78,8 +111,8 @@ const PatientLoginPage: React.FC = () => {
               </label>
               <input
                 type="tel"
-                id="phone-number"
-                value={phone_num}
+                id="phone-number" 
+                value={phone}
                 onChange={(e) => setPhoneNum(e.target.value)}
                 className="ml-[10px] mt-[-2px] text-[13px] rounded-[10px] h-[25px] w-[100px] px-2 py-1 "
               />
@@ -92,18 +125,17 @@ const PatientLoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 인증번호 입력 */}
+          {/* 인증번호 입력 */}  
           <div className="flex items-center m-1 gap-3 rounded-[10px] w-[110%] h-[40px] border border-black border-solid">
-            <label
-              htmlFor="auth-code"
-              className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
-            >
+            <label htmlFor="auth-code" className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap">
               인증번호
             </label>
             <input
               type="text"
               id="auth-code"
-              className="ml-2 w-[65%] h-[25px] text-[13px]"
+              value={authCode}
+              onChange={(e) => setAuthCode(e.target.value)}
+              className="w-[65%] h-[25px] text-[13px]"
             />
           </div>
 
