@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { Client, StompSubscription } from "@stomp/stompjs";
 
-// Define the custom StompSubscriptionWithUnsubscribe type
 interface StompSubscriptionWithUnsubscribe extends StompSubscription {
   roomId: string;
   unsubscribe: () => void;
@@ -11,50 +10,49 @@ const useStompClient = (onMessage: (message: any) => void) => {
   const stompClientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [pendingSubscriptions, setPendingSubscriptions] = useState<StompSubscriptionWithUnsubscribe[]>([]);
+  const subscribedRooms = useRef<Set<string>>(new Set()); // Track currently subscribed rooms
 
   useEffect(() => {
     const stompClient = new Client({
       brokerURL: "ws://localhost:8080/ws-stomp",
-      reconnectDelay: 5000,  // Reconnect every 5 seconds
+      reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
         console.log("Connected to WebSocket");
         setIsConnected(true);
 
-        // Re-subscribe to any rooms that were pending
+        // Re-subscribe to any pending subscriptions
         pendingSubscriptions.forEach((subscription) => {
-          subscription.unsubscribe();
-          // Now re-subscribe
-          const newSubscription = stompClientRef.current?.subscribe(
-            `/sub/chat/room/${subscription.roomId}`,
-            (message) => {
-              onMessage(JSON.parse(message.body));
+          const isSubscribed = subscribedRooms.current.has(subscription.roomId);
+          if (!isSubscribed) {
+            const newSubscription = stompClientRef.current?.subscribe(
+              `/sub/chat/room/${subscription.roomId}`,
+              (message) => {
+                onMessage(JSON.parse(message.body));
+              }
+            );
+            if (newSubscription) {
+              setPendingSubscriptions((prev) => [
+                ...prev,
+                {
+                  ...subscription,
+                  unsubscribe: newSubscription.unsubscribe,
+                  id: newSubscription.id,
+                },
+              ]);
+              subscribedRooms.current.add(subscription.roomId); // Mark as subscribed
             }
-          );
-          // Replace the pending subscription with the active one
-          setPendingSubscriptions((prev) =>
-            prev.filter((sub) => sub.roomId !== subscription.roomId)
-          );
-          if (newSubscription) {
-            setPendingSubscriptions((prev) => [
-              ...prev,
-              {
-                ...subscription,
-                unsubscribe: newSubscription.unsubscribe,  // Add unsubscribe function
-                id: newSubscription.id,  // Add the id from the new subscription
-              },
-            ]);
           }
         });
-        setPendingSubscriptions([]);  // Clear pending subscriptions
+        setPendingSubscriptions([]); // Clear pending subscriptions after re-subscribing
       },
       onDisconnect: () => {
         console.log("Disconnected from WebSocket");
         setIsConnected(false);
       },
       onWebSocketError: (error) => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
       },
       onStompError: (frame) => {
         console.error("STOMP error:", frame);
@@ -71,48 +69,80 @@ const useStompClient = (onMessage: (message: any) => void) => {
         setIsConnected(false);
       }
     };
-  }, []);
+  }, []); // Runs once on mount and setup of WebSocket
+
+  const unsubscribeFromRoom = useCallback((roomId: string) => {
+    const subscription = pendingSubscriptions.find((sub) => sub.roomId === roomId);
+
+    if (subscription && subscribedRooms.current.has(roomId)) {
+      console.log(`Unsubscribing from room: ${roomId}`);
+      subscription.unsubscribe();
+      subscribedRooms.current.delete(roomId);
+    } else {
+      console.warn(`Cannot unsubscribe from room: ${roomId}. Not found.`);
+    }
+  }, [pendingSubscriptions]);
 
   const subscribeToRoom = useCallback(
     (roomId: string): StompSubscriptionWithUnsubscribe | null => {
-      if (stompClientRef.current && isConnected) {
-        const subscription = stompClientRef.current.subscribe(
-          `/sub/chat/room/${roomId}`,
-          (message) => {
-            console.log("Received message:", message); // Log the received message
-            onMessage(JSON.parse(message.body));
-          }
-        );
+      if (!roomId) {
+        console.warn("Room ID is empty. Cannot subscribe.");
+        return null;
+      }
 
-        // Return subscription with additional unsubscribe method and id
-        const subscriptionWithUnsubscribe: StompSubscriptionWithUnsubscribe = {
-          ...subscription,
-          roomId,
-          unsubscribe: subscription.unsubscribe,
-          id: subscription.id,  // Ensure the subscription has an id
-        };
-        return subscriptionWithUnsubscribe;
+      // Unsubscribe from the current room if the roomId is different
+      if (subscribedRooms.current.has(roomId)) {
+        console.log(`Already subscribed to room: ${roomId}`);
+        return null; // Already subscribed, no action needed
       } else {
-        console.warn("STOMP client not connected yet. Subscription deferred.");
+        const currentRoom = Array.from(subscribedRooms.current)[0]; // Assuming 1 room is subscribed at a time
+        if (currentRoom && currentRoom !== roomId) {
+          console.log(`Switching from room: ${currentRoom} to room: ${roomId}`);
+          unsubscribeFromRoom(currentRoom); // Unsubscribe from old room before subscribing to new one
+        }
 
-        // If not connected, defer the subscription and try again once connected
-        if (stompClientRef.current) {
-          // Temporarily assign an empty id or a unique id for pending subscriptions
+        if (stompClientRef.current && isConnected) {
+          const subscription = stompClientRef.current.subscribe(
+            `/sub/chat/room/${roomId}`,
+            (message) => {
+              console.log("Received message:", message.body);
+              onMessage(JSON.parse(message.body));
+            }
+          );
+
+          subscribedRooms.current.add(roomId); // Track the newly subscribed room
+          console.log(`Subscribed to room: ${roomId}`);
+
+          const subscriptionWithUnsubscribe: StompSubscriptionWithUnsubscribe = {
+            ...subscription,
+            roomId,
+            unsubscribe: () => {
+              console.log(`Unsubscribing from room: ${roomId}`);
+              subscription.unsubscribe();
+              subscribedRooms.current.delete(roomId); // Clean up on unsubscribe
+            },
+          };
+
+          setPendingSubscriptions((prev) => [...prev, subscriptionWithUnsubscribe]);
+
+          return subscriptionWithUnsubscribe;
+        } else {
+          console.warn("STOMP client not connected yet. Subscription deferred.");
           const tempId = `temp-${Math.random().toString(36).substr(2, 9)}`;
           setPendingSubscriptions((prev) => [
             ...prev,
-            { roomId, onMessage, unsubscribe: () => {}, id: tempId } // Provide a mock unsubscribe and id for pending subscriptions
+            { roomId, unsubscribe: () => {}, id: tempId },
           ]);
+          return null;
         }
-        return null;
       }
     },
-    [onMessage, isConnected]
+    [onMessage, isConnected, unsubscribeFromRoom]
   );
 
   const sendMessage = useCallback((destination: string, message: any) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-      console.log("Sending message:", message); // Log the message being sent
+      console.log(`Sending message to ${destination}:`, message);
       stompClientRef.current.publish({
         destination,
         body: JSON.stringify(message),
@@ -122,7 +152,7 @@ const useStompClient = (onMessage: (message: any) => void) => {
     }
   }, []);
 
-  return { subscribeToRoom, sendMessage, isConnected };
+  return { subscribeToRoom, unsubscribeFromRoom, sendMessage, isConnected };
 };
 
 export default useStompClient;

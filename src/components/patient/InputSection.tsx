@@ -5,9 +5,12 @@ interface InputSectionProps {
   inputText: string;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSendMessage: () => void;
+  handleCompositionStart?: () => void; 
+  handleCompositionEnd?: () => void; 
   minHeight: string; // minHeight prop to adjust the minimum height
   maxHeight: string; // maxHeight prop to adjust the maximum height
   handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  color?: string; // optional prop for color
 }
 
 const InputSection: React.FC<InputSectionProps> = ({
@@ -15,8 +18,11 @@ const InputSection: React.FC<InputSectionProps> = ({
   handleInputChange,
   handleSendMessage,
   handleKeyDown,
+  handleCompositionStart, 
+  handleCompositionEnd, 
   minHeight,
   maxHeight,
+  color = 'bg-primary-100' // Default color if none is passed
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -30,15 +36,17 @@ const InputSection: React.FC<InputSectionProps> = ({
 
   return (
     <div className="p-4">
-      <div className="flex items-center p-2 bg-primary-100 rounded-3xl">
-        {/* Textarea for input */}
+      <div className={`flex items-center p-2 ${color} rounded-3xl`}>
+        {/* Text area for input */}
         <textarea
           ref={textareaRef}
           value={inputText}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onCompositionStart={handleCompositionStart} // 추가
+          onCompositionEnd={handleCompositionEnd} // 추가
           placeholder="메시지를 입력하세요..."
-          className={`flex-1 px-3 py-1 bg-primary-100 border-none rounded-3xl focus:outline-none text-black resize-none overflow-y-auto`}
+          className={`flex-1 px-3 py-1 ${color} border-none rounded-3xl focus:outline-none text-black resize-none overflow-y-auto`}
           style={{
             minHeight, // Use the passed prop
             maxHeight, // Use the passed prop
@@ -48,7 +56,7 @@ const InputSection: React.FC<InputSectionProps> = ({
         {/* Send button */}
         <button
           onClick={handleSendMessage}
-          className="ml-2 bg-primary-100 rounded-full flex items-center justify-center"
+          className={`ml-2 ${color} rounded-full flex items-center justify-center`}
         >
           <IoMdSend className="w-5 h-5 text-primary" />
         </button>

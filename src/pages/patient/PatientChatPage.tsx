@@ -1,150 +1,179 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { ChatMessage } from '../../types';
-import { useUserContext } from '../../context/UserContext.tsx';
-import useStompClient from '../../hooks/useStompClient';
-import InputSection from '../../components/patient/InputSection.tsx';
-import ChatMessages from "../../components/patient/ChatMessages.tsx";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { ChatMessage } from "../../types";
+import useStompClient from "../../hooks/useStompClient";
+import InputSection from "../../components/patient/InputSection.tsx";
+import ChatMessages from "../../components/common/ChatMessages.tsx";
 import PatientChatHeader from "../../components/patient/PatientChatHeader.tsx";
 import FavoriteRequests from "../../components/patient/FavoriteRequests.tsx";
 
 const PatientChatPage: React.FC = () => {
-  const [userId, setUserId] = useState<string>("5"); // Replace with actual user ID
-  const [nurseId, setNurseId] = useState<string>("1"); // Replace with actual nurse ID
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      messageId: 1,
-      senderId: "nurse_id",
-      receiverId: "patient_id",
-      messageContent: "안녕하세요, 무엇을 도와드릴까요?",
-      timestamp: "10:00 AM",
-      readStatus: true,
-      conversationId: "conversation_1",
-    },
-  ]);
+  const [userId] = useState<number>(5); 
+  const [nurseId] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>("");
-  const [favoriteRequests, setFavoriteRequests] = useState<string[]>(["환자복 교체", "물 주세요", "몸이 너무 아파요"]);
+  const [favoriteRequests, setFavoriteRequests] = useState<string[]>([
+    "환자복 교체", "물 주세요", "몸이 너무 아파요"
+  ]);
   const [connected, setConnected] = useState<boolean>(false);
-  const [roomId, setRoomId] = useState<string>("");
+  const [isComposing, setIsComposing] = useState(false);
+  
+    const handleCompositionStart = () => {
+      setIsComposing(true);
+    };
+    
+    const handleCompositionEnd = () => {
+      setIsComposing(false);
+    };
+
+  const roomId = useMemo(() => `${nurseId}_${userId}`, [nurseId, userId]);
 
   const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: ChatMessage) => {
-    setChatMessages((prevMessages) => [...prevMessages, message]);
+    if (message.sender_id !== userId) { // Check if the message is from someone else
+      setChatMessages((prevMessages) => [...prevMessages, message]);
+    }
   });
 
-  useEffect(() => {
-    if (userId && nurseId) {
-      const conversationId = `${nurseId}_${userId}`;
-      setRoomId(conversationId); // Set the room ID
-      subscribeToRoom(conversationId);
+  const chatMessagesRef = useRef<ChatMessage[]>([]);
+
+  // Fetch chat history
+  const fetchChatHistory = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/chat/message/user?patientId=${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch messages");
+
+      const messages: ChatMessage[] = await response.json();
+      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
+        chatMessagesRef.current = messages;
+        setChatMessages(messages.reverse());
+      }
+    } catch (error) {
+      console.error("Error fetching chat history", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [userId, nurseId, subscribeToRoom]);
+  }, [userId]);
+
+  useEffect(() => {
+    if (!roomId || !isConnected) return;
+    subscribeToRoom(roomId);
+    fetchChatHistory();
+  }, [roomId, isConnected, fetchChatHistory]);
 
   useEffect(() => {
     setConnected(isConnected);
   }, [isConnected]);
 
-  const toggleFavoriteRequest = useCallback((request: string) => {
-    setFavoriteRequests((prev) => {
-      const updatedRequests = prev.includes(request)
-        ? prev.filter((item) => item !== request)
-        : [...prev, request];
-      localStorage.setItem('favoriteRequests', JSON.stringify(updatedRequests));
-      return updatedRequests;
-    });
+  useEffect(() => {
+    const storedFavoriteRequests = localStorage.getItem("favoriteRequests");
+    if (storedFavoriteRequests) {
+      setFavoriteRequests(JSON.parse(storedFavoriteRequests));
+    }
   }, []);
 
-  const sendFavoriteRequestMessage = useCallback((request: string) => {
-    sendMessage(`/pub/chat/room/${nurseId}_${userId}`, {
-      senderId: userId,
-      receiverId: nurseId,
-      messageContent: request,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      readStatus: false,
-      conversationId: `${userId}_${nurseId}`,
-    });
-  }, [userId, nurseId, sendMessage]);
-
-
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
-    const text = e.target.value;
-    setInputText(text);
+    setInputText(e.target.value);
   };
 
-  const handleSendMessage = () => {
-    if (inputText.trim() && connected && userId && nurseId) {
-      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleSendMessage = (): void => {
+    if (inputText.trim() && isConnected) {
+      // const currentTime = new Date().toISOString().replace("Z", "");  // 한국 시간으로 수정 필요
+      const now = new Date();
+      const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", "");  // Korean time
+
       const newMessageId = Math.floor(Math.random() * 1_000_000_000);
-  
-      const newMessage = {
+
+      const newMessage: ChatMessage = {
         messageId: newMessageId,
-        senderId: userId,
-        receiverId: nurseId,
+        patientId: userId,
+        medicalStaffId: nurseId,
         messageContent: inputText,
         timestamp: currentTime,
         readStatus: false,
-        conversationId: `${userId}_${nurseId}`,
+        chatRoomId: `${nurseId}_${userId}`,
+        sender_id: userId,
+        isPatient: true,
       };
-  
-      setChatMessages((prevMessages) => [...prevMessages, newMessage]);
-      sendMessage(`/pub/chat/room/${userId}_${nurseId}`, newMessage);
-      
-      console.log("Message sent:", newMessage); // Log the message
-  
+
+      setChatMessages((prev) => [...prev, newMessage]);
+
+      const messageToSend = {
+        type: "TALK",
+        patientId: userId,
+        medicalStaffId: nurseId,
+        messageContent: inputText,
+        timestamp: currentTime,
+        readStatus: false,
+        chatRoomId: `${nurseId}_${userId}`,
+        sender_id: userId,
+        isPatient: true,
+      };
+
+      sendMessage("/pub/chat/message", messageToSend);
       setInputText("");
-    } else {
-      console.log("Message not sent: Either input is empty or not connected");
     }
   };
-  
-  const sendFavoriteRequest = useCallback((request: string) => {
-    const message = {
-      senderId: userId,
-      receiverId: nurseId,
-      messageContent: request,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      readStatus: false,
-      conversationId: `${userId}_${nurseId}`,
-    };
-    
-    sendMessage(`/pub/chat/room/${userId}_${nurseId}`, message);
-    
-    console.log("Favorite request sent:", message); // Log the message
-  }, [userId, nurseId, sendMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter") {
-      if (e.shiftKey) {
-        return;
-      } else {
-        e.preventDefault();
-        handleSendMessage();
-      }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
+  };
+
+  const markMessageAsRead = useCallback(async (messageId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/chat/message/read?messageId=${messageId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error(`Failed to mark message as read: ${response.status}`);
+
+      setChatMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.messageId === messageId ? { ...message, readStatus: true } : message
+        )
+      );
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const unreadMessages = chatMessages.filter(
+      (message) => !message.readStatus && message.sender_id !== userId
+    );
+    unreadMessages.forEach((message) => markMessageAsRead(message.messageId));
+  }, [chatMessages, userId, markMessageAsRead]);
+
+  const sendFavoriteRequest = (request: string) => {
+    setInputText(request); 
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
       <PatientChatHeader title="삼성병원 간호간병 콜벨 서비스" showMenu={true} />
-      <FavoriteRequests 
-        requests={favoriteRequests} 
-        sendFavoriteRequest={sendFavoriteRequest} 
-        toggleFavoriteRequest={toggleFavoriteRequest}
+      <FavoriteRequests
+        requests={favoriteRequests}
+        sendFavoriteRequest={sendFavoriteRequest}
       />
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
-        <ChatMessages chatMessages={chatMessages} currentUserId={userId || ""} />
+        <ChatMessages chatMessages={chatMessages} currentUserId={userId} />
       </div>
-      
-      {!connected ? (
-        <div className="text-red-500 text-center">Connecting...</div>
-      ) : (
-        <div className="text-green-500 text-center">Connected - Room ID: {roomId}</div>
-      )}
-      <InputSection 
-        inputText={inputText} 
-        handleInputChange={handleInputChange} 
-        handleSendMessage={handleSendMessage} 
-        minHeight="1.5rem"   
-        maxHeight="10rem"    
+      <div className={`text-center ${connected ? 'text-green-500' : 'text-red-500'}`}>
+        {connected ? `Connected - Room ID: ${roomId}` : "Connecting..."}
+      </div>
+      <InputSection
+        inputText={inputText}
+        handleInputChange={handleInputChange}
+        handleSendMessage={handleSendMessage}
+        minHeight="1.5rem"
+        maxHeight="10rem"
         handleKeyDown={handleKeyDown}
+        handleCompositionStart={handleCompositionStart}
+        handleCompositionEnd={handleCompositionEnd}
       />
     </div>
   );

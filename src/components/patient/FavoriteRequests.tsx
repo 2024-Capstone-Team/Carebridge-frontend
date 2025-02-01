@@ -4,10 +4,9 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 interface FavoriteRequestsProps {
   requests: string[];
   sendFavoriteRequest: (request: string) => void;
-  toggleFavoriteRequest: (request: string) => void;
 }
 
-const FavoriteRequests: React.FC<FavoriteRequestsProps> = ({ requests, sendFavoriteRequest, toggleFavoriteRequest }) => {
+const FavoriteRequests: React.FC<FavoriteRequestsProps> = ({ requests, sendFavoriteRequest}) => {
   // Load visibility state from localStorage
   const [isFavoriteVisible, setIsFavoriteVisible] = useState<boolean>(() => {
     const savedVisibility = localStorage.getItem('favoriteRequestsVisible');
@@ -48,7 +47,6 @@ const FavoriteRequests: React.FC<FavoriteRequestsProps> = ({ requests, sendFavor
               key={index}
               className="bg-gray-100 text-gray-800 rounded-xl px-4 py-2 shadow-md whitespace-nowrap max-w-sm sm:max-w-md break-words cursor-pointer"
               onClick={() => sendFavoriteRequest(request)}
-              onDoubleClick={() => toggleFavoriteRequest(request)}
             >
               {request}
             </div>
