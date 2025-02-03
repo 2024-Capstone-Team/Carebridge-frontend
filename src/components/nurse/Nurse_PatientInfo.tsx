@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import search from "../../assets/search.png";
 import back from "../../assets/back.png";
+import Fuse from "fuse.js";
 import axios from "axios";
 
 interface PatientInfo {
@@ -24,11 +25,17 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
   const [patients, setPatients] = useState<PatientInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Fuse.js 초기화
+  const fuse = new Fuse(patients, {
+    keys: ["name"],
+    threshold: 0.3, // 검색 정확도 설정
+  });
+
   // API로부터 환자 데이터 가져오기
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/patient/user"); // API 엔드포인트 수정 가능
+        const response = await axios.get("http://localhost:8080/api/patient/user/{patient_id}");
         setPatients(response.data); // API 응답 데이터를 상태로 저장
       } catch (error) {
         console.error("환자 데이터를 가져오는 중 에러 발생:", error);
@@ -59,9 +66,9 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
           <ul className="space-y-4 w-full">
             {patients.map((patient, index) => (
               <li key={index} className="patient-info-item p-4 border rounded-lg shadow-sm flex flex-col bg-gray-50" onClick={() => onPatientClick(patient.name)}>
-                <div className="patient-name text-base font-semibold">{patient.name}</div>
-                <div className="patient-details text-sm text-gray-500">
-                  <span>{patient.birthdate}</span>
+                <div className="text-base font-semibold">{patient.name}</div>
+                <div className="text-sm text-gray-500">
+                  <span>{patient.birthdate}{patient.gender}</span>
                 </div>
               </li>
             ))}

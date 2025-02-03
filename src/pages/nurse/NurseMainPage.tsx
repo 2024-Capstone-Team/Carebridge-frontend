@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
 import PreLoginPage from '../PreLoginPage';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
@@ -12,7 +12,7 @@ import home from "../../assets/home.png";
 import scheduler from "../../assets/scheduler.png";
 import dbarrows from "../../assets/double arrows.png";
 import macro from "../../assets/macro.png";
-
+import axios from "axios";
 
 const NurseMainPage: React.FC = () => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
