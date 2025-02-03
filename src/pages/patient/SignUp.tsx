@@ -1,10 +1,14 @@
+//SignUp.tsx
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BackButton from "../../components/common/BackButton";
 
 const SignUp: React.FC = () => {
-  // 상태로 성별 관리
+  
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+
   const navigate = useNavigate();
 
   // 버튼 클릭 핸들러
@@ -12,10 +16,36 @@ const SignUp: React.FC = () => {
     setSelectedGender(gender);
   };
 
-  const goLogIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate("/patient-login");
+  // 인증 완료 버튼
+  const handleVerify = () => {
+    setIsVerified(true); // 버튼 클릭 시 이미지 표시
   };
+
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [birth, setBirth] = useState("");
+
+
+  // 생일: 여덟자리 숫자인것만 일단 확인하고 나중에 다른 유효성 검사 추가 (필수아님)
+  const isEightDigitNumber = (input: string) => {
+    return /^\d{8}$/.test(input);
+  };
+
+  const handleShowSignUpCheck = () => {
+    if (name.trim() === "" || email.trim() === "" || birth.trim() === "") {
+      alert("모든 정보를 입력해주세요!");
+      return;
+    } else if (!isEightDigitNumber(birth)) { // 생일이 여덟 자리인지 확인
+      
+      alert("생일은 여덟 자리 숫자여야 합니다!");
+      return;
+    }
+    navigate("/sign-up-check", { state: { name, email, birth, selectedGender } }); // SignUpCheck 페이지로 상태 전달
+
+  };
+
+
   return (
     <main className="centered-container">
       <div
@@ -32,10 +62,10 @@ const SignUp: React.FC = () => {
 
         <div className="flex flex-col items-center">
           <img
-            src="\icons\icon-fit.png"
-            className="place-content-center grid mt-[100px] pb-4
-            w-[95%]"
-          ></img>
+            src="icons/main-page-logo.png"
+            alt="Main Logo"
+            className="w-[233px] h-[133px] mt-10"
+          />
         </div>
         <div>
           <div className="font-bold text-centered">회원가입</div>
@@ -60,6 +90,8 @@ const SignUp: React.FC = () => {
             <input
               className="ml-2 w-[65%] h-[25px] text-[13px]"
               placeholder="이름을 입력해주세요."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             ></input>
           </div>
 
@@ -79,6 +111,29 @@ const SignUp: React.FC = () => {
             <input
               className="ml-2 w-[65%] h-[25px] text-[13px]"
               placeholder="이메일을 입력해주세요."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            ></input>
+          </div>
+
+          {/* 생일 */}
+          <div
+            className="
+            flex items-center m-1
+            gap-3 rounded-[10px] w-[95%] h-[40px]
+            border border-black border-solid"
+          >
+            <label
+              htmlFor="birth-date"
+              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
+            >
+              생일
+            </label>
+            <input
+              className="ml-2 w-[65%] h-[25px] text-[13px]"
+              placeholder="8자리로 입력해주세요."
+              value={birth}
+              onChange={(e) => setBirth(e.target.value)}
             ></input>
           </div>
 
@@ -103,46 +158,41 @@ const SignUp: React.FC = () => {
             </div>
             <button
               type="submit"
-              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px]"
+              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px] text-[13px]"
             >
-              인증하기
+              전송
             </button>
           </div>
 
           {/* 인증번호 */}
-          <div
-            className="
+          <div className="flex items-center">
+            <div
+              className="
             flex items-center m-1
-            gap-3 rounded-[10px] w-[95%] h-[40px]
+            gap-3 rounded-[10px] w-[68%] h-[40px]
             border border-black border-solid"
-          >
-            <label
-              htmlFor="auth-num"
-              className="pl-[10px] font-bold text-[15px] w-[25%] text-left whitespace-nowrap"
             >
-              인증번호
-            </label>
-            <input className="ml-2 w-[45%] h-[25px] text-[13px] "></input>
-            <label>남은 시간</label>
-          </div>
-
-          {/* 생일 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[95%] h-[40px]
-            border border-black border-solid"
-          >
-            <label
-              htmlFor="birth-date"
-              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
+              <label
+                htmlFor="auth-num"
+                className="pl-[10px] font-bold text-[15px] w-[40%] text-left whitespace-nowrap"
+              >
+                인증번호
+              </label>
+              <input
+                className="w-[40%] h-[25px] text-[13px]"
+                placeholder="N자리 입력"
+              ></input>
+              {isVerified && ( // 상태가 true일 때만 이미지 표시
+          <img src="/icons/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
+        )}
+            </div>
+            <button
+              type="submit"
+              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px] text-[13px]"
+              onClick={handleVerify}
             >
-              생일
-            </label>
-            <input
-              className="ml-2 w-[65%] h-[25px] text-[13px]"
-              placeholder="8자리로 입력해주세요."
-            ></input>
+              인증하기
+            </button>
           </div>
 
           {/* 성별 */}
@@ -164,12 +214,13 @@ const SignUp: React.FC = () => {
             {/* 여성 */}
             <button
               onClick={() => handleGenderSelect("female")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3
+              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3 text-[13px]
               ${
                 selectedGender === "female"
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-black"
                   : "bg-primary-200 text-black"
               }`}
+
             >
               여성
             </button>
@@ -177,7 +228,7 @@ const SignUp: React.FC = () => {
             {/* 남성 */}
             <button
               onClick={() => handleGenderSelect("male")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2
+              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2 text-[13px]
               ${
                 selectedGender === "male"
                   ? "bg-primary text-black"
@@ -190,9 +241,10 @@ const SignUp: React.FC = () => {
         </div>
         <div>
           <button
-            onClick={goLogIn}
+            // onClick={goLogIn}
+            onClick={handleShowSignUpCheck}
             type="submit"
-            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px]"
+            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
           >
             회원가입
           </button>

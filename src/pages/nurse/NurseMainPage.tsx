@@ -11,6 +11,9 @@ import bar from "../../assets/hamburger bar.png";
 import home from "../../assets/home.png";
 import scheduler from "../../assets/scheduler.png";
 import dbarrows from "../../assets/double arrows.png";
+import NurseMessaging from '../../components/nurse/NurseMessaging'; 
+
+
 import macro from "../../assets/macro.png";
 import axios from "axios";
 
@@ -116,7 +119,6 @@ const NurseMainPage: React.FC = () => {
 
       </div>
 
-      
       {/*채팅 목록*/}
       <div className="chat-content flex-1 bg-white rounded-tl-lg rounded-bl-lg shadow-lg p-6">
       </div>

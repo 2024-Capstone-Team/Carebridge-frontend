@@ -8,7 +8,7 @@ const ChoosePatientType: React.FC = () => {
 
   const goMainpage = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/patient-mainpage");
+    navigate("/patient-main");
   };
 
   return (
@@ -24,10 +24,7 @@ const ChoosePatientType: React.FC = () => {
         </div>
         <div className="flex flex-col items-center">
           {/* 이미지 */}
-          <img
-            src="public/icons/icon-fit.png"
-            className="w-[60%] h-auto object-cover mt-16 mb-4"
-          />
+          <img src="icons/main-page-logo.png" className="w-[233px] h-[133px]" />
 
           {/* 안내 텍스트 */}
           <h1
