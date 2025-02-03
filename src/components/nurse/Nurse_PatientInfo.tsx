@@ -6,15 +6,9 @@ import axios from "axios";
 
 interface PatientInfo {
   patientId: number;
-  phoneNumber: string;
   name: string;
   birthdate: string;
   gender: string;
-  guardianContact: string;
-  hospitalId: number;
-  hospitalLocation: string;
-  chatRoomId: string;
-  department: string;
 }
 
 interface NursePatientInfoProps {
