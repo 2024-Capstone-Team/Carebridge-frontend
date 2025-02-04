@@ -1,35 +1,82 @@
-// src/pages/PatientLoginPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
+import axios from "axios";
 
 const PatientLoginPage: React.FC = () => {
-  const [phone_num, setPhoneNum] = useState("");
+  const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
   const { setUserId } = useUserContext();
+  const [authCode, setAuthCode] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (phone_num === "") {
-      const userData = { id: "patient123"}; // temp user id for testing, will need to call api later
-      setUserId(userData.id); // set userID context
+    if (!phone || !authCode) {
+      alert("전화번호와 인증번호를 입력해주세요.");
+      return;
+    }
+
+    try {
+      const verifyResponse = await axios.post("http://localhost:8080/api/users/verify-otp", {
+        phone,
+        otp: authCode,
+      });
+
+      if (!verifyResponse.data.success) {
+        alert("인증번호가 올바르지 않습니다.");
+        return;
+      }
+
+      const loginResponse = await axios.post("http://localhost:8080/api/users/login", { phone });
+      setUserId(loginResponse.data.id);
       navigate("/choose-patient-type");
-    } else {
-      alert("등록된 전화번호가 아닙니다.");
+    } catch (error) {
+      console.error("로그인 실패:", error);
+      alert("로그인에 실패했습니다. 다시 시도해주세요.");
     }
   };
+  
 
-  const getAuthorizeNum = (e: React.FormEvent) => {
+  {/* 인증번호 전송 API */}
+  const getAuthorizeNum = async (e: React.FormEvent) => {
     e.preventDefault();
-    return null;
+    if (!phone) {
+      alert("전화번호를 입력해주세요.");
+      return;
+    }
+    try {
+      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}`);
+      console.log("인증번호 전송 성공:", response.data);
+      alert("인증번호가 전송되었습니다.");
+    } catch (error) {
+      console.error("인증번호 전송 실패:", error);
+      alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
+    }
   };
+ 
 
   const goSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     navigate("/sign-up");
   };
 
+  {/* 카카오톡 로그인 API */}
+  const handleKakaoLogin = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
+      console.log("카카오 로그인 URL:", response.data);
+      const kakaoAuthUrl = response.data;
+  
+      // window.location.assign(kakaoAuthUrl);
+      window.location.href = kakaoAuthUrl;
+    } catch (error) {
+      console.error("카카오 로그인 URL 요청 실패:", error);
+    }
+  };
+
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-3">
       <div
@@ -39,10 +86,11 @@ const PatientLoginPage: React.FC = () => {
         }}
       >
         <img
-          src="public\icons\icon-192x192.png"
+          src="/icons/icon-192x192.png"
+          alt="앱 아이콘"
           className="w-[80%] h-auto object-cover"
           style={{ padding: 1 }}
-        ></img>
+        />
         <h1 className="font-bold text-center mb-6 text-[13px] font-[TAEBAEKfont] mt-[-70px]">
           환자&보호자용 로그인
         </h1>
@@ -50,23 +98,21 @@ const PatientLoginPage: React.FC = () => {
           className="space-y-4 flex flex-col items-center m-[80px] w-[250px]"
           onSubmit={handleLogin}
         >
+          {/* 전화번호 입력 */}
           <div className="flex items-center gap-[10px]">
             <div
-              className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[70%] h-[40px]
-            border border-black border-solid"
+              className="flex items-center m-1 gap-3 rounded-[10px] w-[70%] h-[40px] border border-black border-solid"
             >
               <label
-                htmlFor="auth-num"
+                htmlFor="phone-number"
                 className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
               >
                 전화번호
               </label>
               <input
                 type="tel"
-                id="phone-number"
-                value={phone_num}
+                id="phone-number" 
+                value={phone}
                 onChange={(e) => setPhoneNum(e.target.value)}
                 className="ml-[10px] mt-[-2px] text-[13px] rounded-[10px] h-[25px] w-[100px] px-2 py-1 "
               />
@@ -79,28 +125,24 @@ const PatientLoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 인증번호 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[110%] h-[40px]
-            border border-black border-solid"
-          >
-            <label
-              htmlFor="auth-num"
-              className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
-            >
+          {/* 인증번호 입력 */}  
+          <div className="flex items-center m-1 gap-3 rounded-[10px] w-[110%] h-[40px] border border-black border-solid">
+            <label htmlFor="auth-code" className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap">
               인증번호
             </label>
-            <input className="ml-2 w-[65%] h-[25px] text-[13px] "></input>
+            <input
+              type="text"
+              id="auth-code"
+              value={authCode}
+              onChange={(e) => setAuthCode(e.target.value)}
+              className="w-[65%] h-[25px] text-[13px]"
+            />
           </div>
 
           <button
             onClick={handleLogin}
             type="submit"
-            className=" w-20 h-10 
-            font-bold font-[TAEBAEKfont] text-[13px]
-            bg-primary-200 rounded-[10px]"
+            className="w-20 h-10 font-bold font-[TAEBAEKfont] text-[13px] bg-primary-200 rounded-[10px]"
           >
             LOG IN
           </button>
@@ -108,7 +150,7 @@ const PatientLoginPage: React.FC = () => {
 
         <div
           onClick={goSignUp}
-          className="text-[12px] mt-[-60px] text-gray-400 underline"
+          className="text-[12px] mt-[-60px] text-gray-400 underline cursor-pointer"
         >
           회원가입
         </div>
@@ -116,10 +158,13 @@ const PatientLoginPage: React.FC = () => {
         <hr className="border-gray-400 w-[90%] mt-[120px] mb-[30px]" />
         <form className="flex justify-center items-center">
           <div className="text-[12px] mt-[8px] ">소셜 로그인</div>
-          <img
-            src="public/icons/kakaotalk-icon.png"
-            className="w-[12%] h-auto object-cover ml-[20px] rounded-[10px]"
-          />
+          <button onClick={handleKakaoLogin} className="ml-[20px] rounded-[10px]">
+            <img
+              src="/icons/kakaotalk-icon.png"
+              alt="카카오 로그인"
+              className="w-[36px] h-auto object-cover rounded-[10px]"
+            />
+          </button>
         </form>
       </div>
     </div>

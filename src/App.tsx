@@ -10,6 +10,7 @@ import NurseMainPage from "./pages/nurse/NurseMainPage";
 import NurseSchedulePage from "./pages/nurse/NurseSchedulePage";
 
 /* Patient Pages */
+import Redirection from "./pages/patient/Redirection";
 import PatientLoginPage from "./pages/patient/PatientLoginPage";
 import PatientMainPage from "./pages/patient/PatientMainPage";
 import ChoosePatientType from "./pages/patient/ChoosePatientType";
@@ -34,6 +35,7 @@ import { UserProvider } from "./context/UserContext";
 
 /* Test */
 import HospitalInfoPage from './pages/HospitalInfoPage';
+import ScheduleTest from "./pages/patient/ScheduleTest";
 
 const App: React.FC = () => {
   return (
@@ -48,6 +50,7 @@ const App: React.FC = () => {
           <Route path="/nurse-schedule" element={<NurseSchedulePage />} />
 
           {/* Patient Pages */}
+          <Route path="/api/users/social-login/kakao" element={<Redirection />} />
           <Route path="/patient-login" element={<PatientLoginPage />} />
           <Route path="/patient-main" element={<PatientMainPage />} />
           <Route path="/choose-patient-type" element={<ChoosePatientType />} />
@@ -94,6 +97,7 @@ const App: React.FC = () => {
 
           {/* Test */}
           <Route path='/test' element={<HospitalInfoPage />} />
+          <Route path='/test-schedule' element={<ScheduleTest />} />
           
         </Routes>
       </Router>

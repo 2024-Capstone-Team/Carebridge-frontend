@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "cross-env VITE_BACKEND_URL=http://localhost:8080/api VITE_KAKAO_CLIENT_ID=768da1f894b3af2fb2def46769412550 VITE_KAKAO_REDIRECT_URL=http://localhost:8080/api/users/social-login/kakao VITE_API_KEY=NCSBS5C0EM7CVVRK vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -31,6 +31,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
