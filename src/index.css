@@ -109,3 +109,23 @@ button:focus-visible {
 .card-container {
   @apply bg-white rounded-lg shadow-lg p-8 w-full max-w-lg;
 }
+
+/* 커스텀 스크롤바 스타일 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #e6e6e6; /* 카드 테두리 색과 비슷한 색상 */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #b3b3b3; /* 스크롤바 색상 */
+  border-radius: 10px;
+  border: 2px solid #e6e6e6; /* 카드 테두리 색상 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a0a0; /* 스크롤바 호버 색상 */
+}
