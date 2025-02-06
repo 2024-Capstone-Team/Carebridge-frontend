@@ -6,7 +6,7 @@ import axios from "axios";
 const PatientLoginPage: React.FC = () => {
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
-  const { setUserId } = useUserContext();
+  const { setPatientId } = useUserContext();
   const [authCode, setAuthCode] = useState("");
 
 
@@ -30,7 +30,7 @@ const PatientLoginPage: React.FC = () => {
       }
 
       const loginResponse = await axios.post("http://localhost:8080/api/users/login", { phone });
-      setUserId(loginResponse.data.id);
+      setPatientId(loginResponse.data.patientId);
       navigate("/choose-patient-type");
     } catch (error) {
       console.error("로그인 실패:", error);
@@ -68,8 +68,7 @@ const PatientLoginPage: React.FC = () => {
       const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
       console.log("카카오 로그인 URL:", response.data);
       const kakaoAuthUrl = response.data;
-  
-      // window.location.assign(kakaoAuthUrl);
+
       window.location.href = kakaoAuthUrl;
     } catch (error) {
       console.error("카카오 로그인 URL 요청 실패:", error);

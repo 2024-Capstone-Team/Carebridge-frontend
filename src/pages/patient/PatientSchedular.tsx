@@ -4,6 +4,7 @@ import "react-calendar/dist/Calendar.css"; // 기본 스타일
 import dayjs from "dayjs";
 import WeekCalendar from "../../components/patient/WeekCalander";
 import axios from "axios";
+// import { useUserContext } from "../../context/UserContext";
 
 interface Schedule {
   id: number;
@@ -20,6 +21,9 @@ const PatientSchedular: React.FC = () => {
   // 일정 데이터
   const [scheduleData, setScheduleData] = useState<Schedule[]>([]);
   const [selectedDate, setSelectedDate] = useState(currentDate);
+
+  // patient id 불러오기 (UI/UX 기본 설정 끝나면 주석 해제)
+  // const { patientId } = useUserContext(); 
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

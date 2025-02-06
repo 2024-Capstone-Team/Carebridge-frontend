@@ -45,7 +45,7 @@ const SignUp: React.FC = () => {
       alert("생일은 여덟 자리 숫자여야 합니다!");
       return;
     }
-    navigate("/sign-up-check", { state: { name, email, birth, selectedGender } }); // SignUpCheck 페이지로 상태 전달
+    navigate("/sign-up-check", { state: { name, email, birth, selectedGender, phone } }); // SignUpCheck 페이지로 상태 전달
 
   };
 
@@ -69,20 +69,26 @@ const SignUp: React.FC = () => {
 
     // 인증번호 확인
     const verifyOtp = async () => {
+      if (!authCode) {
+        alert("인증번호를 입력해주세요.");
+        return;
+      }
+    
       try {
-        const response = await axios.post(
-          "http://localhost:8080/api/users/verify-otp",
-          { phone, otp: authCode }
-        );
-        if (response.data.success) {
+        const response = await axios.post("http://localhost:8080/api/users/verify-otp", {
+          phone,
+          otp: authCode,
+        });
+    
+        if (response.data) {
           setIsVerified(true);
           alert("인증이 완료되었습니다.");
         } else {
-          alert(`인증 실패: ${response.data.message || "인증번호가 일치하지 않습니다."}`);
+          alert("인증 실패: OTP가 올바르지 않거나 만료되었습니다.");
         }
       } catch (error) {
         console.error("OTP 확인 오류:", error);
-        alert("인증번호 확인에 실패했습니다.");
+        alert("네트워크 오류로 인증에 실패했습니다.");
       }
     };
 
@@ -112,7 +118,6 @@ const SignUp: React.FC = () => {
           <div className="font-bold text-centered">회원가입</div>
         </div>
         <div
-          // className="grid grid-rows-6 pt-[80px] place-content-evenly"
           className="mt-[60px] flex flex-col w-[95%]"
         >
           {/* 이름 */}
@@ -227,7 +232,7 @@ const SignUp: React.FC = () => {
                 className="w-[65%] h-[25px] text-[13px]"
               />
               {isVerified && ( // 상태가 true일 때만 이미지 표시
-                <img src="/icons/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
+                <img src="/src/assets/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
               )}
             </div>
             <button
@@ -283,14 +288,20 @@ const SignUp: React.FC = () => {
           </div>
         </div>
         <div>
-          <button
-            // onClick={goLogIn}
-            onClick={handleShowSignUpCheck}
-            type="submit"
-            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
-          >
-            회원가입
-          </button>
+        <button
+          onClick={() => {
+            if (!isVerified) {
+              alert("휴대폰 인증을 완료해주세요!");
+              return;
+            }
+            handleShowSignUpCheck();
+          }}
+          type="submit"
+          className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
+        >
+          회원가입
+        </button>
+
         </div>
       </div>
     </main>
