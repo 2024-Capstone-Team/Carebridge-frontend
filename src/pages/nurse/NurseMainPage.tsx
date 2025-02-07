@@ -9,22 +9,28 @@ import NurseMacro from '../../components/nurse/NurseMacro';
 import logo from "../../assets/carebridge_logo.png";
 import bar from "../../assets/hamburger bar.png";
 import home from "../../assets/home.png";
-import scheduler from "../../assets/scheduler.png";
+import schedular from "../../assets/schedular.png";
 import dbarrows from "../../assets/double arrows.png";
+import dwarrows from "../../assets/down arrows.png";
 import NurseMessaging from '../../components/nurse/NurseMessaging'; 
-
-
 import macro from "../../assets/macro.png";
 import axios from "axios";
 
 const NurseMainPage: React.FC = () => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [isMacroMode, setIsMacroMode] = useState(false); // 매크로 설정 화면 여부
-  const [selectedPatient, setSelectedPatient] = useState<string | null>(null); //환자 정보 선택 상태
+  const [selectedPatient, setSelectedPatient] = useState<number | null>(null); //환자 정보 선택 상태
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
     navigate('/nurse-main');
+  };
+
+  const handleHamburgerClick = (event: React.MouseEvent<HTMLImageElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left });
+    setIsDropdownVisible((prev) => !prev); 
   };
 
   const currentDate = new Date();
@@ -50,23 +56,18 @@ const NurseMainPage: React.FC = () => {
     navigate(`/schedule/${scheduleId}`, { state: { editMode: true } }); // 수정 버튼 클릭 시 상태 전달
   };
 
-  const handleMouseEnter = () => {
-    setIsDropdownVisible(true); // 팝업 자세히 알림
-  };
-
-  const handleMouseLeave = () => {
-    setIsDropdownVisible(false);
-  };
-
   const handleMenuClick = (path: string) => {
+    setIsDropdownVisible(false); // 메뉴 클릭 시 드롭다운 닫기
     navigate(path);
   };
 
-  const handlePatientClick = (patientName: string) => {
-    setSelectedPatient(patientName); // 환자 상세 정보로 선택
+  const handlePatientClick = (patientId: number) => {
+    console.log("선택된 환자 ID:", patientId);
+    setSelectedPatient(patientId); // 환자 상세 정보로 선택
   };
 
   const handleBackToList = () => {
+    console.log("목록으로 돌아가기");
     setSelectedPatient(null); // 목록으로 돌아가기
   };
 
@@ -78,10 +79,12 @@ const NurseMainPage: React.FC = () => {
         
         {/*로고 영역*/}
         <div className="flex items-center mb-4" style={{ marginTop: '-60px' }}>
-          <img src={bar} alt="hamburger bar" className="relative w-[1.7em] h-[1.7em] mr-2" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} />
+        <img src={isDropdownVisible ? dwarrows : bar} alt="hamburger bar"
+            className="relative w-[1.7em] h-[1.7em] mr-2 cursor-pointer"
+            onClick={handleHamburgerClick}/>
           {isDropdownVisible && (
-          <div className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-            <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
+          <div className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
+          style={{ top: dropdownPosition.top, left: dropdownPosition.left }}>            <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
             <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">일반외과 병동</p>
             <hr className="bg-gray-600"></hr>
 
@@ -90,7 +93,7 @@ const NurseMainPage: React.FC = () => {
                 <img src={home} alt="home" className="w-4 h-4 mr-2" />메인 화면</li>
 
               <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
-                <img src={scheduler} alt="scheduler" className="w-4 h-4 mr-2" />스케줄러</li>
+                <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러</li>
 
                 <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={handleMacroClick}>
                 <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정</li>
@@ -120,25 +123,25 @@ const NurseMainPage: React.FC = () => {
       </div>
 
       {/*채팅 목록*/}
-      <div className="chat-content flex-1 bg-white rounded-tl-lg rounded-bl-lg shadow-lg p-6">
+      <div className="flex-1 bg-white rounded-tl-lg rounded-bl-lg shadow-lg p-6">
       </div>
 
       {/*채팅*/}
-      <div className="chatting-content flex-1 bg-white rounded-tr-lg rounded-br-lg shadow-lg p-6 mr-3">
+      <div className="flex-1 bg-white rounded-tr-lg rounded-br-lg shadow-lg p-6 mr-3">
       </div>
 
       {/*환자 정보 영역*/}
-      <div className="patientinfo-content w-1/5 flex flex-col space-y-6">
+      <div className="w-1/5 flex flex-col space-y-6">
         <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 mb-1">
-          {selectedPatient ? (
-            <Nurse_DetailedPatientInfo patientName={selectedPatient} onBack={handleBackToList} />
+          {selectedPatient !== null ? (
+            <Nurse_DetailedPatientInfo patientId={selectedPatient} onBack={handleBackToList} />
           ) : (
             <NursePatientInfo onPatientClick={handlePatientClick} />
           )}
         </div>
 
         {/*스케줄러 영역*/}
-        <div className="schedule-content w-full h-full bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1">
+        <div className="w-full h-full bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-grow overflow-hidden">
           <NurseSchedule />
         </div>
 

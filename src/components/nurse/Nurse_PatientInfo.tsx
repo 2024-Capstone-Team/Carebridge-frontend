@@ -7,12 +7,12 @@ import axios from "axios";
 interface PatientInfo {
   patientId: number;
   name: string;
-  birthdate: string;
+  birthDate: string;
   gender: string;
 }
 
 interface NursePatientInfoProps {
-  onPatientClick: (patientName: string) => void; // 환자 클릭 핸들러
+  onPatientClick: (patientId: number) => void; // 환자 클릭 핸들러
 }
 
 const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) => {
@@ -25,12 +25,52 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
     threshold: 0.3, // 검색 정확도 설정
   });
 
+
+  // 생년월일 포맷 변환 함수
+  const formatBirthdate = (birthdate: string | null | undefined) => {
+    if (!birthdate) return "정보 없음";
+
+    try {
+      // 'T' 이후를 제거하고 날짜만 추출
+      const trimmedDate = birthdate.split("T")[0];
+      const [year, month, day] = trimmedDate.split("-");
+      if (year && month && day) {
+        return `${year}.${month}.${day}`;
+      }
+      return "정보 없음";
+    } catch (error) {
+      console.error("formatBirthdate 처리 중 에러:", error);
+      return "정보 없음";
+    }
+  };
+
+
+  // 성별 변환 함수
+  const formatGender = (gender: string | undefined) => {
+    if (!gender) return "정보 없음"; // 값이 없을 경우 처리
+    return gender === "Male" ? "남" : gender === "Female" ? "여" : "정보 없음";
+  };
+
+
   // API로부터 환자 데이터 가져오기
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/patient/user/{patient_id}");
-        setPatients(response.data); // API 응답 데이터를 상태로 저장
+        const staffId = 1; // 임시 staff_id 값
+        const response = await axios.get(`http://localhost:8080/api/patient/users/${staffId}`);
+        const fetchedPatients = response.data.map((patient: any) => ({
+          patientId: patient.patientId,
+          name: patient.name,
+          birthDate: patient.birthDate,
+          gender: patient.gender,
+        }));
+
+        // 이름 기준으로 정렬
+        fetchedPatients.sort((a: PatientInfo, b: PatientInfo) =>
+          a.name.localeCompare(b.name, "ko", { sensitivity: "base" })
+        );
+
+        setPatients(fetchedPatients);
       } catch (error) {
         console.error("환자 데이터를 가져오는 중 에러 발생:", error);
       }
@@ -39,10 +79,12 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
     fetchPatients();
   }, []);
 
+
   // 검색어에 따라 필터링된 환자 목록
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPatients = searchQuery
+    ? fuse.search(searchQuery).map((result) => result.item)
+    : patients;
+
 
   return (
     <div className="bg-[#DFE6EC] p-3 rounded-lg ">
@@ -56,14 +98,15 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
         </div>
 
         {/*환자 목록 영역*/}
-        <div className="overflow-y-auto space-y-4 h-[350px]">
-          <ul className="space-y-4 w-full">
-            {patients.map((patient, index) => (
-              <li key={index} className="patient-info-item p-4 border rounded-lg shadow-sm flex flex-col bg-gray-50" onClick={() => onPatientClick(patient.name)}>
+        <div className="space-y-4 h-[350px] overflow-y-auto">
+          <ul className="space-y-4 w-full cursor-pointer">
+            {filteredPatients.map((patient) => (
+              <li key={patient.patientId} className="flex flex-col" onClick={() => onPatientClick(patient.patientId)}>
                 <div className="text-base font-semibold">{patient.name}</div>
-                <div className="text-sm text-gray-500">
-                  <span>{patient.birthdate}{patient.gender}</span>
+                <div className="text-sm text-gray-600">
+                  <span>{formatBirthdate(patient.birthDate)} {formatGender(patient.gender)}</span>
                 </div>
+                <hr className="border-gray-300 mt-2 -mb-2"></hr>
               </li>
             ))}
           </ul>

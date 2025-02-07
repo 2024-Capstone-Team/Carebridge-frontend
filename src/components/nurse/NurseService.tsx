@@ -79,7 +79,7 @@ const NurseService: React.FC = () => {
 
       <div>
         {patients.map((patient, index) => (
-          <div key={index} className="mb-3 p-4 bg-white shadow rounded">
+          <div key={index} className="p-4 border border-gray-300">
             <div className="flex justify-between">
               <div>
                 <p className="font-bold">{patient.name}</p>
