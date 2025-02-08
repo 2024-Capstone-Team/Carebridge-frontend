@@ -58,7 +58,7 @@ const SignUp: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}`);
+      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=true`);
       console.log("인증번호 전송 성공:", response.data);
       alert("인증번호가 전송되었습니다.");
     } catch (error) {

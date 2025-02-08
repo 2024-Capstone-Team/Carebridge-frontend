@@ -14,7 +14,7 @@ function SignUpCheck() {
   const email = state?.email || "이메일 없음";
   const birth = state?.birth || "생일 없음";
   const gender = state?.selectedgender === "male" ? "Male" : "Female";
-  const phone = state?.phone || "전화번호 없음";
+  const phoneNumber = state?.phone || "전화번호 없음";
 
   
   const formatBirthToISO = (birth: string) => {
@@ -43,7 +43,7 @@ function SignUpCheck() {
     const userData = {
       userId: 0,
       name,
-      phone,
+      phoneNumber,
       birthDate: birthDateISO,
       gender,
       email,
@@ -68,7 +68,7 @@ function SignUpCheck() {
         <p className="text-[15px] mb-4">이름: {name}</p>
         <p className="text-[15px] mb-4">이메일: {email}</p>
         <p className="text-[15px] mb-4">생일: {birth}</p>
-        <p className="text-[15px] mb-4">전화번호: {phone} </p>
+        <p className="text-[15px] mb-4">전화번호: {phoneNumber} </p>
         <p className="text-[15px] mb-4">성별: {gender === "Male" ? "남성" : "여성"}</p>
         <button
           onClick={() => navigate(-1)}
