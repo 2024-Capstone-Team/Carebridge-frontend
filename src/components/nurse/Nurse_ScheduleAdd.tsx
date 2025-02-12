@@ -54,7 +54,7 @@ const ScheduleAdd: React.FC<ScheduleAddProps> = ({ scheduleId, onCancel }) => {
       </div>
 
       <div className="flex justify-center p-4 mt-10">
-        <button className="bg-white border shadow-lg text-lg rounded-md px-2 mx-1 w-[60px] h-[35px]" onClick={onCancel}>취소</button>
+        <button className="bg-white border shadow-lg text-lg rounded-md px-2 mx-1 w-[60px] h-[35px] hover:bg-gray-200" onClick={onCancel}>취소</button>
         <button className="bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 w-[60px] h-[35px]" onClick={handleSave}>저장</button>
       </div>
     </div>

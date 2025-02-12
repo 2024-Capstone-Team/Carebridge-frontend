@@ -7,11 +7,11 @@ interface ScheduleEditFormProps {
 
 const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCancel }) => {
   const [schedule, setSchedule] = useState({
-    target: "홍길동",
-    description: "일정의 내용을 입력해주세요.",
-    startTime: "2024-12-04 오전 12:00",
-    endTime: "2024-12-04 오전 02:00",
-    alert: "10분 전",
+    target: "",
+    description: "",
+    startTime: "",
+    endTime: "",
+    alert: "",
   });
 
   const handleSave = () => {

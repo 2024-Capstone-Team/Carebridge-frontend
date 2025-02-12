@@ -10,6 +10,7 @@ import home from "../../assets/home.png";
 import schedular from "../../assets/schedular.png";
 import macro from "../../assets/macro.png";
 import dwarrows from "../../assets/down arrows.png";
+import qresponse from "../../assets/quick response.png";
 import axios from "axios";
 
 interface Patient {
@@ -160,14 +161,15 @@ const NurseSchedulePage: React.FC = () => {
       
       {/*햄버거바 + 로고 영역*/}
       <div className="flex items-center pl-7">
-      <img src={isDropdownVisible ? dwarrows : bar} alt="hamburger bar"
+        <img src={isDropdownVisible ? dwarrows : bar} alt="hamburger bar"
             className="relative w-[1.7em] h-[1.7em] mr-2 cursor-pointer"
             onClick={handleHamburgerClick}/>
           {isDropdownVisible && (
           <div className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
-          style={{ top: dropdownPosition.top, left: dropdownPosition.left }}>            <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
-            <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">일반외과 병동</p>
-            <hr className="bg-gray-600"></hr>
+          style={{ top: dropdownPosition.top, left: dropdownPosition.left }}>            
+          <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
+          <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">일반외과 병동</p>
+          <hr className="bg-gray-600"></hr>
 
             <ul className="py-2">
               <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-main")}>
@@ -176,8 +178,12 @@ const NurseSchedulePage: React.FC = () => {
               <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
                 <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러</li>
 
-                <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
+              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
                 <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정</li>
+                
+              <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center">
+                  <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정</li>
+
                 <hr className="bg-gray-600"></hr>
                 
               <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/change-ward")}>병동 변경</li>
