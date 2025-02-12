@@ -4,7 +4,7 @@ import "react-calendar/dist/Calendar.css"; // 기본 스타일
 import dayjs from "dayjs";
 import WeekCalendar from "../../components/patient/WeekCalander";
 import axios from "axios";
-// import { useUserContext } from "../../context/UserContext";
+import { useUserContext } from "../../context/UserContext";
 
 interface Schedule {
   id: number;
@@ -22,8 +22,8 @@ const PatientSchedular: React.FC = () => {
   const [scheduleData, setScheduleData] = useState<Schedule[]>([]);
   const [selectedDate, setSelectedDate] = useState(currentDate);
 
-  // patient id 불러오기 (UI/UX 기본 설정 끝나면 주석 해제)
-  // const { patientId } = useUserContext(); 
+  // patient id 불러오기
+  const { patientId } = useUserContext(); 
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ const PatientSchedular: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const patientId = "8"; //temp id
+        // const patientId = 8;
         const response = await axios.get(`http://localhost:8080/api/schedule/patient/${patientId}`);
         
         console.log("API 응답 데이터:", response.data);

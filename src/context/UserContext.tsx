@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface UserContextType {
-  userId: string | null;
   nurseId: string | null;
   patientId: String | null;
-  setUserId: (id: string) => void;
   setNurseId: (id: string) => void;
   setPatientId: (id: string) => void;
 }
@@ -16,12 +14,11 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const [userId, setUserId] = useState<string | null>(null);
   const [nurseId, setNurseId] = useState<string | null>(null);
   const [patientId, setPatientId] = useState<string | null>(null);
 
   return (
-    <UserContext.Provider value={{ userId, nurseId, patientId, setUserId, setNurseId, setPatientId }}>
+    <UserContext.Provider value={{nurseId, patientId, setNurseId, setPatientId }}>
       {children}
     </UserContext.Provider>
   );
