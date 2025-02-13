@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface UserContextType {
-  userId: string | null;
   nurseId: string | null;
-  isPatient: boolean;
-  setUserId: (id: string) => void;
+  patientId: String | null;
   setNurseId: (id: string) => void;
-  setIsPatient: (isPatient: boolean) => void;
+  setPatientId: (id: string) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -16,12 +14,11 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const [userId, setUserId] = useState<string | null>(null);
   const [nurseId, setNurseId] = useState<string | null>(null);
-  const [isPatient, setIsPatient] = useState<boolean>(true);
+  const [patientId, setPatientId] = useState<string | null>(null);
 
   return (
-    <UserContext.Provider value={{ userId, nurseId, isPatient, setUserId, setNurseId, setIsPatient }}>
+    <UserContext.Provider value={{nurseId, patientId, setNurseId, setPatientId }}>
       {children}
     </UserContext.Provider>
   );

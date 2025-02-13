@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BackButton from "../../components/common/BackButton";
+import axios from "axios";
 
 const SignUp: React.FC = () => {
   
-  const [selectedGender, setSelectedGender] = useState<string | null>(null);
+
   const [isVerified, setIsVerified] = useState(false);
 
   const navigate = useNavigate();
@@ -25,6 +26,9 @@ const SignUp: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [birth, setBirth] = useState("");
+  const [phone, setPhoneNum] = useState("");
+  const [authCode, setAuthCode] = useState("");
+  const [selectedGender, setSelectedGender] = useState<string | null>(null);
 
 
   // 생일: 여덟자리 숫자인것만 일단 확인하고 나중에 다른 유효성 검사 추가 (필수아님)
@@ -41,9 +45,52 @@ const SignUp: React.FC = () => {
       alert("생일은 여덟 자리 숫자여야 합니다!");
       return;
     }
-    navigate("/sign-up-check", { state: { name, email, birth, selectedGender } }); // SignUpCheck 페이지로 상태 전달
+    navigate("/sign-up-check", { state: { name, email, birth, selectedGender, phone } }); // SignUpCheck 페이지로 상태 전달
 
   };
+
+  
+  {/* 인증번호 전송 API */}
+  const getAuthorizeNum = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone) {
+      alert("전화번호를 입력해주세요.");
+      return;
+    }
+    try {
+      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=true`);
+      console.log("인증번호 전송 성공:", response.data);
+      alert("인증번호가 전송되었습니다.");
+    } catch (error) {
+      console.error("인증번호 전송 실패:", error);
+      alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+    // 인증번호 확인
+    const verifyOtp = async () => {
+      if (!authCode) {
+        alert("인증번호를 입력해주세요.");
+        return;
+      }
+    
+      try {
+        const response = await axios.post("http://localhost:8080/api/users/verify-otp", {
+          phone,
+          otp: authCode,
+        });
+    
+        if (response.data) {
+          setIsVerified(true);
+          alert("인증이 완료되었습니다.");
+        } else {
+          alert("인증 실패: OTP가 올바르지 않거나 만료되었습니다.");
+        }
+      } catch (error) {
+        console.error("OTP 확인 오류:", error);
+        alert("네트워크 오류로 인증에 실패했습니다.");
+      }
+    };
 
 
   return (
@@ -71,7 +118,6 @@ const SignUp: React.FC = () => {
           <div className="font-bold text-centered">회원가입</div>
         </div>
         <div
-          // className="grid grid-rows-6 pt-[80px] place-content-evenly"
           className="mt-[60px] flex flex-col w-[95%]"
         >
           {/* 이름 */}
@@ -152,14 +198,14 @@ const SignUp: React.FC = () => {
                 전화번호
               </label>
               <input
-                className="ml-2 w-[65%] h-[25px] text-[13px]"
-                placeholder="11자리 입력"
-              ></input>
+                type="tel"
+                id="phone-number"
+                value={phone}
+                onChange={(e) => setPhoneNum(e.target.value)}
+                className="w-[65%] h-[25px] text-[13px]"
+              />
             </div>
-            <button
-              type="submit"
-              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px] text-[13px]"
-            >
+            <button className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]" onClick={getAuthorizeNum}>
               전송
             </button>
           </div>
@@ -179,17 +225,19 @@ const SignUp: React.FC = () => {
                 인증번호
               </label>
               <input
-                className="w-[40%] h-[25px] text-[13px]"
-                placeholder="N자리 입력"
-              ></input>
+                type="text"
+                id="auth-code"
+                value={authCode}
+                onChange={(e) => setAuthCode(e.target.value)}
+                className="w-[65%] h-[25px] text-[13px]"
+              />
               {isVerified && ( // 상태가 true일 때만 이미지 표시
-          <img src="/icons/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
-        )}
+                <img src="/src/assets/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
+              )}
             </div>
             <button
-              type="submit"
-              className="w-[25%] h-[40px] font-bold bg-primary rounded-[10px] text-[13px]"
-              onClick={handleVerify}
+              className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular] mt-2"
+              onClick={verifyOtp}
             >
               인증하기
             </button>
@@ -240,14 +288,20 @@ const SignUp: React.FC = () => {
           </div>
         </div>
         <div>
-          <button
-            // onClick={goLogIn}
-            onClick={handleShowSignUpCheck}
-            type="submit"
-            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
-          >
-            회원가입
-          </button>
+        <button
+          onClick={() => {
+            if (!isVerified) {
+              alert("휴대폰 인증을 완료해주세요!");
+              return;
+            }
+            handleShowSignUpCheck();
+          }}
+          type="submit"
+          className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
+        >
+          회원가입
+        </button>
+
         </div>
       </div>
     </main>
