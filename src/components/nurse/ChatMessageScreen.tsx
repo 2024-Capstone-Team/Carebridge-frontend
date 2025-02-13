@@ -43,6 +43,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
+  // Set nurseId as current userId
   const currentUserId = nurseId;
 
   const [isComposing, setIsComposing] = useState(false);
@@ -86,7 +87,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   }, [patientName]);
 
   const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: ChatMessage) => {
-    if (message.sender_id !== currentUserId) { // Check if the message is from someone else
+    if (message.isPatient && message.chatRoomId == currentRoom) { // Only messages from patient will be added
       setChatMessages((prevMessages) => [...prevMessages, message]);
     }
   });
@@ -94,7 +95,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   useEffect(() => {
     if (!currentRoom || !isConnected) return;
   
-    subscribeToRoom(currentRoom);
+    subscribeToRoom(`/sub/user/chat/${nurseId}`);  
     fetchChatHistory(patientId);
   
     return () => {
@@ -133,7 +134,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   // Mark unread messages from others as read
   useEffect(() => {
     const unreadMessagesFromOthers = chatMessages.filter(
-      (message) => !message.readStatus && message.sender_id !== currentUserId
+      (message) => !message.readStatus && message.senderId !== currentUserId
     );
     unreadMessagesFromOthers.forEach((message) => markMessageAsRead(message.messageId));
   }, [chatMessages, currentUserId]);
@@ -171,7 +172,6 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   };
 
   const handleSendMessage = (): void => {
-    console.log("Sending message:", inputText);
 
     if (inputText.trim() && isConnected && patientId) {
       const now = new Date();
@@ -187,30 +187,88 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         timestamp: currentTime,
         readStatus: false,
         chatRoomId: currentRoom,
-        sender_id: currentUserId,
+        senderId: currentUserId,
         isPatient: false,
+        isFailed: false,
       };
 
       setChatMessages((prev) => [...prev, newMessage]);
 
       const messageToSend = {
-        type: "TALK",
+        // type: "TALK",
         patientId: patientId,
         medicalStaffId: currentUserId,
         messageContent: inputText,
         timestamp: currentTime,
         readStatus: false,
         chatRoomId: currentRoom,
-        sender_id: currentUserId,
+        senderId: currentUserId,
         isPatient: false,
       };
 
-      sendMessage("/pub/chat/message", messageToSend);
+      sendMessage(`/pub/chat/message`, messageToSend)
+        .catch(() => {  // set message to failed if message failed to send
+          setChatMessages((prev) =>
+            prev.map((msg) =>
+              msg.messageId === newMessageId ? { ...msg, isFailed: true } : msg
+            )
+          );
+        });
       setInputText("");
 
       clearHistory(); // clear undo history after sending message
     }
   };
+
+  const handleResendMessage = (failedMessage: ChatMessage) => {
+      console.log(`Resending message with ID: ${failedMessage.messageId}`);
+    
+      // Get current time
+      const now = new Date();
+      const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", ""); // Korean time
+    
+      // Message to send over server
+      const messageToSend = {
+        patientId: failedMessage.patientId,
+        medicalStaffId: failedMessage.medicalStaffId,
+        messageContent: failedMessage.messageContent,
+        timestamp: currentTime,
+        readStatus: false,
+        chatRoomId: `${nurseId}_${patientId}`,
+        senderId: nurseId,
+        isPatient: true,
+      };
+    
+      // Send message and update state accordingly
+      sendMessage("/pub/chat/message", messageToSend)  
+        .then(() => {
+          // If successfully sent, update isFailed and timestamp, and move the message to correct position
+          setChatMessages((prev) => {
+            const updatedMessages = prev.map((msg) =>
+              msg.messageId === failedMessage.messageId
+                ? { ...msg, isFailed: false, timestamp: currentTime }
+                : msg
+            );
+    
+            // Separate successful and failed messages
+            const successfulMessages = updatedMessages.filter((msg) => !msg.isFailed);
+            const failedMessages = updatedMessages.filter((msg) => msg.isFailed);
+    
+            // Return new order: successful messages first, then failed ones
+            return [...successfulMessages, ...failedMessages];
+          });
+        })
+        .catch(() => {
+          // If failed again, update the timestamp but keep isFailed as true
+          setChatMessages((prev) =>
+            prev.map((msg) =>
+              msg.messageId === failedMessage.messageId
+                ? { ...msg, timestamp: currentTime }
+                : msg
+            )
+          );
+        });
+    };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -303,6 +361,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         <ChatMessages 
         chatMessages={chatMessages} 
         currentUserId={currentUserId} 
+        onResend={handleResendMessage}
         senderBubbleColor="bg-primary-300"
         receiverBubbleColor="bg-white"
         senderTextColor="text-white"

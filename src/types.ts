@@ -1,6 +1,7 @@
 export interface ChatMessage {
+  isFailed: any;
   messageId: number;
-  sender_id: number; 
+  senderId: number; 
   medicalStaffId: number; 
   messageContent: string;
   timestamp: string;
