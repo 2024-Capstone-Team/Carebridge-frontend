@@ -8,14 +8,24 @@ type FavoriteRequestsContextType = {
 const FavoriteRequestsContext = createContext<FavoriteRequestsContextType | undefined>(undefined);
 
 export const FavoriteRequestsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [favoriteRequests, setFavoriteRequests] = useState<string[]>([]);
+  // Load favorite requests from local storage when the component mounts
+  const loadFavoriteRequestsFromLocalStorage = () => {
+    const savedFavorites = localStorage.getItem('favoriteRequests');
+    return savedFavorites ? JSON.parse(savedFavorites) : [];
+  };
+
+  const [favoriteRequests, setFavoriteRequests] = useState<string[]>(loadFavoriteRequestsFromLocalStorage);
 
   const toggleFavoriteRequest = (request: string) => {
-    setFavoriteRequests((prev) =>
-      prev.includes(request)
+    setFavoriteRequests((prev) => {
+      const updatedFavorites = prev.includes(request)
         ? prev.filter((item) => item !== request)
-        : [...prev, request]
-    );
+        : [...prev, request];
+
+      // Update local storage when the favorite requests list changes
+      localStorage.setItem('favoriteRequests', JSON.stringify(updatedFavorites));
+      return updatedFavorites;
+    });
   };
 
   return (

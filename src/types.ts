@@ -1,11 +1,21 @@
 export interface ChatMessage {
-  messageId: string; 
-  senderId: string; 
-  receiverId: string; 
-  messageContent: string; 
-  timestamp: string; 
+  messageId: number;
+  sender_id: number; 
+  medicalStaffId: number; 
+  messageContent: string;
+  timestamp: string;
   readStatus: boolean;
-  conversationId?: string; 
+  chatRoomId: string;
+  patientId: number; 
+  isPatient: boolean;
+}
+
+export interface ChatRoom {
+  userName: string;
+  conversationId: string; // Unique ID for the conversation (used to group messages)
+  previewMessage: string;  // Last message preview in the room
+  lastMessageTime: string; // Timestamp of the last message
+  unread: boolean;         // Unread message status
 }
 
 export interface HospitalInfo { // temporary for testing
