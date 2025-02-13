@@ -1,10 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PreLoginPage from '../PreLoginPage';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/Nurse_PatientInfo";
 import Nurse_DetailedPatientInfo from '../../components/nurse/Nurse_DetailedPatientInfo';
-import NurseService from '../../components/nurse/NurseService';
 import NurseMacro from '../../components/nurse/NurseMacro';
 import NurseMacroList from '../../components/nurse/NurseMacroList';
 import NurseMacroEdit from '../../components/nurse/NurseMacroEdit';
@@ -54,7 +53,9 @@ const NurseMainPage: React.FC = () => {
   const [requests, setRequests] = useState<CallBellRequest[]>([]);
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [patientDetails, setPatientDetails] = useState<{ [key: number]: PatientDetail }>({});
+  const [currentTime, setCurrentTime] = useState(new Date()); // 시간 업데이트 state
   const navigate = useNavigate();
+  const location = useLocation();
 
   const medicalStaffId = 1; // 임시 staffId
   const hospitalId = 1; // 임시 병원 Id
@@ -82,16 +83,29 @@ const NurseMainPage: React.FC = () => {
     setIsDropdownVisible((prev) => !prev); 
   };
 
-  const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString('ko-KR', {
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // 1초마다 업데이트
+    return () => clearInterval(timerId); 
+  }, []);
+
+  // 날짜와 시간 포맷팅
+  const formattedDate = currentTime.toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-  const formattedTime = currentDate.toLocaleTimeString('ko-KR', {
+  const formattedTime = currentTime.toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  useEffect(() => {
+    if (location.state && location.state.macroMode) {
+      setIsMacroMode(true);
+    }
+  }, [location]);
 
   const handleMacroClick = () => {
     setIsMacroMode(true); // 매크로 설정 화면 활성화

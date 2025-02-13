@@ -55,7 +55,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
   };
 
   return (
-    <div className="w-full h-full bg-[#DFE6EC] p-6 z-50 rounded-lg">
+    <div className="w-full h-full bg-[#DFE6EC] rounded-lg">
       <h2 className="text-lg font-bold mb-4">스크립트 매크로 수정</h2>
       <hr className="mb-4 border border-gray-300" />
 

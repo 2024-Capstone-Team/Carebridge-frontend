@@ -1,4 +1,3 @@
-// NurseMacroList.tsx
 import React, { useState, useEffect } from 'react';
 import star from "../../assets/star.png";
 import ystar from "../../assets/yellow star.png";

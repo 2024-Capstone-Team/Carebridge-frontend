@@ -28,8 +28,9 @@ const NurseSchedule: React.FC = () => {
     navigate("/nurse-schedule"); // NurseSchedulePage로 이동
   };
 
-  const handleAddSchedule = () => {
-    navigate("/add-schedule"); // "추가" 버튼 클릭 시 이동할 경로
+  const handleScheduleAdd = () => {
+    // NurseSchedulePage로 이동하면서 state에 view: 'add' 전달
+    navigate("/nurse-schedule", { state: { view: "add" } });
   };
 
   const handleEditSchedule = (id: number) => {
@@ -172,7 +173,7 @@ const NurseSchedule: React.FC = () => {
       {/*날짜, + 버튼 영역*/}
       <div className="flex items-center justify-between">
         <span className="text-[17px] text-black font-semibold">{formattedDate}</span>
-        <button className="bg-transparent px-4 py-2" onClick={handleAddSchedule}>+</button>
+        <button className="bg-transparent px-4 py-2" onClick={handleScheduleAdd}>+</button>
       </div>
 
       <div className="flex-grow overflow-y-auto">

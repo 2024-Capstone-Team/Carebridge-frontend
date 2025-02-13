@@ -42,7 +42,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
   };
 
   return (
-    <div className="w-full h-full bg-[#DFE6EC] p-6 z-50 rounded-lg">
+    <div className="w-full h-full bg-[#DFE6EC] rounded-lg">
       <h2 className="text-lg font-bold mb-4">스크립트 매크로 추가</h2>
       <hr className="mb-4 border border-gray-300" />
 

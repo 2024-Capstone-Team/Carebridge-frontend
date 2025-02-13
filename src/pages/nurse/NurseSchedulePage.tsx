@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import NurseCalendar from "../../components/nurse/Nurse_Calendar";
 import ScheduleEditForm from "../../components/nurse/Nurse_ScheduleEdit";
 import ScheduleAdd from "../../components/nurse/Nurse_ScheduleAdd";
@@ -136,6 +135,10 @@ const NurseSchedulePage: React.FC = () => {
     setCurrentView("calendar"); // 캘린더 화면으로 전환
     setEditingScheduleId(null); // 수정 상태 초기화
   };
+
+  const handleMacroClick = () => {
+    navigate("/nurse-main", { state: { macroMode: true } });
+  };
   
   const handleMenuClick = (path: string) => {
     if (path === "/nurse-schedule") {
@@ -178,7 +181,7 @@ const NurseSchedulePage: React.FC = () => {
               <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
                 <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러</li>
 
-              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
+              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={handleMacroClick}>
                 <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정</li>
                 
               <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center">
