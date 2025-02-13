@@ -1,6 +1,8 @@
+// /PatientSchedular.tsx
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "react-calendar/dist/Calendar.css"; // 기본 스타일
+import "react-calendar/dist/Calendar.css";
 import dayjs from "dayjs";
 import WeekCalendar from "../../components/patient/WeekCalander";
 import axios from "axios";
@@ -35,7 +37,6 @@ const PatientSchedular: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // const patientId = 8;
         const response = await axios.get(`http://localhost:8080/api/schedule/patient/${patientId}`);
         
         console.log("API 응답 데이터:", response.data);

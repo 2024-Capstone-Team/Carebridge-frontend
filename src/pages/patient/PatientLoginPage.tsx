@@ -30,7 +30,9 @@ const PatientLoginPage: React.FC = () => {
       }
 
       // 로그인 성공 시 patientId를 받아서 상태에 저장
-      setPatientId(loginResponse.data.patientId);
+      const patientId = loginResponse.data;
+      setPatientId(patientId);
+      console.log(patientId);
       navigate("/choose-patient-type");
     } catch (error) {
       console.error("로그인 실패:", error);
