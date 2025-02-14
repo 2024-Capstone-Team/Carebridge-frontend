@@ -334,7 +334,7 @@ const NurseMainPage: React.FC = () => {
                         <p className="font-bold text-[17px]">{patientDetails[request.patientId].name}</p>
                         <div className="flex flex-col items-end text-[11px] text-gray-500 pl-20 ml-7 pb-1">
                           <p>요청: {formatTime(request.requestTime)}</p>
-                          <p>예약: {request.acceptTime ? formatTime(request.acceptTime) : "미수락"}</p>
+                          <p>예약: {request.acceptTime ? formatTime(request.acceptTime) : "대기 중"}</p>
                         </div>
                       </div>
                       <p className="text-[13px] text-gray-500">
@@ -382,16 +382,7 @@ const NurseMainPage: React.FC = () => {
         ) : (
           // 매크로 모드가 아닐 때
           <>
-          {/* 채팅 목록 */}
-          <div className="flex-1 bg-white rounded-tl-lg rounded-bl-lg shadow-lg p-6">
-
-            {/* 채팅 목록 내용 */}
-
-          </div>
-          {/* 채팅 */}
-          <div className="flex-1 bg-white rounded-tr-lg rounded-br-lg shadow-lg p-6 mr-3">
-            {/* 채팅 내용 */}
-          </div>
+          <NurseMessaging />
 
           {/* 환자 정보 */}
           <div className="w-1/5 flex flex-col space-y-6">

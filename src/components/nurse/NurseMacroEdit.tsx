@@ -1,4 +1,3 @@
-// NurseMacroEdit.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -36,14 +35,27 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
     setError(null);
 
     try {
-      const response = await axios.put(`http://localhost:8080/api/macro/${medicalStaffId}`, {
+      // 매크로 목록을 불러와서, 현재 수정 중인 매크로를 제외한 다른 매크로 중 동일 제목 체크
+      const response = await axios.get(`http://localhost:8080/api/macro/list/${medicalStaffId}`);
+      const existingMacros: Macro[] = response.data;
+
+      const duplicate = existingMacros.find(
+        (m) => m.macroName === macroName && m.macroId !== macro.macroId
+      );
+      if (duplicate) {
+        setError('동일한 제목의 매크로가 존재합니다');
+        setLoading(false);
+        return;
+      }
+
+      const responseUpdate = await axios.put(`http://localhost:8080/api/macro/${medicalStaffId}`, {
         macroId: macro.macroId,
         medicalStaffId: medicalStaffId,
         macroName: macroName,
         text: text
       });
 
-      console.log("서버 응답:", response.data);
+      console.log("서버 응답:", responseUpdate.data);
       alert('매크로가 성공적으로 수정되었습니다.');
       onClose();
     } catch (err) {

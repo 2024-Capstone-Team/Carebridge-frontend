@@ -1,6 +1,12 @@
-// 로그인한 medical_staff_id를 받아와서 매크로 저장 시에 id에 맞춰서 저장하는 기능 구현 필요
 import React, { useState } from 'react';
 import axios from 'axios';
+
+interface Macro {
+  macroId: number;
+  medicalStaffId: number;
+  text: string;
+  macroName: string;
+}
 
 interface NurseMacroProps {
   onClose: () => void;
@@ -28,6 +34,17 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
     setError(null);
 
     try {
+      // 매크로 중복 체크
+      const response = await axios.get(`http://localhost:8080/api/macro/list/${medicalStaffId}`);
+      const existingMacros: Macro[] = response.data;
+
+      const duplicate = existingMacros.find((macro) => macro.macroName === macroName);
+      if (duplicate) {
+        setError('동일한 제목의 매크로가 존재합니다');
+        setLoading(false);
+        return;
+      }
+
       await axios.post(`http://localhost:8080/api/macro/${medicalStaffId}`, {
         macroName,
         text

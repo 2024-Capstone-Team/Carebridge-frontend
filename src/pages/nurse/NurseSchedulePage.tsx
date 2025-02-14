@@ -26,15 +26,6 @@ const NurseSchedulePage: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
-  
-  const [selectAll, setSelectAll] = useState(false);
-  const [selectedPatients, setSelectedPatients] = useState<Record<number, boolean>>(
-    patients.reduce((acc, patient) => {
-      acc[patient.patientId] = false;
-      return acc;
-    }, {} as Record<number, boolean>)
-  );
-
 
   // 생년월일 포맷 변환 함수
   const formatBirthdate = (birthdate: string | null | undefined) => {
@@ -52,7 +43,6 @@ const NurseSchedulePage: React.FC = () => {
       return "정보 없음";
     }
   };
-  
 
   // API 호출하여 환자 데이터 가져오기
   useEffect(() => {
@@ -67,16 +57,11 @@ const NurseSchedulePage: React.FC = () => {
           birthDate: patient.birthDate,
         }));
 
-         // 이름 기준으로 환자 정렬
-         fetchedPatients.sort((a: Patient, b: Patient) => a.name.localeCompare(b.name, "ko", { sensitivity: "base" }));
-         setPatients(fetchedPatients);
-
-        const initialSelectedPatients = fetchedPatients.reduce((acc: Record<number, boolean>, patient: Patient) => {
-          acc[patient.patientId] = false;
-          return acc;
-        }, {});
-        setSelectedPatients(initialSelectedPatients);
-
+        // 이름 기준으로 환자 정렬
+        fetchedPatients.sort((a: Patient, b: Patient) =>
+          a.name.localeCompare(b.name, "ko", { sensitivity: "base" })
+        );
+        setPatients(fetchedPatients);
         setLoading(false);
       } catch (error) {
         console.error("환자 데이터를 가져오는 중 오류 발생:", error);
@@ -86,40 +71,21 @@ const NurseSchedulePage: React.FC = () => {
 
     fetchPatients();
   }, []);
-  
-  const handleSelectAll = () => {
-    const newSelectAll = !selectAll;
-    setSelectAll(newSelectAll);
-    setSelectedPatients(
-      patients.reduce((acc, patient) => {
-        acc[patient.patientId] = newSelectAll;
-        return acc;
-      }, {} as Record<number, boolean>)
-    );
-  };
-  
-  const handleIndividualSelect = (id: number) => {
-    setSelectedPatients((prevState) => {
-      const newState = { ...prevState, [id]: !prevState[id] };
-      const allSelected = patients.every((patient) => newState[patient.patientId]);
-      setSelectAll(allSelected);
-      return newState;
-    });
-  };
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogoClick = () => {
     navigate('/nurse-main');
   };
 
   const handleHamburgerClick = (event: React.MouseEvent<HTMLImageElement>) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left });
-      setIsDropdownVisible((prev) => !prev); 
-    };
+    const rect = event.currentTarget.getBoundingClientRect();
+    setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left });
+    setIsDropdownVisible((prev) => !prev); 
+  };
 
-   // 스케줄 수정 시 호출
+  // 스케줄 수정 시 호출
   const handleEditSchedule = (scheduleId: string) => {
     setEditingScheduleId(scheduleId); // 수정할 스케줄 ID 저장
     setCurrentView("edit"); // 화면을 수정 모드로 전환
@@ -153,10 +119,9 @@ const NurseSchedulePage: React.FC = () => {
 
   useEffect(() => {
     if (location.pathname === "/nurse-schedule") {
-    setCurrentView("calendar");
-  }
-}, [location]);
-  
+      setCurrentView("calendar");
+    }
+  }, [location]);
 
   return (
     /*전체 페이지 창*/
@@ -164,75 +129,98 @@ const NurseSchedulePage: React.FC = () => {
       
       {/*햄버거바 + 로고 영역*/}
       <div className="flex items-center pl-7">
-        <img src={isDropdownVisible ? dwarrows : bar} alt="hamburger bar"
-            className="relative w-[1.7em] h-[1.7em] mr-2 cursor-pointer"
-            onClick={handleHamburgerClick}/>
-          {isDropdownVisible && (
-          <div className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
-          style={{ top: dropdownPosition.top, left: dropdownPosition.left }}>            
-          <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
-          <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">일반외과 병동</p>
-          <hr className="bg-gray-600"></hr>
+        <img
+          src={isDropdownVisible ? dwarrows : bar}
+          alt="hamburger bar"
+          className="relative w-[1.7em] h-[1.7em] mr-2 cursor-pointer"
+          onClick={handleHamburgerClick}
+        />
+        {isDropdownVisible && (
+          <div
+            className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
+            style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+          >
+            <p className="text-black text-[15px] font-semibold pt-2 px-2">서울아산병원</p>
+            <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">일반외과 병동</p>
+            <hr className="bg-gray-600"></hr>
 
             <ul className="py-2">
-              <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-main")}>
-                <img src={home} alt="home" className="w-4 h-4 mr-2" />메인 화면</li>
-
-              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={() => handleMenuClick("/nurse-schedule")}>
-                <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러</li>
-
-              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center" onClick={handleMacroClick}>
-                <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정</li>
-                
-              <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center">
-                  <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정</li>
-
-                <hr className="bg-gray-600"></hr>
-                
-              <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/change-ward")}>병동 변경</li>
-              <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/reset-password")}>비밀번호 재설정</li>
-              <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/nurse-login")}>로그아웃</li>
+              <li
+                className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={() => handleMenuClick("/nurse-main")}
+              >
+                <img src={home} alt="home" className="w-4 h-4 mr-2" />메인 화면
+              </li>
+              <li
+                className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={() => handleMenuClick("/nurse-schedule")}
+              >
+                <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러
+              </li>
+              <li
+                className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={handleMacroClick}
+              >
+                <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정
+              </li>
+              <li
+                className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+              >
+                <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정
+              </li>
+              <hr className="bg-gray-600"></hr>
+              <li
+                className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleMenuClick("/change-ward")}
+              >
+                병동 변경
+              </li>
+              <li
+                className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleMenuClick("/reset-password")}
+              >
+                비밀번호 재설정
+              </li>
+              <li
+                className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleMenuClick("/nurse-login")}
+              >
+                로그아웃
+              </li>
             </ul>
-            </div>
-          )}
-          <img src={logo} alt="CareBridge 로고" className="w-[7.5em] h-[7.5em] cursor-pointer" onClick={handleLogoClick} />  
           </div>
+        )}
+        <img
+          src={logo}
+          alt="CareBridge 로고"
+          className="w-[7.5em] h-[7.5em] cursor-pointer"
+          onClick={handleLogoClick}
+        />  
+      </div>
 
       {/*스케줄 메인 페이지 영역*/}
       <div className="flex flex-1 overflow-hidden">
-
         {/*환자 목록 영역*/}
         <div className="flex flex-col bg-[#96B2C7] w-1/6 rounded-lg px-2 mb-4 ml-4 mr-2 shadow-md overflow-hidden">
-          <h2 className="text-black font-semibold text-lg my-2 pl-2">환자 목록</h2>
+          <h2 className="text-black font-semibold text-lg mt-2 pl-2">환자 목록</h2>
 
-          {/*전체선택, 추가 버튼 영역*/}
-          <div className="flex justify-between items-center pl-2 mb-1">
-            
-            {/*전체선택, 추가 버튼 정렬*/}
-            <div className="flex items-center">
-              <input type="checkbox" checked={selectAll} onChange={handleSelectAll} className="mr-2"/>
-              <label className="text-gray-600 text-sm">전체 선택</label>
-            </div>
-            <button className="text-sm text-gray-600 bg-transparent hover:text-gray-400 focus:outline-none" onClick={() => handleViewChange("add")}>추가</button>
+          {/* 추가 버튼 영역 */}
+          <div className="flex justify-end items-center pl-2 mb-1">
+            <button
+              className="text-sm text-gray-600 bg-transparent hover:text-gray-400 focus:outline-none"
+              onClick={() => handleViewChange("add")}>
+              추가
+            </button>
           </div>
 
           {/*환자 목록 영역*/}
           <div className="h-[calc(100vh-14rem)] bg-white rounded-lg p-2 shadow-md overflow-y-auto">
-          <ul>
-                {patients.map((patient) => (
-                  <li key={patient.patientId} className="flex items-center border-b border-gray-200 py-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedPatients[patient.patientId]}
-                      id={`patient-${patient.patientId}`}
-                      onChange={() => handleIndividualSelect(patient.patientId)}
-                      className="mr-2 mb-5"
-                    />
-                    <label htmlFor={`patient-${patient.patientId}`} className="flex-1">
-                      <span className="font-semibold">{patient.name}</span>
-                      <p className="text-sm text-gray-500">{formatBirthdate(patient.birthDate)}</p>
-                    </label>
-                  </li>
+            <ul>
+              {patients.map((patient) => (
+                <li key={patient.patientId} className="flex flex-col border-b border-gray-200 py-2 pl-1">
+                  <span className="text-md font-semibold">{patient.name}</span>
+                  <p className="text-sm text-gray-500">{formatBirthdate(patient.birthDate)}</p>
+                </li>
               ))}
             </ul>
           </div>

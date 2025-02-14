@@ -16,6 +16,16 @@ interface PatientInfo {
   phoneNumber: string;
 }
 
+interface RequestRecord {
+  requestId: number;
+  patientId: number;
+  medicalStaffId: number;
+  requestContent: string;
+  status: string;
+  requestTime: string;
+  acceptTime: string;
+}
+
 interface NurseDetailedPatientInfoProps {
   patientId: number; // 선택된 환자의 ID
   onBack: () => void; // 돌아가기 버튼 핸들러
@@ -36,6 +46,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [allPatients, setAllPatients] = useState<PatientInfo[]>([]);
+  const [patientRequests, setPatientRequests] = useState<RequestRecord[]>([]);
 
   // 선택한 환자의 상세 정보 가져오기
   useEffect(() => {
@@ -53,6 +64,21 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
       }
     };
     fetchPatientDetails();
+  }, [patientId]);
+
+  // 선택한 환자의 요청 기록 가져오기
+  useEffect(() => {
+    if (!patientId) return;
+    const fetchPatientRequests = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/call-bell/request/patient/${patientId}`);
+        console.log("환자 요청 기록:", response.data);
+        setPatientRequests(response.data);
+      } catch (error) {
+        console.error("환자의 요청 기록을 가져오는 중 오류 발생:", error);
+      }
+    };
+    fetchPatientRequests();
   }, [patientId]);
 
   // 검색에 사용할 전체 환자 목록 가져오기
@@ -95,7 +121,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
         <img
           src={back}
           alt="back"
-          className="w-[1.5em] h-[1.5em] mr-2 cursor-pointer absolute -translate-x-6 translate-y-1"
+          className="w-[1.5em] h-[1.5em] mr-2 cursor-pointer hover:bg-white absolute -translate-x-6 translate-y-1"
           onClick={onBack}
         />
         <h2 className="text-lg font-bold">환자 정보</h2>
@@ -142,7 +168,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
           )}
         </div>
       ) : (
-        // 검색어가 없으면 선택된 환자의 상세 정보 표시
+        // 검색어가 없으면 선택된 환자의 상세 정보와 요청 기록 표시
         <>
           {!patient ? (
             <div className="text-gray-500 text-center">로딩 중...</div>
@@ -180,7 +206,23 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                   </button>
                 </div>
               </div>
-            </div>
+
+              {/* 요청 사항 기록 섹션 */}
+              <h3 className="text-[15px] font-semibold mb-1">요청 기록</h3>
+              {patientRequests.length === 0 ? (
+                <p className="text-gray-500">요청 기록이 없습니다.</p>
+              ) : (
+                <ul className="text-[15px] text-gray-500">
+                    {patientRequests.map((req) => (
+                      <li key={req.requestId} className="mb-3">
+                        <p className="">{formatDate(req.requestTime)}</p>
+                        <p className="text-[13px]">{req.requestContent}</p>
+                        <p className="">{req.acceptTime ? formatDate(req.acceptTime) : "응답 대기 중"}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
           )}
         </>
       )}

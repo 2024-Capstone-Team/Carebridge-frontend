@@ -19,7 +19,6 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
   const [patients, setPatients] = useState<PatientInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fuse.js 초기화
   const fuse = new Fuse(patients, {
     keys: ["name"],
     threshold: 0.3, // 검색 정확도 설정
@@ -47,7 +46,7 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
 
   // 성별 변환 함수
   const formatGender = (gender: string | undefined) => {
-    if (!gender) return "정보 없음"; // 값이 없을 경우 처리
+    if (!gender) return "정보 없음";
     return gender === "Male" ? "남" : gender === "Female" ? "여" : "정보 없음";
   };
 

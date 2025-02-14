@@ -35,6 +35,17 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
 
   useEffect(() => {
     fetchMacros();
+    // 컴포넌트가 마운트될 때 localStorage에서 즐겨찾기 정보를 불러옴
+    const savedFavorites = localStorage.getItem('favoriteMacroIds');
+    if (savedFavorites) {
+      const favorites: number[] = JSON.parse(savedFavorites);
+      // 초기 toggledStars 상태 설정
+      const initialStars: Record<number, boolean> = {};
+      favorites.forEach((id) => {
+        initialStars[id] = true;
+      });
+      setToggledStars(initialStars);
+    }
   }, [medicalStaffId]);
 
   const handleDelete = async (macroName: string) => {
@@ -63,8 +74,16 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
     fetchMacros();
   };
 
+  // 즐겨찾기 토글: localStorage에 즐겨찾기 macroId 목록을 저장
   const toggleStar = (macroId: number) => {
-    setToggledStars(prev => ({ ...prev, [macroId]: !prev[macroId] }));
+    setToggledStars((prev) => {
+      const newState = { ...prev, [macroId]: !prev[macroId] };
+      const favoriteMacroIds = Object.entries(newState)
+        .filter(([id, isFavorite]) => isFavorite)
+        .map(([id]) => parseInt(id));
+      localStorage.setItem("favoriteMacroIds", JSON.stringify(favoriteMacroIds));
+      return newState;
+    });
   };
 
   return (
@@ -100,11 +119,11 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                   </div>
                   <div className="flex space-x-2">
                     <img 
-                        src={toggledStars[macro.macroId] ? ystar : star} 
-                        alt={toggledStars[macro.macroId] ? "ystar" : "star"} 
-                        className="h-[20px] w-[20px] mt-2 mr-1 cursor-pointer"
-                        onClick={() => toggleStar(macro.macroId)}
-                      />
+                      src={toggledStars[macro.macroId] ? ystar : star} 
+                      alt={toggledStars[macro.macroId] ? "즐겨찾기됨" : "즐겨찾기 안됨"} 
+                      className="h-[20px] w-[20px] mt-2 mr-1 cursor-pointer"
+                      onClick={() => toggleStar(macro.macroId)}
+                    />
                     <button 
                       className="bg-gray-200 text-gray-700 text-[17px] h-[40px] w-[70px] rounded-md hover:bg-gray-300"
                       onClick={() => handleEdit(macro)}>
