@@ -27,7 +27,7 @@ const useStompClient = (onMessage: (message: any) => void) => {
           const isSubscribed = subscribedRooms.current.has(subscription.subscriptionPath);
           if (!isSubscribed) {
             const newSubscription = stompClientRef.current?.subscribe(
-              `/sub/chat/room/${subscription.subscriptionPath}`,
+              subscription.subscriptionPath,
               (message) => {
                 onMessage(JSON.parse(message.body));
               }

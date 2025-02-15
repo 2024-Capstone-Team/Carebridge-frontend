@@ -1,5 +1,5 @@
 export interface ChatMessage {
-  isFailed: any;
+  isFailed: boolean;
   messageId: number;
   senderId: number; 
   medicalStaffId: number; 
@@ -9,6 +9,17 @@ export interface ChatMessage {
   chatRoomId: string;
   patientId: number; 
   isPatient: boolean;
+  isRequest: boolean;
+}
+
+export interface RequestDto {
+  requestId: number;
+  patientId: number;
+  medicalStaffId: number;
+  requestContent: string;
+  status: string;
+  requestTime: string;
+  acceptTime?: string | null;
 }
 
 export interface ChatRoom {

@@ -190,6 +190,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         senderId: currentUserId,
         isPatient: false,
         isFailed: false,
+        isRequest:false, // temporary 
       };
 
       setChatMessages((prev) => [...prev, newMessage]);
