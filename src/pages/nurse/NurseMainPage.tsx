@@ -17,38 +17,13 @@ import qresponse from "../../assets/quick response.png";
 import NurseMessaging from '../../components/nurse/NurseMessaging'; 
 import useStompClient from "../../hooks/useStompClient";
 import ChatMessages from "../../components/common/ChatMessages.tsx";
-import { ChatMessage, RequestDto } from "../../types";import macro from "../../assets/macro.png";
+import { ChatMessage, CallBellRequest, PatientDetail } from "../../types";
+import macro from "../../assets/macro.png";
 import axios from "axios";
-
-interface CallBellRequest {
-  requestId: number;
-  patientId: number;
-  medicalStaffId: number;
-  requestContent: string;
-  status: string;
-  requestTime: string;
-  acceptTime: string;
-}
-
-interface PatientDetail {
-  patientId: number;
-  phoneNumber: string;
-  name: string;
-  birthDate: string; 
-  gender: string;
-  guardianContact: string;
-  hospitalId: number;
-  hospitalLocation: string;
-  chatRoomId: string;
-  department: string;
-  email: string;
-  hospitalizationDate: string;
-  userId: number;
-}
 
 const NurseMainPage: React.FC = () => {
 
-  const [requestPopup, setRequestPopup] = useState<RequestDto | null>(null);  // 요청사항 팝업 
+  const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
@@ -277,10 +252,10 @@ const NurseMainPage: React.FC = () => {
       console.log("Received a chat message:", chatMessage);
       // 채팅 메시지 처리 (수정중)
     } else if (message.type === "request") {  // 메시지가 요청사항인지 확인 
-      const request: RequestDto = message as RequestDto;
+      const request: CallBellRequest = message as CallBellRequest;
       console.log("Received a request message:", request);  
       // 요청 메시지 처리 (알림 띄우기)
-      setRequestPopup(message as RequestDto); // 요청 메시지를 팝업에 저장
+      setRequestPopup(message as CallBellRequest); // 요청 메시지를 팝업에 저장
     } else {
       console.warn("Unknown message type:", message);
     }
@@ -288,7 +263,7 @@ const NurseMainPage: React.FC = () => {
 
   // 테스트용 요청 메시지 보내기
   const handleTestRequest = () => {
-    const testRequest: RequestDto = {
+    const testRequest: CallBellRequest = {
       requestId: 9999,
       patientId: 5,
       medicalStaffId: 1,

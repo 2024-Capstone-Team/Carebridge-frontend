@@ -12,7 +12,7 @@ export interface ChatMessage {
   isRequest: boolean;
 }
 
-export interface RequestDto {
+export interface CallBellRequest {
   requestId: number;
   patientId: number;
   medicalStaffId: number;
@@ -28,6 +28,22 @@ export interface ChatRoom {
   previewMessage: string;  // Last message preview in the room
   lastMessageTime: string; // Timestamp of the last message
   unread: boolean;         // Unread message status
+}
+
+export interface PatientDetail {
+  patientId: number;
+  phoneNumber: string;
+  name: string;
+  birthDate: string; 
+  gender: string;
+  guardianContact: string;
+  hospitalId: number;
+  hospitalLocation: string;
+  chatRoomId: string;
+  department: string;
+  email: string;
+  hospitalizationDate: string;
+  userId: number;
 }
 
 export interface HospitalInfo { // temporary for testing
