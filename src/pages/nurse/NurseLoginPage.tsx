@@ -1,19 +1,41 @@
 // src/pages/NurseLoginPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const NurseLoginPage: React.FC = () => {
   const [id, setID] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (id === '' && password === '') {
-      navigate('/nurse-main');
-    } else {
-      alert('Invalid credentials');
+    if (!id.trim()) {
+      alert('ID를 입력해주세요.');
+      return;
+    }
+
+    if (!password.trim()) {
+      alert('비밀번호를 입력해주세요.');
+      return;
+    }
+
+    try {
+      // 서버로 로그인 요청
+      const response = await axios.post('http://localhost:8080/api/staff/login', {
+        userId: id,
+        password: password,
+      });
+
+      if (response.status === 200) {
+        // 로그인 성공 시 페이지 이동
+        navigate('/nurse-main');
+      }
+    } catch (error) {
+      // 로그인 실패 시 처리
+      console.error('로그인 실패:', error);
+      alert('ID 또는 비밀번호가 잘못되었습니다.');
     }
   };
 
