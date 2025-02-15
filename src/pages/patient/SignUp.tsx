@@ -183,6 +183,50 @@ const SignUp: React.FC = () => {
             ></input>
           </div>
 
+          {/* 성별 */}
+          <div className="flex items-center w-[95%]">
+            <div
+              className="
+            flex items-center m-1
+            gap-3 rounded-[10px] w-[20%] h-[40px]
+            "
+            >
+              <label
+                htmlFor="gender"
+                className="pl-[10px] font-bold text-[15px] text-left whitespace-nowrap"
+              >
+                성별
+              </label>
+            </div>
+
+            {/* 여성 */}
+            <button
+              onClick={() => handleGenderSelect("female")}
+              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3 text-[13px]
+              ${
+                selectedGender === "female"
+                  ? "bg-primary text-black"
+                  : "bg-primary-100 text-black"
+              }`}
+
+            >
+              여성
+            </button>
+
+            {/* 남성 */}
+            <button
+              onClick={() => handleGenderSelect("male")}
+              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2 text-[13px]
+              ${
+                selectedGender === "male"
+                  ? "bg-primary text-black"
+                  : "bg-primary-100 text-black"
+              }`}
+            >
+              남성
+            </button>
+          </div>
+
           {/* 전화번호 */}
           <div className="flex items-center">
             <div
@@ -236,56 +280,12 @@ const SignUp: React.FC = () => {
               )}
             </div>
             <button
-              className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular] mt-2"
+              className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]"
               onClick={verifyOtp}
             >
               인증하기
             </button>
-          </div>
-
-          {/* 성별 */}
-          <div className="flex items-center w-[95%]">
-            <div
-              className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[20%] h-[40px]
-            "
-            >
-              <label
-                htmlFor="gender"
-                className="pl-[10px] font-bold text-[15px] text-left whitespace-nowrap"
-              >
-                성별
-              </label>
-            </div>
-
-            {/* 여성 */}
-            <button
-              onClick={() => handleGenderSelect("female")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3 text-[13px]
-              ${
-                selectedGender === "female"
-                  ? "bg-primary text-black"
-                  : "bg-primary-200 text-black"
-              }`}
-
-            >
-              여성
-            </button>
-
-            {/* 남성 */}
-            <button
-              onClick={() => handleGenderSelect("male")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2 text-[13px]
-              ${
-                selectedGender === "male"
-                  ? "bg-primary text-black"
-                  : "bg-primary-200 text-black"
-              }`}
-            >
-              남성
-            </button>
-          </div>
+          </div>          
         </div>
         <div>
         <button
