@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
+import { SnackbarProvider, useSnackbar } from 'notistack';
 import PreLoginPage from '../PreLoginPage';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/Nurse_PatientInfo";
@@ -22,8 +23,11 @@ import macro from "../../assets/macro.png";
 import axios from "axios";
 
 const NurseMainPage: React.FC = () => {
+  const { enqueueSnackbar } = useSnackbar();
 
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
+  const [isTimeSelection, setIsTimeSelection] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<Date | null>(null);
 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
@@ -211,15 +215,34 @@ const NurseMainPage: React.FC = () => {
   
     const fetchPatientDetail = async (patientId: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
-        if (!response.ok) {
-          console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, response.status);
+        // 환자 기본 정보와 질병명을 병렬로 가져오기
+        const [patientResponse, diseaseResponse] = await Promise.all([
+          fetch(`http://localhost:8080/api/patient/user/${patientId}`),
+          fetch(`http://localhost:8080/api/medical-record/${patientId}`)
+        ]);
+
+        if (!patientResponse.ok) {
+          console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, patientResponse.status);
           return;
         }
-        const data: PatientDetail = await response.json();
-        setPatientDetails((prevDetails) => ({ ...prevDetails, [patientId]: data }));
+        if (!diseaseResponse.ok) {
+          console.error(`질병명 조회 API 에러 (ID: ${patientId})`, diseaseResponse.status);
+          return;
+        }
+
+        const patientData: PatientDetail = await patientResponse.json();
+        const disease = await diseaseResponse.text();
+
+        // 환자 정보와 질병명을 한 번에 업데이트
+        setPatientDetails(prevDetails => ({
+          ...prevDetails,
+          [patientId]: {
+            ...patientData,
+            disease: disease
+          }
+        }));
       } catch (error) {
-        console.error(`환자 상세 정보 가져오기 실패 (ID: ${patientId})`, error);
+        console.error(`환자 정보 가져오기 실패 (ID: ${patientId})`, error);
       }
     };
   
@@ -243,7 +266,7 @@ const NurseMainPage: React.FC = () => {
 
   // 테스트용 간호사 ID
   const nurseId = "1";
-    
+
   // 웹소켓 연결 
   const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: any) => {
     // 들어오는 메시지 확인 
@@ -253,25 +276,35 @@ const NurseMainPage: React.FC = () => {
       // 채팅 메시지 처리 (수정중)
     } else if (message.type === "request") {  // 메시지가 요청사항인지 확인 
       const request: CallBellRequest = message as CallBellRequest;
-      console.log("Received a request message:", request);  
-      // 요청 메시지 처리 (알림 띄우기)
-      setRequestPopup(message as CallBellRequest); // 요청 메시지를 팝업에 저장
+      console.log("Received a request message:", request);
+      
+      // 환자 정보가 없는 경우에만 fetch (질병명도 함께 가져옴)
+      if (!patientDetails[request.patientId]) {
+        fetchPatientDetail(request.patientId);
+      }
+      
+      setRequestPopup(request);
     } else {
       console.warn("Unknown message type:", message);
     }
   });
 
   // 테스트용 요청 메시지 보내기
-  const handleTestRequest = () => {
+  const handleTestRequest = async () => {
     const testRequest: CallBellRequest = {
       requestId: 9999,
       patientId: 5,
       medicalStaffId: 1,
-      requestContent: "테스트 요청: 환자가 도움이 필요합니다!",
+      requestContent: "진통제 투약 요청",
       status: "pending",
       requestTime: new Date().toISOString(),
       acceptTime: null,
     };
+    
+    // 환자 정보와 질병명을 한 번에 가져오기
+    await fetchPatientDetail(testRequest.patientId);
+    
+    // 데이터가 준비된 후에 팝업 표시
     setRequestPopup(testRequest);
   };
 
@@ -283,29 +316,282 @@ const NurseMainPage: React.FC = () => {
       };
     }, [isConnected]);
 
+  // 보류 버튼 핸들러 수정
+  const handlePending = async (requestId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/call-bell/request/status/${requestId}?status=PENDING`, {
+        method: 'PUT',
+      });
+      
+      if (!response.ok) {
+        console.error('보류 상태 변경 실패:', response.status);
+        enqueueSnackbar('요청 처리에 실패했습니다.', { 
+          variant: 'error',
+          autoHideDuration: 2000,
+        });
+        return;
+      }
+      
+      const responseData = await response.text();
+      console.log('요청 처리 완료:', responseData);
+      
+      // 성공적으로 상태가 변경되면 팝업창 닫기
+      setRequestPopup(null);
+      
+      // Snackbar 알림 표시
+      enqueueSnackbar('요청이 성공적으로 보류 처리되었습니다.', { 
+        variant: 'success',
+        autoHideDuration: 2000,
+      });
+      
+    } catch (error) {
+      console.error('보류 상태 변경 중 에러 발생:', error);
+      enqueueSnackbar('요청 처리 중 오류가 발생했습니다.', { 
+        variant: 'error',
+        autoHideDuration: 2000,
+      });
+    }
+  };
+
+  // 시간 선택 화면으로 전환
+  const handleAcceptClick = () => {
+    setIsTimeSelection(true);
+    setSelectedTime(new Date());
+  };
+
+  // 시간 버튼 클릭 핸들러
+  const handleTimeButtonClick = (minutes: number) => {
+    const newTime = new Date();
+    newTime.setMinutes(newTime.getMinutes() + minutes);
+    setSelectedTime(newTime);
+  };
+
+  // 시간 포맷팅 함수
+  const formatSelectedTime = (date: Date | null) => {
+    if (!date) return "00:00";
+    return date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
+  // 확인 버튼 핸들러 추가
+  const handleConfirmTime = async () => {
+    if (!selectedTime || !requestPopup) return;
+
+    try {
+      // 현재 시간 (UTC)
+      const now = new Date();
+      
+      // 1. 시간 설정 API 호출 (UTC 시간으로 acceptTime 설정)
+      const timeResponse = await fetch(`http://localhost:8080/api/call-bell/request/${requestPopup.requestId}?acceptTime=${now.toISOString()}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!timeResponse.ok) {
+        throw new Error('시간 설정에 실패했습니다.');
+      }
+
+      // 2. 상태 변경 API 호출
+      const statusResponse = await fetch(`http://localhost:8080/api/call-bell/request/status/${requestPopup.requestId}?status=SCHEDULED`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error('상태 변경에 실패했습니다.');
+      }
+
+      // 3. 채팅 메시지 전송
+      const chatRoomId = `${medicalStaffId}_${requestPopup.patientId}`;
+      // 선택된 시간과 현재 시간의 차이 계산
+      const timeDiff = Math.round((selectedTime.getTime() - now.getTime()) / (1000 * 60));
+      const message = `${timeDiff}분 후 도착합니다.`;
+
+      // 메시지용 한국 시간 설정 (UTC + 9시간)
+      const koreanTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const formattedTime = koreanTime.toISOString().replace('Z', '');
+      
+      const messageToSend = {
+        patientId: requestPopup.patientId,
+        medicalStaffId: medicalStaffId,
+        messageContent: message,
+        timestamp: formattedTime,
+        readStatus: false,
+        chatRoomId: chatRoomId,
+        senderId: medicalStaffId,
+        isPatient: false,
+        type: "TEXT",
+        hospitalId: hospitalId,
+        category: "CALLBELL_RESPONSE"
+      };
+
+      // 웹소켓으로 메시지 전송
+      sendMessage("/pub/chat/message", messageToSend);
+      
+      // 성공적으로 상태가 변경되면 팝업창 닫기
+      setRequestPopup(null);
+      setIsTimeSelection(false);
+      setSelectedTime(null);
+      
+      // Snackbar 알림 표시
+      enqueueSnackbar('요청이 성공적으로 예약되었습니다.', { 
+        variant: 'success',
+        autoHideDuration: 2000,
+      });
+      
+    } catch (error: any) {
+      console.error('요청 처리 중 에러 발생:', error);
+      enqueueSnackbar(`요청 처리 중 오류가 발생했습니다: ${error.message}`, { 
+        variant: 'error',
+        autoHideDuration: 2000,
+      });
+    }
+  };
+
   {/* 메시지 관련 코드 끝 */}
 
+  // 날짜 포맷팅 함수 추가
+  const formatRequestTime = (timeString: string): string => {
+    const date = new Date(timeString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? '오후' : '오전';
+    const formattedHours = hours % 12 || 12;
+
+    return `${year}-${month}-${day} ${ampm} ${formattedHours}:${minutes}`;
+  };
 
   return (
-    /*전체 창*/
     <div className="flex h-screen bg-gray-100 p-6">
 
-      {/* 요청 메시지 팝업 */} 
-      {requestPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-1/3 relative">
-            {/* 닫기 버튼 */}
+      {/* ===== 요청 메시지 팝업 컨테이너 ===== */}
+      {requestPopup && patientDetails[requestPopup.patientId] && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          {/* ----- 팝업 메인 박스 ----- */}
+          <div className="bg-white p-6 rounded-none shadow-[0_15px_50px_rgba(0,0,0,0.4)] w-[60vw] md:w-[60vw] lg:w-[40vw] xl:w-[30vw] min-h-[334px] relative border-[1.8px] border-gray-300 flex flex-col items-center">
+            
+            {/* ----- 닫기 버튼 ----- */}
+            {/* 우측 상단에 위치한 X 버튼. 클릭 시 팝업을 닫고 시간 선택 상태를 초기화 */}
             <button
-              onClick={() => setRequestPopup(null)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg"
+              onClick={() => {
+                setRequestPopup(null);
+                setIsTimeSelection(false);
+                setSelectedTime(null);
+              }}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
             >
               ✖
             </button>
-            <h3 className="text-xl font-bold text-center mb-4">🚨 요청 알림</h3>
-            <p className="text-gray-800 text-center">{requestPopup.requestContent}</p>
-            <p className="text-gray-500 text-sm text-center mt-2">
-              요청 시간: {new Date(requestPopup.requestTime).toLocaleString()}
+
+            {/* ----- 요청 시간 표시 ----- */}
+            {/* 요청이 들어온 시간을 년-월-일 오전/오후 시:분 형식으로 표시 */}
+            <p className="text-center text-[18px] text-gray-600 mb-2">
+              {formatRequestTime(requestPopup.requestTime)}
             </p>
+
+            {/* ----- 환자 기본 정보 ----- */}
+            {/* 환자의 나이, 성별, 질병명을 한 줄로 표시 */}
+            <p className="text-center text-[18px] text-gray-700 mb-1">
+              만 {calculateAge(patientDetails[requestPopup.patientId].birthDate)}세 
+              {"  "}
+              {formatGender(patientDetails[requestPopup.patientId].gender)}
+              {"  "}
+              {patientDetails[requestPopup.patientId].disease || "질병명 로딩중..."}
+            </p>
+
+            {/* ----- 환자 이름 ----- */}
+            {/* 환자 이름을 크게 표시하고 '환자' 텍스트 추가 */}
+            <p className="text-center text-xl lg:text-2xl xl:text-3xl mb-2 font-bold text-black">
+              {patientDetails[requestPopup.patientId].name} 환자
+            </p>
+
+            {/* ----- 요청 내용 ----- */}
+            {/* 환자가 요청한 구체적인 내용을 크게 표시 */}
+            <p className="text-center text-xl lg:text-2xl xl:text-3xl mb-5 font-bold text-black">
+              {requestPopup.requestContent}
+            </p>
+
+            {/* ----- 안내 문구 ----- */}
+            {/* 시간 선택 모드에 따라 다른 안내 문구 표시 */}
+            <p className="text-center text-[18px] text-gray-700 mb-8">
+              {isTimeSelection ? "제공 가능한 시간을 입력해주세요." : "수락하시겠습니까?"}
+            </p>
+
+            {/* ===== 버튼 그룹 영역 ===== */}
+            <div className="flex flex-col items-center w-full">
+              {isTimeSelection ? (
+                // 시간 선택 모드 UI
+                <>
+                  {/* 빠른 시간 선택 버튼들 */}
+                  <div className="flex justify-between w-[60%] mb-6">
+                    <button 
+                      onClick={() => handleTimeButtonClick(5)}
+                      className="px-4 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.5px] border-[#CFC9C9] hover:bg-[#8B8787] transition-all duration-200">
+                      5분 후
+                    </button>
+                    <button 
+                      onClick={() => handleTimeButtonClick(10)}
+                      className="px-4 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.5px] border-[#CFC9C9] hover:bg-[#8B8787] transition-all duration-200">
+                      10분 후
+                    </button>
+                    <button 
+                      onClick={() => handleTimeButtonClick(30)}
+                      className="px-4 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.5px] border-[#CFC9C9] hover:bg-[#8B8787] transition-all duration-200">
+                      30분 후
+                    </button>
+                  </div>
+
+                  {/* 선택된 시간 표시 영역 */}
+                  <div className="w-[60%] bg-white border-[1.5px] border-[#A9A9A9] rounded-lg px-4 py-1 mb-6 text-center text-black font-bold text-[70px] leading-none">
+                    {formatSelectedTime(selectedTime)}
+                  </div>
+
+                  {/* 취소/확인 버튼 */}
+                  <div className="flex justify-end space-x-3 w-full">
+                    <button 
+                      onClick={() => {
+                        setIsTimeSelection(false);
+                        setSelectedTime(null);
+                      }}
+                      className="px-3 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.3px] border-[#A5A1A1] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-[#8B8787] hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                      취소
+                    </button>
+                    <button 
+                      onClick={handleConfirmTime}
+                      className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                      확인
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // 기본 모드 UI
+                <div className="flex justify-end space-x-3 w-full">
+                  <button 
+                    onClick={() => handlePending(requestPopup.requestId)}
+                    className="px-3 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.3px] border-[#A5A1A1] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-[#8B8787] hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                    보류
+                  </button>
+                  <button className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                    채팅
+                  </button>
+                  <button 
+                    onClick={handleAcceptClick}
+                    className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                    수락
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -347,7 +633,7 @@ const NurseMainPage: React.FC = () => {
                   <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정</li>
 
                   <hr className="bg-gray-600"></hr>
-  
+      
                 <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/change-ward")}>병동 변경</li>
                 <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/reset-password")}>비밀번호 재설정</li>
                 <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer" onClick={() => handleMenuClick("/nurse-login")}>로그아웃</li>
