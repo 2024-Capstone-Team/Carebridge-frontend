@@ -1,10 +1,14 @@
+// /context/UserContext.tsx
+
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface UserContextType {
   nurseId: string | null;
   patientId: String | null;
-  setNurseId: (id: string) => void;
-  setPatientId: (id: string) => void;
+  isPatient: boolean; //true, false
+  setNurseId: (id: string | null) => void;
+  setPatientId: (id: string | null) => void;
+  setIsPatient: (isPatient: boolean) => void; 
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -15,10 +19,13 @@ interface UserProviderProps {
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [nurseId, setNurseId] = useState<string | null>(null);
-  const [patientId, setPatientId] = useState<string | null>(null);
+  const [patientId, setPatientId] = useState<string | null>(() => {
+    return localStorage.getItem("patientId");
+  });
+  const [isPatient, setIsPatient] = useState<boolean>(false);
 
   return (
-    <UserContext.Provider value={{nurseId, patientId, setNurseId, setPatientId }}>
+    <UserContext.Provider value={{nurseId, patientId, isPatient, setNurseId, setPatientId, setIsPatient }}>
       {children}
     </UserContext.Provider>
   );
