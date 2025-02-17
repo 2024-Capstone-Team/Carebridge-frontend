@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, memo } from "react";
+import React, { useEffect, useRef, memo } from "react";
 import { ChatMessage } from "../../types";
 
 // Helper function to format timestamp
@@ -20,6 +20,67 @@ const formatTimestamp = (timestamp: string): string => {
   return messageTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
 };
 
+// Component for rendering each message
+const MessageBubble: React.FC<{
+  message: ChatMessage;
+  isSender: boolean;
+  timestamp: string;
+  isRead: boolean;
+  onResend: (msg: ChatMessage) => void;
+  senderBubbleColor: string;
+  receiverBubbleColor: string;
+  senderTextColor: string;
+  receiverTextColor: string;
+  customStyles: { [key: string]: string } | undefined;
+}> = ({
+  message,
+  isSender,
+  timestamp,
+  isRead,
+  onResend,
+  senderBubbleColor,
+  receiverBubbleColor,
+  senderTextColor,
+  receiverTextColor,
+  customStyles,
+}) => (
+  <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-4`}>
+    {/* Sender's message */}
+    {isSender && (
+      <div className="flex flex-row items-end mr-3">
+        <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
+        <span className="text-xs text-gray-500 ml-2">{formatTimestamp(timestamp)}</span>
+        <span>
+          {message.isFailed && (
+            <button className="ml-2 text-red-500" onClick={() => onResend(message)}>
+              재전송
+            </button>
+          )}
+        </span>
+      </div>
+    )}
+
+    {/* Sender/Receiver message bubble */}
+    <div
+      className={`max-w-xs px-4 py-2 rounded-3xl ${
+        isSender ? senderBubbleColor : receiverBubbleColor
+      } ${isSender ? senderTextColor : receiverTextColor} ${
+        customStyles?.message || ""
+      } whitespace-pre-line`}
+    >
+      {message.messageContent}
+    </div>
+
+    {/* Receiver's message */}
+    {!isSender && (
+      <div className="flex flex-row items-end ml-3">
+        <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
+        <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
+      </div>
+    )}
+  </div>
+);
+
 interface ChatMessagesProps {
   chatMessages: ChatMessage[];
   currentUserId: number;
@@ -40,14 +101,25 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
     receiverBubbleColor = "bg-primary-100",
     senderTextColor = "text-black",
     receiverTextColor = "text-black",
-    onResend
+    onResend,
   }) => {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
-    // const reversedMessages = useMemo(() => [...chatMessages].reverse(), [chatMessages]);
 
+    // Scroll to the bottom when the component first mounts
+    useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+      }, 100); // Delay to ensure DOM is fully rendered
+    
+      return () => clearTimeout(timeoutId); // Cleanup the timeout
+    }, []); // Initial mount
+
+    // Scroll to the latest message when chatMessages changes
     useEffect(() => {
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
       }
     }, [chatMessages]);
 
@@ -57,39 +129,19 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
           const isSender = message.senderId === currentUserId;
           const isRead = message.readStatus;
           return (
-            <div key={index} className={`flex ${isSender ? "justify-end" : "justify-start"} mb-4`}>
-            {/* For the sender */}
-            {isSender && (
-              <div className="flex flex-row items-end mr-3">
-                <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
-                <span className="text-xs text-gray-500 ml-2">{formatTimestamp(message.timestamp)}</span>
-                <span>
-                {message.isFailed && (
-                  <button className="ml-2 text-red-500" onClick={() => onResend(message)}>재전송</button>
-                )}
-                </span>
-              </div>
-            )}
-
-            {/* Sender/Receiver chat bubble */}
-            <div
-              className={`max-w-xs px-4 py-2 rounded-3xl ${
-                isSender ? senderBubbleColor : receiverBubbleColor
-              } ${isSender ? senderTextColor : receiverTextColor} ${
-                customStyles?.message || ""
-              } whitespace-pre-line`}
-            >
-              {message.messageContent}
-            </div>
-
-            {/* For the receiver */}
-            {!isSender && (
-              <div className="flex flex-row items-end ml-3">
-                <span className="text-xs text-gray-500">{formatTimestamp(message.timestamp)}</span>
-                <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
-              </div>
-            )}
-          </div>
+            <MessageBubble
+              key={index}
+              message={message}
+              isSender={isSender}
+              timestamp={message.timestamp}
+              isRead={isRead}
+              onResend={onResend}
+              senderBubbleColor={senderBubbleColor}
+              receiverBubbleColor={receiverBubbleColor}
+              senderTextColor={senderTextColor}
+              receiverTextColor={receiverTextColor}
+              customStyles={customStyles}
+            />
           );
         })}
         <div ref={messagesEndRef} />
