@@ -31,7 +31,7 @@ const SignUp: React.FC = () => {
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
 
 
-  // 생일: 여덟자리 숫자인것만 일단 확인하고 나중에 다른 유효성 검사 추가 (필수아님)
+  // 생일 확인
   const isEightDigitNumber = (input: string) => {
     return /^\d{8}$/.test(input);
   };
