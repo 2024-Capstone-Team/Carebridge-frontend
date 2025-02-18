@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "react-calendar/dist/Calendar.css";
 import dayjs from "dayjs";
 import WeekCalendar from "../../components/patient/WeekCalander";
 import axios from "axios";
 import { useUserContext } from "../../context/UserContext";
+
 
 interface Schedule {
   id: number;
@@ -23,21 +24,29 @@ const PatientSchedular: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(currentDate);
 
   // patient id 불러오기
-  // const { patientId } = useUserContext();
+  const { patientId } = useUserContext();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // 날짜 ref 저장
   const scheduleRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // API 호출
   useEffect(() => {
+    if (!patientId) {
+      alert("로그인 정보를 찾을 수 없습니다.");
+      navigate("/patient-login");
+      return;
+    }
+
     const fetchSchedules = async () => {
       setLoading(true);
       setError(null);
       try {
-        const patientId = 12348; //temp id (for test)
+        //temp id (for test)
+        // const patientId = 12348;
         const response = await axios.get(`http://localhost:8080/api/schedule/patient/${patientId}`);
 
         console.log("API 응답 데이터:", response.data);
@@ -81,6 +90,13 @@ const PatientSchedular: React.FC = () => {
       });
     }
     setSelectedDate(date); // 날짜 선택 상태 업데이트
+  };
+
+  // 카테고리 매핑
+  const categoryMap: Record<string, { label: string; color: string}> ={
+    "SURGERY": { label: "수술", color: "bg-primary-200"},
+    "OUTPATIENT": { label: "재활", color: "bg-primary-300" },
+    "EXAMINATION": { label: "진료", color: "bg-primary-400" },
   };
 
   return (
@@ -145,14 +161,10 @@ const PatientSchedular: React.FC = () => {
                     {/* 태그 버튼 */}
                     <button
                       className={`px-3 py-1 text-sm rounded-full text-white ${
-                        schedule.category === "진료"
-                          ? "bg-primary-200"
-                          : schedule.category === "재활"
-                          ? "bg-primary-300"
-                          : "bg-primary-400"
+                        categoryMap[schedule.category]?.color || "bg-gray-400"
                       }`}
                     >
-                      #{schedule.category}
+                      #{categoryMap[schedule.category]?.label || "기타"}
                     </button>
                   </div>
                   {index < schedules.length - 1 && <hr className="border-t border-gray-300 my-2" />}
