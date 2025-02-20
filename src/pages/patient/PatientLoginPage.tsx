@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
 import axios from "axios";
+import Timer from "../../components/common/Timer";
 
 const PatientLoginPage: React.FC = () => {
   const [phone, setPhoneNum] = useState("");
@@ -9,6 +10,7 @@ const PatientLoginPage: React.FC = () => {
   const { setPatientId } = useUserContext();
   const [otp, setotp] = useState("");
   const [check, setIsCheck] = useState<boolean>(false);
+  const [showTimer, setShowTimer] = useState(false);
 
   useEffect(() => {
     const autoLogin = localStorage.getItem("autoLogin") === "true"; // 저장된 값이 "true"인지 확인
@@ -18,9 +20,12 @@ const PatientLoginPage: React.FC = () => {
     if (autoLogin) {
       const checkSession = async () => {
         try {
-          const response = await axios.get("http://localhost:8080/api/users/session-check", { withCredentials: true });
-
-          if (response.status === 200) {
+          const response = await axios.get("http://localhost:8080/api/users/session-check", {
+            withCredentials: true,
+          });
+          console.log(response.data); 
+          
+          if (response.data) {
             console.log("자동 로그인 성공:", localStorage.getItem("patientId"), "/ 응답: ",response.data);
             setPatientId(localStorage.getItem("patientId"));
             navigate("/patient-main");
@@ -47,7 +52,6 @@ const PatientLoginPage: React.FC = () => {
       const loginResponse = await axios.post("http://localhost:8080/api/users/login", {
         phone,
         otp,
-        withCredentials: true
       });
       if (!loginResponse.data) {
         alert("인증번호가 올바르지 않거나 다른 문제가 발생했습니다.");
@@ -77,6 +81,7 @@ const PatientLoginPage: React.FC = () => {
     try {
       const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
+      setShowTimer(true);
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
       console.error("인증번호 전송 실패:", error);
@@ -171,6 +176,7 @@ const PatientLoginPage: React.FC = () => {
               onChange={(e) => setotp(e.target.value)}
               className="w-[65%] h-[25px] text-[13px]"
             />
+            {showTimer && <Timer />}
           </div>
 
           {/* 자동 로그인 버튼 */}

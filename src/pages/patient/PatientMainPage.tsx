@@ -28,6 +28,8 @@ const PatientMainPage: React.FC = () => {
         await axios.post('http://localhost:8080/api/users/logout');
         setPatientId(null);
         localStorage.removeItem("patientId");
+        localStorage.removeItem("autoLogin");
+        alert("로그아웃 완료. 확인 버튼을 누르면 로그인 화면으로 돌아갑니다.")
         console.log('로그아웃 성공');
         navigate('/patient-login');
     } catch (error) {

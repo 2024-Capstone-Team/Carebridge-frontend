@@ -1,6 +1,7 @@
 //ScheduleToday.tsx
 
 import React, { useEffect } from "react";
+import { useParams } from "react-router-dom";
 
 interface Schedule {
   id: number;
@@ -38,6 +39,7 @@ const ScheduleToday: React.FC<ScheduleTodayProps> = ({
 
   return (
     <main>
+      
       <div
         className="fixed inset-0 bg-black bg-opacity-25 z-10"
         onClick={onClose}
