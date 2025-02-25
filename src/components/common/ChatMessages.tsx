@@ -27,6 +27,7 @@ const MessageBubble: React.FC<{
   timestamp: string;
   isRead: boolean;
   onResend: (msg: ChatMessage) => void;
+  onCancel: (msg: ChatMessage) => void;
   senderBubbleColor: string;
   receiverBubbleColor: string;
   senderTextColor: string;
@@ -38,6 +39,7 @@ const MessageBubble: React.FC<{
   timestamp,
   isRead,
   onResend,
+  onCancel,
   senderBubbleColor,
   receiverBubbleColor,
   senderTextColor,
@@ -50,13 +52,6 @@ const MessageBubble: React.FC<{
       <div className="flex flex-row items-end mr-3">
         <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
         <span className="text-xs text-gray-500 ml-2">{formatTimestamp(timestamp)}</span>
-        <span>
-          {message.isFailed && (
-            <button className="ml-2 text-red-500" onClick={() => onResend(message)}>
-              재전송
-            </button>
-          )}
-        </span>
       </div>
     )}
 
@@ -74,10 +69,25 @@ const MessageBubble: React.FC<{
     {/* Receiver's message */}
     {!isSender && (
       <div className="flex flex-row items-end ml-3">
-        <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
-        <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
+        {!message.isFailed ? (  // if message sent then show time and read status
+          <>
+            <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
+            <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
+          </>
+        ) : (  // if message failed then show failed text and button instead
+          <div className="flex items-center ml-2">
+            <span className="text-xs text-red-500 mr-2">전송 실패</span>
+            <button className="text-xs text-blue-500 hover:underline" onClick={() => onResend(message)}>
+              재전송
+            </button>
+            <button className="text-xs text-gray-500 hover:underline ml-2" onClick={() => onCancel(message)}>
+              취소
+            </button>
+          </div>
+        )}
       </div>
     )}
+
   </div>
 );
 
@@ -90,6 +100,7 @@ interface ChatMessagesProps {
   senderTextColor?: string;
   receiverTextColor?: string;
   onResend: (msg: ChatMessage) => void;
+  onCancel: (msg: ChatMessage) => void;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = memo(
@@ -102,6 +113,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
     senderTextColor = "text-black",
     receiverTextColor = "text-black",
     onResend,
+    onCancel,
   }) => {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -136,6 +148,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
               timestamp={message.timestamp}
               isRead={isRead}
               onResend={onResend}
+              onCancel={onCancel}
               senderBubbleColor={senderBubbleColor}
               receiverBubbleColor={receiverBubbleColor}
               senderTextColor={senderTextColor}
@@ -153,7 +166,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
       prevProps.chatMessages.length === nextProps.chatMessages.length &&
       prevProps.currentUserId === nextProps.currentUserId &&
       prevProps.chatMessages.every(
-        (msg, index) => msg.messageContent === nextProps.chatMessages[index].messageContent
+        (msg, index) =>
+          msg.messageContent === nextProps.chatMessages[index].messageContent &&
+          msg.readStatus === nextProps.chatMessages[index].readStatus // Check for isRead
       )
     );
   }

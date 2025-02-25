@@ -12,6 +12,30 @@ const useStompClient = (onMessage: (message: any) => void) => {
   const [pendingSubscriptions, setPendingSubscriptions] = useState<StompSubscriptionWithUnsubscribe[]>([]);
   const subscribedRooms = useRef<Set<string>>(new Set()); // Track currently subscribed rooms
 
+  // Monitor internet connectivity
+  const handleConnectionChange = useCallback(() => {
+    if (!navigator.onLine) {
+      // If offline, deactivate the WebSocket connection
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate();
+        setIsConnected(false);
+        console.log("Disconnected WebSocket due to no internet");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Listen for online/offline changes
+    window.addEventListener("offline", handleConnectionChange);
+    window.addEventListener("online", handleConnectionChange);
+
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener("offline", handleConnectionChange);
+      window.removeEventListener("online", handleConnectionChange);
+    };
+  }, [handleConnectionChange]);
+
   useEffect(() => {
     const stompClient = new Client({
       brokerURL: "ws://localhost:8080/ws-stomp",
@@ -139,19 +163,39 @@ const useStompClient = (onMessage: (message: any) => void) => {
 
   const sendMessage = useCallback((destination: string, message: any): Promise<void> => {
     return new Promise((resolve, reject) => {
-      if (stompClientRef.current && stompClientRef.current.connected) {
+      if (!stompClientRef.current) {
+        console.warn("STOMP client not initialized. Message not sent.");
+        reject(new Error("STOMP client not initialized"));
+        return;
+      }
+
+      // Then check if the WebSocket is connected and the device is online
+      // if (!navigator.onLine) {
+      //   console.warn("Device is offline. Message not sent.");
+      //   reject(new Error("Device is offline"));
+      //   return;
+      // }
+  
+      if (!stompClientRef.current.connected) {
+        console.warn("STOMP client not connected. Message not sent.");
+        reject(new Error("STOMP client not connected"));
+        return;
+      }
+  
+      try {
         console.log(`Sending message to ${destination}:`, message);
         stompClientRef.current.publish({
           destination,
           body: JSON.stringify(message),
         });
-        resolve(); // Message sent successfully
-      } else {
-        console.warn("STOMP client not connected. Message not sent.");
-        reject(new Error("STOMP client not connected")); // Reject the promise
+        resolve(); // Immediately resolve since there's no feedback
+      } catch (error) {
+        console.error("Error sending message:", error);
+        reject(new Error("Failed to send message"));
       }
     });
   }, []);
+  
 
   return { subscribeToRoom, unsubscribeFromRoom, sendMessage, isConnected };
 };
