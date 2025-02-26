@@ -6,31 +6,33 @@ import axios from "axios";
 const PatientLoginPage: React.FC = () => {
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
-  const { setUserId } = useUserContext();
-  const [authCode, setAuthCode] = useState("");
+  const { setPatientId } = useUserContext();
+  const [otp, setotp] = useState("");
 
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!phone || !authCode) {
+    if (!phone || !otp) {
       alert("전화번호와 인증번호를 입력해주세요.");
       return;
     }
 
     try {
-      const verifyResponse = await axios.post("http://localhost:8080/api/users/verify-otp", {
+      const loginResponse = await axios.post("http://localhost:8080/api/users/login", {
         phone,
-        otp: authCode,
+        otp
       });
 
-      if (!verifyResponse.data.success) {
-        alert("인증번호가 올바르지 않습니다.");
+      if (!loginResponse.data) {
+        alert("인증번호가 올바르지 않거나 다른 문제가 발생했습니다.");
         return;
       }
 
-      const loginResponse = await axios.post("http://localhost:8080/api/users/login", { phone });
-      setUserId(loginResponse.data.id);
+      // 로그인 성공 시 patientId를 받아서 상태에 저장
+      const patientId = loginResponse.data;
+      setPatientId(patientId);
+      console.log(patientId);
       navigate("/choose-patient-type");
     } catch (error) {
       console.error("로그인 실패:", error);
@@ -47,7 +49,7 @@ const PatientLoginPage: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}`);
+      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
@@ -68,8 +70,7 @@ const PatientLoginPage: React.FC = () => {
       const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
       console.log("카카오 로그인 URL:", response.data);
       const kakaoAuthUrl = response.data;
-  
-      // window.location.assign(kakaoAuthUrl);
+
       window.location.href = kakaoAuthUrl;
     } catch (error) {
       console.error("카카오 로그인 URL 요청 실패:", error);
@@ -133,8 +134,8 @@ const PatientLoginPage: React.FC = () => {
             <input
               type="text"
               id="auth-code"
-              value={authCode}
-              onChange={(e) => setAuthCode(e.target.value)}
+              value={otp}
+              onChange={(e) => setotp(e.target.value)}
               className="w-[65%] h-[25px] text-[13px]"
             />
           </div>
