@@ -23,6 +23,14 @@ interface Macro {
   macroName: string;
 }
 
+interface QuickAnswer {
+  id: number;
+  hospitalId: number;
+  category: string;
+  title: string;
+  information: string;
+}
+
 const ChatScreen: React.FC<ChatScreenProps> = ({
   currentRoom,
   patientId,
@@ -38,6 +46,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   const [isLoading, setIsLoading] = useState(true);  // Loading state for chat history
 
   const [macros, setMacros] = useState<Macro[]>([]);
+  const [quickAnswers, setQuickAnswers] = useState<QuickAnswer[]>([]);
 
   // History stack for undo functionality
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -225,8 +234,20 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   const fetchMacros = async (nurseId: number) => {
     try {
       const response = await fetch(`/api/macro/list/${nurseId}`);
-      const data = await response.json();
-      setMacros(data);
+      const data: Macro[] = await response.json();
+      const savedFavorites = localStorage.getItem("favoriteMacroIds");
+      
+      // 활성화된 즐겨찾기
+      if (savedFavorites) {
+         const favoriteIds: number[] = JSON.parse(savedFavorites);
+         const filteredMacros = data.filter((macro) =>
+          favoriteIds.includes(macro.macroId)
+        );
+        setMacros(filteredMacros);
+      } else {
+        // 즐겨찾기가 없으면 빈 배열로 설정
+        setMacros([]);
+      }
     } catch (error) {
       console.error("Error fetching macros:", error);
     }
@@ -277,6 +298,33 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
     }
   };
 
+  const hospitalId = 1;
+  const fetchQuickAnswers = async () => {
+    try {
+      const response = await fetch(`/api/hospital-info/list/${hospitalId}`);
+      const data: QuickAnswer[] = await response.json();
+      const savedFavorites = localStorage.getItem("favoriteQuickAnswerIds");
+      if (savedFavorites) {
+        const favoriteIds: number[] = JSON.parse(savedFavorites);
+        const filtered = data.filter((qa) => favoriteIds.includes(qa.id));
+        setQuickAnswers(filtered);
+      } else {
+        setQuickAnswers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching quick answers:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuickAnswers();
+  }, [hospitalId]);
+
+  const handleQuickAnswerClick = (qa: QuickAnswer) => {
+    updateInputHistory(qa.information);
+    setInputText(qa.information);
+  };
+
   return (
     <div className="flex flex-col h-full bg-primary-100 overflow-hidden">
 
@@ -318,6 +366,15 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
             className={"flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-primary text-white"}
           >
             {macro.macroName}
+          </div>
+        ))}
+        {quickAnswers.map((qa) => (
+          <div
+            key={qa.id}
+            onClick={() => handleQuickAnswerClick(qa)}
+            className="flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-secondary text-white"
+          >
+            {qa.title}
           </div>
         ))}
       </div>

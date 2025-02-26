@@ -25,3 +25,44 @@ export interface HospitalInfo { // temporary for testing
   title: string;
   information: string;
 }
+
+export interface CallBellRequest {
+  requestId: number;
+  patientId: number;
+  medicalStaffId: number;
+  requestContent: string;
+  status: string;
+  requestTime: string;
+  acceptTime: string;
+}
+
+export interface PatientDetail {
+  patientId: number;
+  phoneNumber: string;
+  name: string;
+  birthDate: string; 
+  gender: string;
+  guardianContact: string;
+  hospitalId: number;
+  hospitalLocation: string;
+  chatRoomId: string;
+  department: string;
+  email: string;
+  hospitalizationDate: string;
+  userId: number;
+}
+
+// 채팅을 위한 인터페이스
+export interface ChatConversation {
+  conversationId: string;
+  patientId: number;
+  patientName: string;
+}
+
+export interface MedicalStaff {
+  medicalstaffId: number;
+  department: string;
+  hospitalId: number;
+  phraseHead: string;
+  phraseTail: string;
+}

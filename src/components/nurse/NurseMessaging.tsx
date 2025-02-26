@@ -14,12 +14,34 @@ interface ChatRoomListItem {
   isRead: boolean;
 }
 
-const NurseMessaging: React.FC = () => {
+interface NurseMessagingProps {
+  selectedConversation?: {
+    conversationId: string;
+    patientId: number;
+    patientName: string;
+  } | null;
+  onCloseChat?: () => void;
+}
+
+const NurseMessaging: React.FC<NurseMessagingProps> = ({ selectedConversation, onCloseChat }) => {
   const [currentRoom, setCurrentRoom] = useState<string>(""); 
   const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
   const [patientName, setPatientName] = useState<string>("Unknown");
   const [patientId, setPatientId] = useState<number>(5);
   const [isDataFetched, setIsDataFetched] = useState<boolean>(false);
+
+  // 부모로부터 선택된 대화 정보가 있다면 내부 state에 반영
+  useEffect(() => {
+    if (selectedConversation) {
+      setCurrentRoom(selectedConversation.conversationId);
+      setPatientName(selectedConversation.patientName);
+      setPatientId(selectedConversation.patientId);
+    } else {
+      setCurrentRoom("");
+      setPatientName("Unknown");
+      setPatientId(0);
+    }
+  }, [selectedConversation]);
 
   // Fetch chatrooms from the server
   const fetchRooms = async () => {
