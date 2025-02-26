@@ -1,6 +1,8 @@
 export interface ChatMessage {
+  isPending: boolean;  // local, not for db
+  isFailed: boolean;  // local, not for db
   messageId: number;
-  sender_id: number; 
+  senderId: number; 
   medicalStaffId: number; 
   messageContent: string;
   timestamp: string;
@@ -10,12 +12,45 @@ export interface ChatMessage {
   isPatient: boolean;
 }
 
+export interface CallBellRequest {
+  requestId: number;
+  patientId: number;
+  medicalStaffId: number;
+  requestContent: string;
+  status: string;
+  requestTime: string;
+  acceptTime?: string | null;
+}
+
 export interface ChatRoom {
   userName: string;
-  conversationId: string; // Unique ID for the conversation (used to group messages)
+  conversationId: string; 
   previewMessage: string;  // Last message preview in the room
   lastMessageTime: string; // Timestamp of the last message
-  unread: boolean;         // Unread message status
+  isRead: boolean;         // Unread message status
+}
+
+export interface Macro {
+  macroId: number;
+  medicalStaffId: number;
+  text: string;
+  macroName: string;
+}
+
+export interface PatientDetail {
+  patientId: number;
+  phoneNumber: string;
+  name: string;
+  birthDate: string; 
+  gender: string;
+  guardianContact: string;
+  hospitalId: number;
+  hospitalLocation: string;
+  chatRoomId: string;
+  department: string;
+  email: string;
+  hospitalizationDate: string;
+  userId: number;
 }
 
 export interface HospitalInfo { // temporary for testing

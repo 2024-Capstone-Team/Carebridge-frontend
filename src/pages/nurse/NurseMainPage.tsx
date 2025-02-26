@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import PreLoginPage from '../PreLoginPage';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
@@ -15,36 +15,16 @@ import dbarrows from "../../assets/double arrows.png";
 import dwarrows from "../../assets/down arrows.png";
 import qresponse from "../../assets/quick response.png";
 import NurseMessaging from '../../components/nurse/NurseMessaging'; 
+import useStompClient from "../../hooks/useStompClient";
+import ChatMessages from "../../components/common/ChatMessages.tsx";
+import { ChatMessage, CallBellRequest, PatientDetail, ChatRoom } from "../../types";
 import macro from "../../assets/macro.png";
 import axios from "axios";
 
-interface CallBellRequest {
-  requestId: number;
-  patientId: number;
-  medicalStaffId: number;
-  requestContent: string;
-  status: string;
-  requestTime: string;
-  acceptTime: string;
-}
-
-interface PatientDetail {
-  patientId: number;
-  phoneNumber: string;
-  name: string;
-  birthDate: string; 
-  gender: string;
-  guardianContact: string;
-  hospitalId: number;
-  hospitalLocation: string;
-  chatRoomId: string;
-  department: string;
-  email: string;
-  hospitalizationDate: string;
-  userId: number;
-}
-
 const NurseMainPage: React.FC = () => {
+
+  const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
+
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [isMacroMode, setIsMacroMode] = useState(false); // 매크로 설정 화면 여부
@@ -259,9 +239,214 @@ const NurseMainPage: React.FC = () => {
         : requests.filter((req) => convertStatus(req.status) === selectedStatus);
   
 
+  {/* 메시지 관련 코드 시작 */}
+
+  {/* Set constants */}
+  const nurseId = "1";  // 테스트용 간호사 ID
+
+  {/* State Variables */}
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);  // Loading state for chat history
+  const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<string>("");
+  const [patientName, setPatientName] = useState<string>("Unknown");
+  const [patientId, setPatientId] = useState<number>(5);
+  const [isDataFetched, setIsDataFetched] = useState<boolean>(false);
+  const currentRoomRef = useRef<string>("");  // Stores latest room
+
+  {/* Handlers and Utility Functions */}
+
+  // Save messages to prevent repeated render 
+  const chatMessagesRef = useRef<ChatMessage[]>([]);
+  
+  const updateMessages = (newMessage: ChatMessage) => {
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+  };
+    
+  // Get chat history
+  const fetchChatHistory = async (patientId: number) => {
+    console.log("fetching chat history");
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/chat/message/user?patientId=${patientId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch messages for patient: ${patientId}`);
+      }
+      const messages: ChatMessage[] = await response.json();
+
+      // 기존 데이터와 다를 때만 상태 업데이트
+      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
+        chatMessagesRef.current = messages;
+        setMessages(messages.reverse());
+      }
+    } catch (error) {
+      console.error("Failed to fetch chat history", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+    
+  // 웹소켓 연결 
+  const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: any) => {
+    // 들어오는 메시지 확인 
+    if (message.type === "MESSAGE") {
+      const chatMessage: ChatMessage = message as ChatMessage;
+      console.log("Received a chat message:", chatMessage);
+      console.log("Current room: ", currentRoomRef.current);
+      if (message.chatRoomId == currentRoomRef.current) { // Only messages from patient will be added
+        setMessages((prevMessages) => [...prevMessages, message]);
+        console.log("Adding message to array");
+      }
+      // 채팅 메시지 처리 
+    } else if (message.type === "REQUEST") {  // 메시지가 요청사항인지 확인 
+      const request: CallBellRequest = message as CallBellRequest;
+      console.log("Received a request message:", request);  
+      // 요청 메시지 처리 (알림 띄우기)
+      setRequestPopup(message as CallBellRequest); // 요청 메시지를 팝업에 저장
+    } else if (message.messageType === "NOTIFICATION") {  // 읽음 표시 업데이트 
+      console.log("Update read status");
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          !msg.isPatient && !msg.readStatus ? { ...msg, isRead: true } : msg
+        )
+      );
+    } else {
+      console.warn("Unknown message type:", message);
+    }
+  });
+
+  // Fetch chatrooms from the server
+  const fetchRooms = async () => {
+    try {
+      const response = await fetch(`/api/chat/message/main/${nurseId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch rooms: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get("Content-Type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const body = await response.text();
+        throw new Error(`Expected JSON response but received: ${body}`);
+      }
+
+      const roomsData: ChatRoom[] = await response.json();
+      setRooms(roomsData);
+      setIsDataFetched(true);
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    }
+  };
+
+  // Add sample rooms if data is not fetched (for testing)
+  const addSampleRooms = () => {
+    const sampleRooms: ChatRoom[] = [
+      {
+        userName: "홍길동",
+        conversationId: "1_5",
+        previewMessage: "물 요청",
+        lastMessageTime: "2025-01-20T09:15:00Z",
+        isRead: false,
+      },
+    ];
+
+    if (!isDataFetched) {
+      setRooms(sampleRooms);
+    }
+  };
+
+  // Handle room selection and update the patient data
+  const handleRoomSelect = (roomId: string) => {
+    setCurrentRoom(roomId);
+    console.log("Current room set: ", roomId);
+    const selectedRoom = rooms.find(room => room.conversationId === roomId);
+    if (selectedRoom) {
+      setPatientName(selectedRoom.userName);
+      const patientId = parseInt(roomId.split('_')[1]);
+      setPatientId(patientId);
+    }
+  };
+
+  // Function to mark message as read
+  const markMessageAsRead = async (messageId: number) => {
+    console.log("Marking message as read.");
+    try {
+      const url = `http://localhost:8080/api/chat/message/read?messageId=${messageId}`;
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Check if the response is successful (status code 2xx)
+      if (!response.ok) {
+        // If response status is not OK, throw an error with status text
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      // Update local state after marking as read
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.messageId === messageId ? { ...message, readStatus: true } : message
+        )
+      );
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+    }
+  };
+
+
+  {/* Hooks */}
+
+  useEffect(() => {
+    currentRoomRef.current = currentRoom;  // Update ref when state changes
+    console.log("Updated currentRoomRef:", currentRoomRef.current);
+  }, [currentRoom]);
+
+  // 웹소켓 연결되면 간호사 채널에 구독
+  useEffect(() => {
+    if (!isConnected) return;
+    subscribeToRoom(`/sub/user/chat/${nurseId}`); 
+    return () => {
+    };
+  }, [isConnected]);
+
+  useEffect(() => {
+    console.log("Updated currentRoom:", currentRoom);
+  }, [currentRoom]);
+
+  // Fetch chat rooms on mount
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  {/* 메시지 관련 코드 끝 */}
+
+
   return (
     /*전체 창*/
     <div className="flex h-screen bg-gray-100 p-6">
+
+      {/* 요청 메시지 팝업 */} 
+      {requestPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-1/3 relative">
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setRequestPopup(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✖
+            </button>
+            <h3 className="text-xl font-bold text-center mb-4">🚨 요청 알림</h3>
+            <p className="text-gray-800 text-center">{requestPopup.requestContent}</p>
+            <p className="text-gray-500 text-sm text-center mt-2">
+              요청 시간: {new Date(requestPopup.requestTime).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
         
         {/*로고 영역*/}
@@ -382,7 +567,20 @@ const NurseMainPage: React.FC = () => {
         ) : (
           // 매크로 모드가 아닐 때
           <>
-          <NurseMessaging />
+          <NurseMessaging
+            messages={messages}
+            sendMessage={sendMessage}
+            isConnected={isConnected}
+            markMessageAsRead={markMessageAsRead}
+            rooms={rooms}
+            currentRoom={currentRoom}
+            onRoomSelect={handleRoomSelect}
+            patientName = {patientName}
+            patientId = {patientId}
+            subscribeToRoom={subscribeToRoom}
+            fetchChatHistory={fetchChatHistory}
+            updateMessages={updateMessages}
+          />
 
           {/* 환자 정보 */}
           <div className="w-1/5 flex flex-col space-y-6">
