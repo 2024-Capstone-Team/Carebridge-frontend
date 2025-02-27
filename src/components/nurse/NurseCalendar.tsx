@@ -89,7 +89,7 @@
         })
       );
 
-      // category별로 duration(분 단위) 반환
+      // category별로 duration 반환
       function getDurationByCategory(category: string): number {
         switch (category) {
           case "SURGERY":
@@ -97,9 +97,9 @@
           case "OUTPATIENT":
             return 30;
           case "EXAMINATION":
-            return 15;
+            return 30;
           default:
-            return 20; // 기타 카테고리는 20분으로 처리
+            return 20; 
         }
       }
 
@@ -118,7 +118,7 @@
           start: startDate,
           end: endDate,
           allDay: false,
-          backgroundColor: "transparent",
+          backgroundColor: "#D3E1FA",
           borderColor: "transparent",
           extendedProps: {
             details: schedule.details,
@@ -165,10 +165,9 @@
         age: event.extendedProps.age,
         details: event.extendedProps.details,
       });
-      setIsPopupOpen(true); // 팝업 열기
+      setIsPopupOpen(true);
     };
 
-    // 팝업 닫기
     const closePopup = () => {
       setIsPopupOpen(false);
       setSelectedEvent(null);
@@ -177,7 +176,7 @@
 
     const handleEdit = () => {
       if (selectedEvent) {
-        onEdit(selectedEvent.id); // scheduleId를 전달
+        onEdit(selectedEvent.id); // scheduleId 전달
       }
     };
 
@@ -237,9 +236,9 @@
             const { details, patientName } = event.extendedProps;
 
             return (
-              <div className="bg-[#D3E1FA] p-1">
+              <div className="p-1">
                 <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="flex justify-between items-center">
                     <span className="text-black text-[13px]">
                       {new Date(event.start!).toLocaleTimeString("ko-KR", { 
                         hour: "2-digit", 
@@ -270,11 +269,15 @@
             left: `${popupPosition.left}px`,}}
             >
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <span className="text-[20px] font-bold mb-1 mr-2">{selectedEvent.patientName}</span>
-              <span className="text-[15px]">환자</span>
-              <button onClick={closePopup} className="px-1 text-black hover:bg-gray-300">
-                ✖
-              </button>
+              <div className="flex justify-between">
+                <div className="flex items-center">
+                  <span className="text-[20px] font-bold mb-1 mr-2">{selectedEvent.patientName}</span>
+                  <span className="text-[15px]">환자</span>
+                  </div>
+                <button onClick={closePopup} className="px-1 text-black hover:bg-gray-300">
+                  ✖
+                </button>
+              </div>
               <hr className="border-gray-400 mb-4"></hr>
 
               <p>
@@ -295,7 +298,7 @@
               </p>
 
               <div className="flex justify-center mt-4">
-              <button className="bg-gray-300 border border-gray-400 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={() => alert("추후 구현")}>
+                <button className="bg-gray-300 border border-gray-400 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={() => alert("추후 구현")}>
                   삭제
                 </button>
                 <button className="border border-gray-300 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={handleEdit}>
