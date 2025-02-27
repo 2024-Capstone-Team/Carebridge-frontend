@@ -8,6 +8,8 @@ import PreLoginPage from "./pages/PreLoginPage";
 import NurseLoginPage from "./pages/nurse/NurseLoginPage";
 import NurseMainPage from "./pages/nurse/NurseMainPage";
 import NurseSchedulePage from "./pages/nurse/NurseSchedulePage";
+import NurseFindPasswordPage from "./pages/nurse/NurseFindPassword";
+import NurseResetPasswordPage from "./pages/nurse/NurseResetPassword";
 
 /* Patient Pages */
 import Redirection from "./pages/patient/Redirection";
@@ -49,6 +51,8 @@ const App: React.FC = () => {
           <Route path="/nurse-login" element={<NurseLoginPage />} /> 
           <Route path="/nurse-main" element={<NurseMainPage />} />
           <Route path="/nurse-schedule" element={<NurseSchedulePage />} />
+          <Route path="/nurse-find-password" element={<NurseFindPasswordPage />} />
+          <Route path="/nurse-reset-password" element={<NurseResetPasswordPage />} />
 
           {/* Patient Pages */}
           <Route path="/api/users/social-login/kakao" element={<Redirection />} />
@@ -98,7 +102,7 @@ const App: React.FC = () => {
           <Route path="/custom-request" element={<CustomRequestPage />} />
 
           {/* Test */}
-          <Route path='/test' element={<NurseChatPage />} />
+          {/* <Route path='/test' element={<NurseChatPage />} /> */}
           <Route path='/test-schedule' element={<ScheduleTest />} />
           
         </Routes>

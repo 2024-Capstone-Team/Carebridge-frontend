@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import star from "../../assets/star.png";
 import ystar from "../../assets/yellow star.png";
 import axios from 'axios';
-import NurseMacro from './NurseMacro';
+import NurseMacro from './NurseMacroAdd';
 import NurseMacroEdit from './NurseMacroEdit';
 
 interface Macro {
@@ -35,11 +35,12 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
 
   useEffect(() => {
     fetchMacros();
-    // 컴포넌트가 마운트될 때 localStorage에서 즐겨찾기 정보를 불러옴
+    // localStorage에서 즐겨찾기 정보를 불러옴
     const savedFavorites = localStorage.getItem('favoriteMacroIds');
     if (savedFavorites) {
       const favorites: number[] = JSON.parse(savedFavorites);
-      // 초기 toggledStars 상태 설정
+      
+      // 초기 Stars 상태 설정
       const initialStars: Record<number, boolean> = {};
       favorites.forEach((id) => {
         initialStars[id] = true;
@@ -74,7 +75,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
     fetchMacros();
   };
 
-  // 즐겨찾기 토글: localStorage에 즐겨찾기 macroId 목록을 저장
+  // localStorage에 즐겨찾기 macroId 목록을 저장
   const toggleStar = (macroId: number) => {
     setToggledStars((prev) => {
       const newState = { ...prev, [macroId]: !prev[macroId] };
