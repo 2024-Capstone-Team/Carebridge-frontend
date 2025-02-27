@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
@@ -6,7 +6,6 @@ import Nurse_DetailedPatientInfo from '../../components/nurse/NurseDetailedPatie
 import NurseMacroList from '../../components/nurse/NurseMacroList';
 import NurseQuickAnswerList from '../../components/nurse/NurseQuickAnswerList';
 import NurseMessaging from '../../components/nurse/NurseMessaging';
-import { CallBellRequest, PatientDetail, ChatConversation, MedicalStaff } from '../../types';
 import logo from "../../assets/carebridge_logo.png";
 import bar from "../../assets/hamburger bar.png";
 import home from "../../assets/home.png";
@@ -14,14 +13,18 @@ import schedular from "../../assets/schedular.png";
 import dbarrows from "../../assets/double arrows.png";
 import dwarrows from "../../assets/down arrows.png";
 import qresponse from "../../assets/quick response.png";
+import useStompClient from "../../hooks/useStompClient";
+import ChatMessages from "../../components/common/ChatMessages.tsx";
+import { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, ChatConversation, MedicalStaff } from "../../types";
 import macro from "../../assets/macro.png";
 import axios from "axios";
 
 const NurseMainPage: React.FC = () => {
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false); // 메뉴 팝업 표시
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 }); // 메뉴바 위치 설정
   const [isMacroMode, setIsMacroMode] = useState(false); // 매크로 설정 화면 여부
-  const [isQAMode, setIsQAMode] = useState(false);
+  const [isQAMode, setIsQAMode] = useState(false); // 빠른 답변 모드 설정 화면 여부
   const [selectedPatient, setSelectedPatient] = useState<number | null>(null); // 환자 정보 선택 상태
   const [hospitalName, setHospitalName] = useState(""); // 불러올 병원 이름
   const [medicalStaffList, setMedicalStaffList] = useState<MedicalStaff[]>([]); // 분과 이름
@@ -29,7 +32,6 @@ const NurseMainPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [patientDetails, setPatientDetails] = useState<{ [key: number]: PatientDetail }>({});
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [chatConversation, setChatConversation] = useState<ChatConversation | null>(null); // 채팅창을 열기 위한 상태
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -130,15 +132,17 @@ const NurseMainPage: React.FC = () => {
     setSelectedPatient(null);
   };
 
-  // 채팅 버튼 클릭 시 해당 환자 정보 이용
+  // 채팅 버튼 클릭 시 해당 환자 정보 이동
   const handleChatClick = (patientId: number) => {
     console.log("채팅 버튼 클릭: 환자 ID", patientId);
     const patientDetail = patientDetails[patientId];
-    const patientName = patientDetail ? patientDetail.name : "Unknown";
+    const patientNameValue = patientDetail ? patientDetail.name : "Unknown";
     
-    // 채팅 버튼 
+    // nurseId, patientId 조합으로 conversationId 생성
     const conversationId = `${medicalStaffId}_${patientId}`;
-    setChatConversation({ conversationId, patientId, patientName });
+    setCurrentRoom(conversationId);
+    setPatientName(patientNameValue);
+    setPatientId(patientId);
   };
 
   const convertStatus = (status: string): string => {
@@ -191,61 +195,272 @@ const NurseMainPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchRequests = async () => {
+      const fetchRequests = async () => {
+        try {
+          const response = await fetch(`http://localhost:8080/api/call-bell/request/staff/${medicalStaffId}`);
+          if (!response.ok) {
+            console.error("호출 요청 API 에러", response.status);
+            return;
+          }
+          const data: CallBellRequest[] = await response.json();
+          setRequests(data);
+        } catch (error) {
+          console.error("호출 요청 데이터 가져오기 실패", error);
+        }
+      };
+  
+      fetchRequests();
+    }, [medicalStaffId]);
+  
+    useEffect(() => {
+      const uniquePatientIds = Array.from(new Set(requests.map((req) => req.patientId)));
+  
+      uniquePatientIds.forEach((patientId) => {
+        
+        // 아직 환자의 상세 정보를 가져오지 않은 경우만 API 호출
+        if (!patientDetails[patientId]) {
+          fetchPatientDetail(patientId);
+        }
+      });
+    }, [requests]);
+  
+    const fetchPatientDetail = async (patientId: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/call-bell/request/staff/${medicalStaffId}`);
+        const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
         if (!response.ok) {
-          console.error("호출 요청 API 에러", response.status);
+          console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, response.status);
           return;
         }
-        const data: CallBellRequest[] = await response.json();
-        setRequests(data);
+        const data: PatientDetail = await response.json();
+        setPatientDetails((prev) => ({ ...prev, [patientId]: data }));
       } catch (error) {
-        console.error("호출 요청 데이터 가져오기 실패", error);
+        console.error(`환자 상세 정보 가져오기 실패 (ID: ${patientId})`, error);
       }
     };
-    fetchRequests();
-  }, [medicalStaffId]);
+  
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedStatus(e.target.value);
+    };
+  
+    // 상태 우선순위
+    const statusPriority = ['대기 중', '진행 중', '예약됨', '완료됨'];
+  
+    const filteredRequests =
+      selectedStatus === "전체"
+      ? [...requests].sort((a, b) =>
+        statusPriority.indexOf(convertStatus(a.status)) - statusPriority.indexOf(convertStatus(b.status))
+      )
+    : requests.filter(req => convertStatus(req.status) === selectedStatus);
+  
 
-  useEffect(() => {
-    const uniquePatientIds = Array.from(new Set(requests.map(req => req.patientId)));
-    uniquePatientIds.forEach(patientId => {
-      if (!patientDetails[patientId]) {
-        fetchPatientDetail(patientId);
-      }
-    });
-  }, [requests]);
+  {/* 메시지 관련 코드 시작 */}
 
-  const fetchPatientDetail = async (patientId: number) => {
+  {/* Set constants */}
+  const nurseId = "1";  // 테스트용 간호사 ID
+
+  {/* State Variables */}
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);  // Loading state for chat history
+  const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<string>("");
+  const [patientName, setPatientName] = useState<string>("Unknown");
+  const [patientId, setPatientId] = useState<number>(5);
+  const [isDataFetched, setIsDataFetched] = useState<boolean>(false);
+  const currentRoomRef = useRef<string>("");  // Stores latest room
+
+  {/* Handlers and Utility Functions */}
+
+  // Save messages to prevent repeated render 
+  const chatMessagesRef = useRef<ChatMessage[]>([]);
+  
+  const updateMessages = (newMessage: ChatMessage) => {
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+  };
+    
+  // Get chat history
+  const fetchChatHistory = async (patientId: number) => {
+    console.log("fetching chat history");
     try {
-      const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
+      setIsLoading(true);
+      const response = await fetch(`/api/chat/message/user?patientId=${patientId}`);
       if (!response.ok) {
-        console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, response.status);
-        return;
+        throw new Error(`Failed to fetch messages for patient: ${patientId}`);
       }
-      const data: PatientDetail = await response.json();
-      setPatientDetails(prev => ({ ...prev, [patientId]: data }));
+      const messages: ChatMessage[] = await response.json();
+
+      // 기존 데이터와 다를 때만 상태 업데이트
+      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
+        chatMessagesRef.current = messages;
+        setMessages(messages.reverse());
+      }
     } catch (error) {
-      console.error(`환자 상세 정보 가져오기 실패 (ID: ${patientId})`, error);
+      console.error("Failed to fetch chat history", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+    
+  // 웹소켓 연결 
+  const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: any) => {
+    // 들어오는 메시지 확인 
+    if (message.type === "MESSAGE") {
+      const chatMessage: ChatMessage = message as ChatMessage;
+      console.log("Received a chat message:", chatMessage);
+      console.log("Current room: ", currentRoomRef.current);
+      if (message.chatRoomId == currentRoomRef.current) { // Only messages from patient will be added
+        setMessages((prevMessages) => [...prevMessages, message]);
+        console.log("Adding message to array");
+      }
+      // 채팅 메시지 처리 
+    } else if (message.type === "REQUEST") {  // 메시지가 요청사항인지 확인 
+      const request: CallBellRequest = message as CallBellRequest;
+      console.log("Received a request message:", request);  
+      // 요청 메시지 처리 (알림 띄우기)
+      setRequestPopup(message as CallBellRequest); // 요청 메시지를 팝업에 저장
+    } else if (message.messageType === "NOTIFICATION") {  // 읽음 표시 업데이트 
+      console.log("Update read status");
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          !msg.isPatient && !msg.readStatus ? { ...msg, isRead: true } : msg
+        )
+      );
+    } else {
+      console.warn("Unknown message type:", message);
+    }
+  });
+
+  // Fetch chatrooms from the server
+  const fetchRooms = async () => {
+    try {
+      const response = await fetch(`/api/chat/message/main/${nurseId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch rooms: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get("Content-Type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const body = await response.text();
+        throw new Error(`Expected JSON response but received: ${body}`);
+      }
+
+      const roomsData: ChatRoom[] = await response.json();
+      setRooms(roomsData);
+      setIsDataFetched(true);
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
     }
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedStatus(e.target.value);
+  // Add sample rooms if data is not fetched (for testing)
+  const addSampleRooms = () => {
+    const sampleRooms: ChatRoom[] = [
+      {
+        userName: "홍길동",
+        conversationId: "1_5",
+        previewMessage: "물 요청",
+        lastMessageTime: "2025-01-20T09:15:00Z",
+        isRead: false,
+      },
+    ];
+
+    if (!isDataFetched) {
+      setRooms(sampleRooms);
+    }
   };
 
-  const statusPriority = ['대기 중', '진행 중', '예약됨', '완료됨'];
-  const filteredRequests =
-    selectedStatus === "전체"
-      ? [...requests].sort((a, b) =>
-          statusPriority.indexOf(convertStatus(a.status)) - statusPriority.indexOf(convertStatus(b.status))
+  // Handle room selection and update the patient data
+  const handleRoomSelect = (roomId: string) => {
+    setCurrentRoom(roomId);
+    console.log("Current room set: ", roomId);
+    const selectedRoom = rooms.find(room => room.conversationId === roomId);
+    if (selectedRoom) {
+      setPatientName(selectedRoom.userName);
+      const patientId = parseInt(roomId.split('_')[1]);
+      setPatientId(patientId);
+    }
+  };
+
+  // Function to mark message as read
+  const markMessageAsRead = async (messageId: number) => {
+    console.log("Marking message as read.");
+    try {
+      const url = `http://localhost:8080/api/chat/message/read?messageId=${messageId}`;
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Check if the response is successful (status code 2xx)
+      if (!response.ok) {
+        // If response status is not OK, throw an error with status text
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      // Update local state after marking as read
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.messageId === messageId ? { ...message, readStatus: true } : message
         )
-      : requests.filter(req => convertStatus(req.status) === selectedStatus);
+      );
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+    }
+  };
+
+
+  {/* Hooks */}
+
+  useEffect(() => {
+    currentRoomRef.current = currentRoom;  // Update ref when state changes
+    console.log("Updated currentRoomRef:", currentRoomRef.current);
+  }, [currentRoom]);
+
+  // 웹소켓 연결되면 간호사 채널에 구독
+  useEffect(() => {
+    if (!isConnected) return;
+    subscribeToRoom(`/sub/user/chat/${nurseId}`); 
+    return () => {
+    };
+  }, [isConnected]);
+
+  useEffect(() => {
+    console.log("Updated currentRoom:", currentRoom);
+  }, [currentRoom]);
+
+  // Fetch chat rooms on mount
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  {/* 메시지 관련 코드 끝 */}
+
 
   return (
     /* 전체 창*/
     <div className="flex h-screen bg-gray-100 p-6">
-      {/* 메뉴 영역 */}
+
+      {/* 요청 메시지 팝업 */} 
+      {requestPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-1/3 relative">
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setRequestPopup(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✖
+            </button>
+            <h3 className="text-xl font-bold text-center mb-4">🚨 요청 알림</h3>
+            <p className="text-gray-800 text-center">{requestPopup.requestContent}</p>
+            <p className="text-gray-500 text-sm text-center mt-2">
+              요청 시간: {new Date(requestPopup.requestTime).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
         <div className="flex items-center mb-4" style={{ marginTop: '-60px' }}>
           <img src={isDropdownVisible ? dwarrows : bar} alt="hamburger bar"
@@ -261,6 +476,7 @@ const NurseMainPage: React.FC = () => {
               {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
               </p>
               <hr className="bg-gray-600" />
+
               <ul className="py-2">
                 <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
                     onClick={() => handleMenuClick("/nurse-main")}>
@@ -279,6 +495,7 @@ const NurseMainPage: React.FC = () => {
                   <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정
                 </li>
                 <hr className="bg-gray-600" />
+
                 <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
                     onClick={() => handleMenuClick("/nurse-reset-password")}>비밀번호 재설정</li>
                 <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
@@ -376,10 +593,21 @@ const NurseMainPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <NurseMessaging 
-            selectedConversation={chatConversation}
-            onCloseChat={() => setChatConversation(null)}
+          <NurseMessaging
+            messages={messages}
+            sendMessage={sendMessage}
+            isConnected={isConnected}
+            markMessageAsRead={markMessageAsRead}
+            rooms={rooms}
+            currentRoom={currentRoom} // conversationId 전달
+            onRoomSelect={handleRoomSelect}
+            patientName={patientName}
+            patientId={patientId}
+            subscribeToRoom={subscribeToRoom}
+            fetchChatHistory={fetchChatHistory}
+            updateMessages={updateMessages}
           />
+
           {/* 환자 정보 및 스케줄러 영역 */}
           <div className="w-1/5 flex flex-col space-y-6">
             <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 mb-1">

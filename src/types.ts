@@ -1,6 +1,8 @@
 export interface ChatMessage {
+  isPending: boolean;  // local, not for db
+  isFailed: boolean;  // local, not for db
   messageId: number;
-  sender_id: number; 
+  senderId: number; 
   medicalStaffId: number; 
   messageContent: string;
   timestamp: string;
@@ -10,22 +12,6 @@ export interface ChatMessage {
   isPatient: boolean;
 }
 
-export interface ChatRoom {
-  userName: string;
-  conversationId: string; // Unique ID for the conversation (used to group messages)
-  previewMessage: string;  // Last message preview in the room
-  lastMessageTime: string; // Timestamp of the last message
-  unread: boolean;         // Unread message status
-}
-
-export interface HospitalInfo { // temporary for testing
-  id: number;
-  hospitalId: number;
-  category: string;
-  title: string;
-  information: string;
-}
-
 export interface CallBellRequest {
   requestId: number;
   patientId: number;
@@ -33,7 +19,22 @@ export interface CallBellRequest {
   requestContent: string;
   status: string;
   requestTime: string;
-  acceptTime: string;
+  acceptTime?: string | null;
+}
+
+export interface ChatRoom {
+  userName: string;
+  conversationId: string; 
+  previewMessage: string;  // Last message preview in the room
+  lastMessageTime: string; // Timestamp of the last message
+  isRead: boolean;         // Unread message status
+}
+
+export interface Macro {
+  macroId: number;
+  medicalStaffId: number;
+  text: string;
+  macroName: string;
 }
 
 export interface PatientDetail {
@@ -52,6 +53,14 @@ export interface PatientDetail {
   userId: number;
 }
 
+export interface HospitalInfo { // temporary for testing
+  id: number;
+  hospitalId: number;
+  category: string;
+  title: string;
+  information: string;
+}
+
 // 채팅을 위한 인터페이스
 export interface ChatConversation {
   conversationId: string;
@@ -65,4 +74,12 @@ export interface MedicalStaff {
   hospitalId: number;
   phraseHead: string;
   phraseTail: string;
+}
+
+export interface QuickAnswer {
+  id: number;
+  hospitalId: number;
+  category: string;
+  title: string;
+  information: string;
 }

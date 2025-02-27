@@ -102,7 +102,7 @@ const App: React.FC = () => {
           <Route path="/custom-request" element={<CustomRequestPage />} />
 
           {/* Test */}
-          <Route path='/test' element={<NurseChatPage />} />
+          {/* <Route path='/test' element={<NurseChatPage />} /> */}
           <Route path='/test-schedule' element={<ScheduleTest />} />
           
         </Routes>
