@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
 import axios from "axios";
 import Timer from "../../components/common/Timer";
+import { requestForToken } from "../../firebase/firebase";
+
 
 const PatientLoginPage: React.FC = () => {
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
-  const { setPatientId } = useUserContext();
+  const { setUserId, setPatientId } = useUserContext();
   const [otp, setotp] = useState("");
   const [check, setIsCheck] = useState<boolean>(false);
   const [showTimer, setShowTimer] = useState(false);
-
   useEffect(() => {
     const autoLogin = localStorage.getItem("autoLogin") === "true"; // 저장된 값이 "true"인지 확인
     console.log("autologin: ", autoLogin);
@@ -40,6 +41,18 @@ const PatientLoginPage: React.FC = () => {
   }, [navigate, setPatientId]);
 
 
+
+  { /*FCM 토큰 등록 api*/}
+  const registerFcmToken = async (userId: number, token: string): Promise<void> => {
+    try {
+      await axios.post("/api/notification/register", { userId, token });
+      console.log("FCM 토큰 등록 성공");
+    } catch (error) {
+      console.error("FCM 토큰 등록 실패:", error);
+    }
+  }; 
+
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,10 +72,27 @@ const PatientLoginPage: React.FC = () => {
       }
 
       // 로그인 성공 시 patientId를 받아서 상태에 저장
-      const patientId = loginResponse.data;
+      const { userId, patientId } = loginResponse.data;
       setPatientId(patientId); //UserContext의 PatientId 업데이트
-      localStorage.setItem("patientId", patientId); //localstorage에 patientId 저장
-      console.log(patientId);
+      setUserId(userId);
+      localStorage.setItem("patientId", patientId);
+      localStorage.setItem("userId", userId);
+      console.log("User ID:", userId);
+      console.log("Patient ID:", patientId);
+
+      try {
+        const token = await requestForToken();
+        if (token) {
+          await axios.post("http://localhost:8080/api/notification/register", {
+            userId,
+            token
+          });
+          console.log("FCM 토큰 등록 성공");
+        }
+      } catch (error) {
+        console.error("FCM 토큰 등록 실패:", error);
+      }
+
       navigate("/choose-patient-type");
     } catch (error) {
       console.error("로그인 실패:", error);
@@ -88,7 +118,6 @@ const PatientLoginPage: React.FC = () => {
       alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
     }
   };
- 
 
   const goSignUp = (e: React.FormEvent) => {
     e.preventDefault();
