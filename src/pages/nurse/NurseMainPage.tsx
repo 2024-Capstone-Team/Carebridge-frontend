@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import { SnackbarProvider, useSnackbar } from 'notistack';
 import PreLoginPage from '../PreLoginPage';
@@ -24,6 +24,19 @@ import axios from "axios";
 
 const NurseMainPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
+
+  // =============== 상태 관리 ===============
+  /**
+   * @description 알림 시스템 관련 상태
+   * @property notificationQueue - 대기 중인 알림 목록을 관리
+   * @property currentNotification - 현재 표시 중인 알림 정보
+   * @property unreadNotifications - 읽지 않은 알림을 저장하는 객체
+   * @property isProcessingQueue - 알림 처리 진행 상태
+   */
+  const [notificationQueue, setNotificationQueue] = useState<CallBellRequest[]>([]);
+  const [currentNotification, setCurrentNotification] = useState<CallBellRequest | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState<{[key: number]: Date}>({});
+  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
 
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
   const [isTimeSelection, setIsTimeSelection] = useState(false);
@@ -202,56 +215,64 @@ const NurseMainPage: React.FC = () => {
       fetchRequests();
     }, [medicalStaffId]);
   
+    // useMemo를 컴포넌트 최상위 레벨로 이동
+    const uniquePatientIds = useMemo(() => 
+        Array.from(new Set(requests.map((req) => req.patientId))),
+        [requests]
+    );
+  
+    // useEffect에서는 계산된 값을 사용
     useEffect(() => {
-      const uniquePatientIds = Array.from(new Set(requests.map((req) => req.patientId)));
+        uniquePatientIds.forEach((patientId) => {
+            if (!patientDetails[patientId]) {
+                fetchPatientDetail(patientId);
+            }
+        });
+    }, [uniquePatientIds, patientDetails]); // 의존성 배열 수정
   
-      uniquePatientIds.forEach((patientId) => {
-        // 아직 환자의 상세 정보를 가져오지 않은 경우만 API 호출
-        if (!patientDetails[patientId]) {
-          fetchPatientDetail(patientId);
-        }
-      });
-    }, [requests]);
-  
-    const fetchPatientDetail = async (patientId: number) => {
-      try {
-        // 환자 기본 정보와 질병명을 병렬로 가져오기
-        const [patientResponse, diseaseResponse] = await Promise.all([
-          fetch(`http://localhost:8080/api/patient/user/${patientId}`),
-          fetch(`http://localhost:8080/api/medical-record/${patientId}`)
-        ]);
+  /**
+   * @description 데이터 가져오기 - 환자 상세 정보
+   * 환자의 기본 정보와 질병명을 병렬로 조회합니다.
+   */
+  const fetchPatientDetail = async (patientId: number) => {
+    try {
+      // 환자 기본 정보와 질병명을 병렬로 가져오기
+      const [patientResponse, diseaseResponse] = await Promise.all([
+        fetch(`http://localhost:8080/api/patient/user/${patientId}`),
+        fetch(`http://localhost:8080/api/medical-record/${patientId}`)
+      ]);
 
-        if (!patientResponse.ok) {
-          console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, patientResponse.status);
-          return;
-        }
-        if (!diseaseResponse.ok) {
-          console.error(`질병명 조회 API 에러 (ID: ${patientId})`, diseaseResponse.status);
-          return;
-        }
-
-        const patientData: PatientDetail = await patientResponse.json();
-        const disease = await diseaseResponse.text();
-
-        // 환자 정보와 질병명을 한 번에 업데이트
-        setPatientDetails(prevDetails => ({
-          ...prevDetails,
-          [patientId]: {
-            ...patientData,
-            disease: disease
-          }
-        }));
-      } catch (error) {
-        console.error(`환자 정보 가져오기 실패 (ID: ${patientId})`, error);
+      if (!patientResponse.ok) {
+        console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, patientResponse.status);
+        return;
       }
-    };
+      if (!diseaseResponse.ok) {
+        console.error(`질병명 조회 API 에러 (ID: ${patientId})`, diseaseResponse.status);
+        return;
+      }
+
+      const patientData: PatientDetail = await patientResponse.json();
+      const disease = await diseaseResponse.text();
+
+      // 환자 정보와 질병명을 한 번에 업데이트
+      setPatientDetails(prevDetails => ({
+        ...prevDetails,
+        [patientId]: {
+          ...patientData,
+          disease: disease
+        }
+      }));
+    } catch (error) {
+      console.error(`환자 정보 가져오기 실패 (ID: ${patientId})`, error);
+    }
+  };
   
-    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setSelectedStatus(e.target.value);
-    };
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
+  };
   
-    // 상태 우선순위
-    const statusPriority = ['대기', '진행 중', '예약', '완료'];
+  // 상태 우선순위
+  const statusPriority = ['대기', '진행 중', '예약', '완료'];
   
     const filteredRequests =
       selectedStatus === "전체"
@@ -276,16 +297,23 @@ const NurseMainPage: React.FC = () => {
       // 채팅 메시지 처리 (수정중)
     } else if (message.type === "request") {  // 메시지가 요청사항인지 확인 
       const request: CallBellRequest = message as CallBellRequest;
-      console.log("Received a request message:", request);
+      console.log("요청 메시지 수신:", request);
       
       // 환자 정보가 없는 경우에만 fetch (질병명도 함께 가져옴)
       if (!patientDetails[request.patientId]) {
         fetchPatientDetail(request.patientId);
       }
       
-      setRequestPopup(request);
+      // 현재 표시 중인 알림이 없을 때만 바로 표시
+      if (!currentNotification && !requestPopup) {
+        setRequestPopup(request);
+        setCurrentNotification(request);
+      } else {
+        // 이미 다른 알림이 표시 중이면 큐에 추가
+        addToQueue(request);
+      }
     } else {
-      console.warn("Unknown message type:", message);
+      console.warn("알 수 없는 메시지 타입:", message);
     }
   });
 
@@ -316,7 +344,88 @@ const NurseMainPage: React.FC = () => {
       };
     }, [isConnected]);
 
-  // 보류 버튼 핸들러 수정
+  // ===== 알림 큐 관련 함수들 =====
+  
+  /**
+   * 알림을 큐에 추가하는 함수
+   * @param notification 추가할 알림
+   */
+  const addToQueue = (notification: CallBellRequest) => {
+    setNotificationQueue(prev => [...prev, notification]);
+    // 미확인 알림에 추가
+    setUnreadNotifications(prev => ({
+      ...prev,
+      [notification.requestId]: new Date()
+    }));
+  };
+
+  /**
+   * 큐에서 다음 알림을 처리하는 함수
+   */
+  const processNextNotification = () => {
+    if (notificationQueue.length > 0 && !currentNotification && !requestPopup) {
+      const nextNotification = notificationQueue[0];
+      setCurrentNotification(nextNotification);
+      setRequestPopup(nextNotification);
+      setNotificationQueue(prev => prev.slice(1));
+    }
+  };
+
+  /**
+   * 알림 팝업을 닫을 때 호출되는 함수
+   */
+  const handleCloseNotification = () => {
+    setRequestPopup(null);
+    setCurrentNotification(null);
+    setIsTimeSelection(false);
+    setSelectedTime(null);
+  };
+
+  // 큐 처리를 위한 useEffect
+  useEffect(() => {
+    if (!isProcessingQueue && notificationQueue.length > 0 && !currentNotification) {
+      setIsProcessingQueue(true);
+      processNextNotification();
+      setIsProcessingQueue(false);
+    }
+  }, [notificationQueue, currentNotification, isProcessingQueue]);
+
+  // 미확인 알림 재알림을 위한 useEffect
+  useEffect(() => {
+    const checkUnreadNotifications = () => {
+      const now = new Date();
+      Object.entries(unreadNotifications).forEach(([requestId, timestamp]) => {
+        const timeDiff = now.getTime() - timestamp.getTime();
+        const minutesPassed = Math.floor(timeDiff / (1000 * 60));
+        
+        // 5분이 지난 미확인 알림 재표시
+        if (minutesPassed >= 5) {
+          const notification = requests.find(req => req.requestId === Number(requestId));
+          if (notification) {
+            // 현재 표시 중인 알림이 없을 때만 재알림
+            if (!currentNotification && !requestPopup) {
+              setRequestPopup(notification);
+              setCurrentNotification(notification);
+            } else {
+              // 이미 다른 알림이 표시 중이면 큐에 추가
+              addToQueue(notification);
+            }
+            // 타임스탬프 갱신
+            setUnreadNotifications(prev => ({
+              ...prev,
+              [requestId]: new Date()
+            }));
+          }
+        }
+      });
+    };
+
+    // 1분마다 미확인 알림 체크
+    const intervalId = setInterval(checkUnreadNotifications, 60 * 1000);
+    return () => clearInterval(intervalId);
+  }, [unreadNotifications, requests, currentNotification, requestPopup]);
+
+  // 알림 처리 완료 시 호출되는 함수들 수정
   const handlePending = async (requestId: number) => {
     try {
       const response = await fetch(`http://localhost:8080/api/call-bell/request/status/${requestId}?status=PENDING`, {
@@ -335,10 +444,13 @@ const NurseMainPage: React.FC = () => {
       const responseData = await response.text();
       console.log('요청 처리 완료:', responseData);
       
-      // 성공적으로 상태가 변경되면 팝업창 닫기
-      setRequestPopup(null);
+      // 알림 큐에서 다음 알림 처리
+      handleCloseNotification();
       
-      // Snackbar 알림 표시
+      // 미확인 알림 목록에서 제거
+      const { [requestId]: removed, ...remainingNotifications } = unreadNotifications;
+      setUnreadNotifications(remainingNotifications);
+      
       enqueueSnackbar('요청이 성공적으로 보류 처리되었습니다.', { 
         variant: 'success',
         autoHideDuration: 2000,
@@ -353,38 +465,12 @@ const NurseMainPage: React.FC = () => {
     }
   };
 
-  // 시간 선택 화면으로 전환
-  const handleAcceptClick = () => {
-    setIsTimeSelection(true);
-    setSelectedTime(new Date());
-  };
-
-  // 시간 버튼 클릭 핸들러
-  const handleTimeButtonClick = (minutes: number) => {
-    const newTime = new Date();
-    newTime.setMinutes(newTime.getMinutes() + minutes);
-    setSelectedTime(newTime);
-  };
-
-  // 시간 포맷팅 함수
-  const formatSelectedTime = (date: Date | null) => {
-    if (!date) return "00:00";
-    return date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  };
-
-  // 확인 버튼 핸들러 추가
   const handleConfirmTime = async () => {
     if (!selectedTime || !requestPopup) return;
 
     try {
-      // 현재 시간 (UTC)
       const now = new Date();
       
-      // 1. 시간 설정 API 호출 (UTC 시간으로 acceptTime 설정)
       const timeResponse = await fetch(`http://localhost:8080/api/call-bell/request/${requestPopup.requestId}?acceptTime=${now.toISOString()}`, {
         method: 'PATCH',
         headers: {
@@ -396,7 +482,6 @@ const NurseMainPage: React.FC = () => {
         throw new Error('시간 설정에 실패했습니다.');
       }
 
-      // 2. 상태 변경 API 호출
       const statusResponse = await fetch(`http://localhost:8080/api/call-bell/request/status/${requestPopup.requestId}?status=SCHEDULED`, {
         method: 'PUT',
         headers: {
@@ -408,13 +493,10 @@ const NurseMainPage: React.FC = () => {
         throw new Error('상태 변경에 실패했습니다.');
       }
 
-      // 3. 채팅 메시지 전송
       const chatRoomId = `${medicalStaffId}_${requestPopup.patientId}`;
-      // 선택된 시간과 현재 시간의 차이 계산
       const timeDiff = Math.round((selectedTime.getTime() - now.getTime()) / (1000 * 60));
       const message = `${timeDiff}분 후 도착합니다.`;
 
-      // 메시지용 한국 시간 설정 (UTC + 9시간)
       const koreanTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
       const formattedTime = koreanTime.toISOString().replace('Z', '');
       
@@ -432,15 +514,15 @@ const NurseMainPage: React.FC = () => {
         category: "CALLBELL_RESPONSE"
       };
 
-      // 웹소켓으로 메시지 전송
       sendMessage("/pub/chat/message", messageToSend);
       
-      // 성공적으로 상태가 변경되면 팝업창 닫기
-      setRequestPopup(null);
-      setIsTimeSelection(false);
-      setSelectedTime(null);
+      // 알림 큐에서 다음 알림 처리
+      handleCloseNotification();
       
-      // Snackbar 알림 표시
+      // 미확인 알림 목록에서 제거
+      const { [requestPopup.requestId]: removed, ...remainingNotifications } = unreadNotifications;
+      setUnreadNotifications(remainingNotifications);
+      
       enqueueSnackbar('요청이 성공적으로 예약되었습니다.', { 
         variant: 'success',
         autoHideDuration: 2000,
@@ -469,6 +551,31 @@ const NurseMainPage: React.FC = () => {
     const formattedHours = hours % 12 || 12;
 
     return `${year}-${month}-${day} ${ampm} ${formattedHours}:${minutes}`;
+  };
+
+  // ===== 시간 선택 관련 함수들 =====
+  
+  // 시간 선택 화면으로 전환
+  const handleAcceptClick = () => {
+    setIsTimeSelection(true);
+    setSelectedTime(new Date());
+  };
+
+  // 시간 버튼 클릭 핸들러
+  const handleTimeButtonClick = (minutes: number) => {
+    const newTime = new Date();
+    newTime.setMinutes(newTime.getMinutes() + minutes);
+    setSelectedTime(newTime);
+  };
+
+  // 시간 포맷팅 함수
+  const formatSelectedTime = (date: Date | null) => {
+    if (!date) return "00:00";
+    return date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
   };
 
   return (
