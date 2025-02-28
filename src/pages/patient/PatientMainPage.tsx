@@ -1,9 +1,12 @@
 import React from "react";
 import * as Separator from "@radix-ui/react-separator";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useUserContext } from "../../context/UserContext";
 
 const PatientMainPage: React.FC = () => {
   const navigate = useNavigate();
+  const { setPatientId } = useUserContext();
 
   const chatBot = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +22,20 @@ const PatientMainPage: React.FC = () => {
     e.preventDefault();
     navigate("/patient-setting");
   };
+
+  const handleLogout = async () => {
+    try {
+        await axios.post('http://localhost:8080/api/users/logout');
+        setPatientId(null);
+        localStorage.removeItem("patientId");
+        localStorage.removeItem("autoLogin");
+        alert("로그아웃 완료. 확인 버튼을 누르면 로그인 화면으로 돌아갑니다.")
+        console.log('로그아웃 성공');
+        navigate('/patient-login');
+    } catch (error) {
+        console.error('로그아웃 실패:', error);
+    }
+};
 
   return (
     <div className="relative flex flex-col justify-center items-center h-screen bg-white">
@@ -113,15 +130,15 @@ const PatientMainPage: React.FC = () => {
         </div>
       </div>
       {/* Logout Button */}
-      <div className="absolute -bottom-2 right-0 p-4 flex flex-rows items-center">
-        <Link to="/patient-login">
-          <img
-            src="/icons/logout-icon.png"
-            className="w-[28px] h-[28px] mr-2"
-          ></img>
-        </Link>
-        <div className="text-[13px] "> 로그아웃</div>
-      </div>
+      <div className="absolute -bottom-2 right-0 p-4">
+            <button
+                onClick={handleLogout}
+                className="flex items-center text-black rounded-lg text-[13px]"
+            >
+                <img src="/icons/logout-icon.png" className="w-[28px] h-[28px] mr-2" alt="로그아웃 아이콘" />
+                로그아웃
+            </button>
+        </div>
     </div>
   );
 };

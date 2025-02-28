@@ -32,13 +32,12 @@ const Redirection: React.FC = () => {
         );
 
         console.log("User Info:", userInfo.data);
-        navigate("/"); // 홈으로 이동
+        navigate("/patient-main"); // 홈으로 이동
       } catch (error) {
         console.error("카카오 로그인 실패", error);
         alert("로그인 중 문제가 발생했습니다. 다시 시도해주세요.");
       }
     };
-
     fetchToken();
   }, [searchParams, navigate]);
 

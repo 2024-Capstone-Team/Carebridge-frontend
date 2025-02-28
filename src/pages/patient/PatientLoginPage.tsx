@@ -1,13 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
 import axios from "axios";
+import Timer from "../../components/common/Timer";
+import { requestForToken } from "../../firebase/firebase";
+
 
 const PatientLoginPage: React.FC = () => {
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
-  const { setPatientId } = useUserContext();
+  const { setUserId, setPatientId } = useUserContext();
   const [otp, setotp] = useState("");
+  const [check, setIsCheck] = useState<boolean>(false);
+  const [showTimer, setShowTimer] = useState(false);
+  useEffect(() => {
+    const autoLogin = localStorage.getItem("autoLogin") === "true"; // 저장된 값이 "true"인지 확인
+    console.log("autologin: ", autoLogin);
+    setIsCheck(autoLogin); // 체크박스 상태 설정
+
+    if (autoLogin) {
+      const checkSession = async () => {
+        try {
+          const response = await axios.get("http://localhost:8080/api/users/session-check", {
+            withCredentials: true,
+          });
+          console.log(response.data); 
+          
+          if (response.data) {
+            console.log("자동 로그인 성공:", localStorage.getItem("patientId"), "/ 응답: ",response.data);
+            setPatientId(localStorage.getItem("patientId"));
+            navigate("/patient-main");
+          }
+        } catch (err) {
+          console.log("자동 로그인 세션 없음", err);
+        }
+      };
+
+      checkSession();
+    }
+  }, [navigate, setPatientId]);
+
+
+
+  { /*FCM 토큰 등록 api*/}
+  const registerFcmToken = async (userId: number, token: string): Promise<void> => {
+    try {
+      await axios.post("/api/notification/register", { userId, token });
+      console.log("FCM 토큰 등록 성공");
+    } catch (error) {
+      console.error("FCM 토큰 등록 실패:", error);
+    }
+  }; 
 
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -21,18 +64,35 @@ const PatientLoginPage: React.FC = () => {
     try {
       const loginResponse = await axios.post("http://localhost:8080/api/users/login", {
         phone,
-        otp
+        otp,
       });
-
       if (!loginResponse.data) {
         alert("인증번호가 올바르지 않거나 다른 문제가 발생했습니다.");
         return;
       }
 
       // 로그인 성공 시 patientId를 받아서 상태에 저장
-      const patientId = loginResponse.data;
-      setPatientId(patientId);
-      console.log(patientId);
+      const { userId, patientId } = loginResponse.data;
+      setPatientId(patientId); //UserContext의 PatientId 업데이트
+      setUserId(userId);
+      localStorage.setItem("patientId", patientId);
+      localStorage.setItem("userId", userId);
+      console.log("User ID:", userId);
+      console.log("Patient ID:", patientId);
+
+      try {
+        const token = await requestForToken();
+        if (token) {
+          await axios.post("http://localhost:8080/api/notification/register", {
+            userId,
+            token
+          });
+          console.log("FCM 토큰 등록 성공");
+        }
+      } catch (error) {
+        console.error("FCM 토큰 등록 실패:", error);
+      }
+
       navigate("/choose-patient-type");
     } catch (error) {
       console.error("로그인 실패:", error);
@@ -51,13 +111,13 @@ const PatientLoginPage: React.FC = () => {
     try {
       const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
+      setShowTimer(true);
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
       console.error("인증번호 전송 실패:", error);
       alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
     }
   };
- 
 
   const goSignUp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +135,13 @@ const PatientLoginPage: React.FC = () => {
     } catch (error) {
       console.error("카카오 로그인 URL 요청 실패:", error);
     }
+  };
+  
+
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    setIsCheck(checked);
+    localStorage.setItem("autoLogin", checked.toString()); // 체크 상태를 localStorage에 저장
   };
 
   
@@ -138,8 +205,18 @@ const PatientLoginPage: React.FC = () => {
               onChange={(e) => setotp(e.target.value)}
               className="w-[65%] h-[25px] text-[13px]"
             />
+            {showTimer && <Timer />}
           </div>
 
+          {/* 자동 로그인 버튼 */}
+          <div className="flex">
+            <label className="flex items-center text-[13px] space-x-2">
+              <input type="checkbox" checked={check} onChange={handleCheckboxChange} />
+              <span>자동 로그인</span>
+            </label>
+          </div>
+
+          {/* 로그인버튼 */}
           <button
             onClick={handleLogin}
             type="submit"
@@ -149,6 +226,7 @@ const PatientLoginPage: React.FC = () => {
           </button>
         </form>
 
+    
         <div
           onClick={goSignUp}
           className="text-[12px] mt-[-60px] text-gray-400 underline cursor-pointer"
