@@ -103,12 +103,12 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
     setHistoryIndex(-1); // Reset history index
   };
 
-  // // Log pendingMessages before passing to ChatMessages
-  // useEffect(() => {
-  //   console.log("Pending messages:", pendingMessages); // Log the messages here
-  // }, [pendingMessages]); // This will log whenever pendingMessages changes
+  // Log pendingMessages before passing to ChatMessages
+  useEffect(() => {
+    console.log("Pending messages:", pendingMessages); // Log the messages here
+  }, [pendingMessages]); // This will log whenever pendingMessages changes
 
-  const handleSendMessage = (): void => {
+  const handleSendMessage = async (): Promise<void> => {
     if (inputText.trim() && patientId) {
       const now = new Date();
       const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", "");  // Korean time
@@ -144,30 +144,36 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         hospitalId: hospitalId,
       };
 
-      sendMessage(`/pub/chat/message`, messageToSend)
-        .then(() => {
-          // Update to indicate message is successfully sent, move it to the messages array
-          setPendingMessages((prev) =>
-            prev.filter((msg) => msg.messageId !== newMessageId) // Remove from pendingMessages
-          );
-
-          // Call the callback function to update the parent messages array
-          updateMessages(newMessage); // Pass the new message to the parent
-        })
-        .catch(() => {
-          // Mark as failed if message failed to send
-          console.log(`Message failed with ID: ${newMessageId}`);
+      try {
+        await sendMessage(`/pub/chat/message`, messageToSend);
+  
+        // Remove from pending and mark as sent
+        setPendingMessages((prev) =>
+          prev.filter((msg) => msg.messageId !== newMessageId)
+        );
+  
+        // Add message to main chat history
+        updateMessages({ ...newMessage, isPending: false });
+  
+      } catch (error) {
+        console.log(`Message failed with ID: ${newMessageId}`);
+  
+        // Mark message as failed with a slight delay to ensure the state update reflects in the UI
+        setTimeout(() => {
           setPendingMessages((prev) =>
             prev.map((msg) =>
               msg.messageId === newMessageId
-                ? { ...msg, isFailed: true, isPending: false }
+                ? { ...msg, isFailed: true, isPending: false }  // Mark as failed
                 : msg
             )
           );
-        });
-      setInputText("");
+        }, 500); // Adjust this timeout based on your needs
+      }
 
+      setInputText("");
       clearHistory(); // clear undo history after sending message
+      if (newMessage.isFailed != null) console.log("Message Status:", newMessage.messageId, newMessage.isFailed);
+
     }
   };
 
