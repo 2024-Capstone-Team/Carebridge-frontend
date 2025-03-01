@@ -1,47 +1,43 @@
+//Redirection.tsx
 import React, { useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const Redirection: React.FC = () => {
-  const [searchParams] = useSearchParams();
+const KakaoCallbackPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchToken = async () => {
-      const code = searchParams.get("code");
-      if (!code) {
-        console.error("Authorization code is missing in the URL.");
-        return;
+    // URL에서 code 파라미터를 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    console.log("인가코드: ", code);
+  
+    if (code) {
+      handleKakaoCallback(code);
+    } else {
+      console.error("카카오 인가 코드가 없습니다.");
+    }
+  }, []);
+
+  const handleKakaoCallback = async (code: string) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/users/social-login/kakao/token?code=${code}`);
+      console.log("카카오 로그인 응답:", response.data);
+
+      if (response.status === 200) {
+        // 로그인 성공 시 필요한 작업 (예: 세션 설정 등)
+        // 예시로 navigate로 페이지 이동
+        navigate("/choose-patient-type");
+      } else {
+        console.error("카카오 로그인 실패:", response.data);
       }
+    } catch (error) {
+      console.error("카카오 로그인 처리 중 오류:", error);
+      alert("카카오 로그인 처리 중 오류가 발생했습니다.");
+    }
+  };
 
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/oauth/kakao?code=${code}`
-        );
-
-        // 액세스 토큰 저장
-        const accessToken = response.data.accessToken;
-        localStorage.setItem("accessToken", accessToken);
-
-        // 유저 정보 요청
-        const userInfo = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/user/info`,
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }
-        );
-
-        console.log("User Info:", userInfo.data);
-        navigate("/patient-main"); // 홈으로 이동
-      } catch (error) {
-        console.error("카카오 로그인 실패", error);
-        alert("로그인 중 문제가 발생했습니다. 다시 시도해주세요.");
-      }
-    };
-    fetchToken();
-  }, [searchParams, navigate]);
-
-  return <div>로그인 처리 중...</div>;
+  return <div>카카오 로그인 처리 중...</div>;
 };
 
-export default Redirection;
+export default KakaoCallbackPage;
