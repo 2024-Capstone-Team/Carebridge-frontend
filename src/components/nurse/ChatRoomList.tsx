@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { FaChevronDown, FaSearch } from "react-icons/fa";
 import { getChoseong } from 'es-hangul'; // Import the getChoseong function
+import { ChatRoom } from "../../types";
 
 // Helper function to format time
 const formatTime = (timestamp: string): string => {
+  if (!timestamp) return ''; // Return an empty string if timestamp is empty
+  
   const now = new Date();
   const messageTime = new Date(timestamp);
   const diffInMs = now.getTime() - messageTime.getTime();
@@ -23,16 +26,8 @@ const formatTime = (timestamp: string): string => {
   }
 };
 
-type Room = {
-  userName: string;
-  conversationId: string;
-  previewMessage: string;
-  lastMessageTime: string;
-  isRead: boolean;
-};
-
 interface ChatRoomListProps {
-  rooms: Room[];
+  rooms: ChatRoom[];
   currentRoom: string;
   onRoomSelect: (room: string) => void;
 }
@@ -73,7 +68,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
     };
   }, []);
 
-  const filterRoomsBySearchQuery = (room: Room, searchQuery: string): boolean => {
+  const filterRoomsBySearchQuery = (room: ChatRoom, searchQuery: string): boolean => {
     if (searchQuery === '') {
       return true; // Show all rooms if the search query is empty
     }
@@ -97,6 +92,10 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
     return rooms
       .filter((room) => filterRoomsBySearchQuery(room, searchQuery))
       .sort((a, b) => {
+        // Move empty previewMessage rooms to the top
+        if (a.lastMessageTime === '' && b.lastMessageTime !== '') return -1;
+        if (b.lastMessageTime === '' && a.lastMessageTime !== '') return 1;
+  
         if (sortOrder === "latest") {
           return new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime(); // Most recent messages first
         } else if (sortOrder === "unread") {
@@ -107,7 +106,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
         }
         return 0; // Default (no sorting)
       });
-  }, [rooms, sortOrder, searchQuery]);
+  }, [rooms, sortOrder, searchQuery]);  
 
   return (
     <div className="flex flex-col h-full p-4 bg-primary-100 text-sm">
@@ -174,7 +173,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
               }`}
               onClick={() => onRoomSelect(room.conversationId)}
             >
-              <div className="flex flex-col">
+              <div className="flex flex-col min-h-[56px]">
                 <span
                   className={`font-semibold ${!room.isRead ? 'font-bold' : ''}`} // Bold unread rooms
                 >

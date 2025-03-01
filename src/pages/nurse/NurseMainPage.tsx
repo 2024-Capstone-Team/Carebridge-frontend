@@ -145,6 +145,25 @@ const NurseMainPage: React.FC = () => {
     setCurrentRoom(conversationId);
     setPatientName(patientNameValue);
     setPatientId(patientId);
+
+    const emptyRoom: ChatRoom = {
+      userName: patientNameValue,
+      conversationId: conversationId,
+      previewMessage: '',
+      lastMessageTime: '',
+      isRead: false
+    }
+    setRooms((prevRooms) => {
+      const roomExists = prevRooms.some(room => room.conversationId === conversationId && room.previewMessage === '');
+      
+      if (roomExists) {
+        return prevRooms.map(room => 
+          room.conversationId === conversationId && room.previewMessage === '' ? emptyRoom : room
+        );
+      } else {
+        return [...prevRooms, emptyRoom];
+      }
+    });
   };
 
   const convertStatus = (status: string): string => {
@@ -384,6 +403,11 @@ const NurseMainPage: React.FC = () => {
     }
   };
 
+  // Remove empty rooms when leaving chat room (back click)
+  const removeEmptyRoom = (conversationId: string) => {
+    setRooms((prevRooms) => prevRooms.filter(room => !(room.conversationId === conversationId && room.lastMessageTime === '')));
+  };  
+
   // Function to mark message as read
   const markMessageAsRead = async (messageId: number) => {
     console.log("Marking message as read.");
@@ -610,6 +634,7 @@ const NurseMainPage: React.FC = () => {
             subscribeToRoom={subscribeToRoom}
             fetchChatHistory={fetchChatHistory}
             updateMessages={updateMessages}
+            removeEmptyRoom={removeEmptyRoom}
           />
 
           {/* 환자 정보 및 스케줄러 영역 */}
