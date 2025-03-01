@@ -4,13 +4,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BackButton from "../../components/common/BackButton";
 import axios from "axios";
+import Timer from "../../components/common/Timer";
 
 const SignUp: React.FC = () => {
   
-
   const [isVerified, setIsVerified] = useState(false);
-
   const navigate = useNavigate();
+  const [showTimer, setShowTimer] = useState(false);
 
   // 버튼 클릭 핸들러
   const handleGenderSelect = (gender: string) => {
@@ -30,8 +30,10 @@ const SignUp: React.FC = () => {
   const [authCode, setAuthCode] = useState("");
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
 
+  
 
-  // 생일: 여덟자리 숫자인것만 일단 확인하고 나중에 다른 유효성 검사 추가 (필수아님)
+
+  // 생일 확인
   const isEightDigitNumber = (input: string) => {
     return /^\d{8}$/.test(input);
   };
@@ -60,6 +62,7 @@ const SignUp: React.FC = () => {
     try {
       const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=true`);
       console.log("인증번호 전송 성공:", response.data);
+      setShowTimer(true);
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
       console.error("인증번호 전송 실패:", error);
@@ -83,17 +86,19 @@ const SignUp: React.FC = () => {
         if (response.data) {
           setIsVerified(true);
           alert("인증이 완료되었습니다.");
+          setShowTimer(false);
         } else {
           alert("인증 실패: OTP가 올바르지 않거나 만료되었습니다.");
         }
       } catch (error) {
         console.error("OTP 확인 오류:", error);
-        alert("네트워크 오류로 인증에 실패했습니다.");
+        alert("인증번호가 올바르지 않습니다.");
       }
     };
 
 
   return (
+    
     <main className="centered-container">
       <div
         className="bg-white rounded-lg shadow-lg
@@ -120,6 +125,7 @@ const SignUp: React.FC = () => {
         <div
           className="mt-[60px] flex flex-col w-[95%]"
         >
+          
           {/* 이름 */}
           <div
             className="
@@ -139,6 +145,7 @@ const SignUp: React.FC = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             ></input>
+          
           </div>
 
           {/* 이메일 */}
@@ -278,6 +285,7 @@ const SignUp: React.FC = () => {
               {isVerified && ( // 상태가 true일 때만 이미지 표시
                 <img src="/src/assets/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
               )}
+              
             </div>
             <button
               className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]"
@@ -287,6 +295,7 @@ const SignUp: React.FC = () => {
             </button>
           </div>          
         </div>
+        {showTimer && <Timer />}
         <div>
         <button
           onClick={() => {

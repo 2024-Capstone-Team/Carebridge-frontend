@@ -35,7 +35,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
     setError(null);
 
     try {
-      // 매크로 목록을 불러와서, 현재 수정 중인 매크로를 제외한 다른 매크로 중 동일 제목 체크
+      // 동일 제목의 매크로 체크
       const response = await axios.get(`http://localhost:8080/api/macro/list/${medicalStaffId}`);
       const existingMacros: Macro[] = response.data;
 

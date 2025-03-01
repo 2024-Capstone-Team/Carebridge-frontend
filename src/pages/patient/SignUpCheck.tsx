@@ -13,7 +13,7 @@ function SignUpCheck() {
   const name = state?.name || "이름 없음";
   const email = state?.email || "이메일 없음";
   const birth = state?.birth || "생일 없음";
-  const gender = state?.selectedgender === "male" ? "Male" : "Female";
+  const gender = state?.selectedGender === "male" ? "Male" : "Female";
   const phoneNumber = state?.phone || "전화번호 없음";
 
   

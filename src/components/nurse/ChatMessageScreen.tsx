@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChatMessages from "../common/ChatMessages";
 import InputSection from "../../components/patient/InputSection";
-import { ChatMessage, Macro } from "../../types";
+import { ChatMessage, Macro, QuickAnswer } from "../../types";
 import useStompClient from "../../hooks/useStompClient";
 import IconButton from "../patient/IconButton";
 
@@ -47,6 +47,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   {/* State Variables */}
   const [inputText, setInputText] = useState("");  // Input text
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);  // Initially empty
+  const [isLoading, setIsLoading] = useState(true);  // Loading state for chat history
   const [pendingMessages, setPendingMessages] = useState<ChatMessage[]>([]);  // Pending messages, to contain failed messages
   const displayedMessages = [...messages, ...pendingMessages]  // Displayed messages, contains all messages and failed messages
   .sort((a, b) => {
@@ -58,6 +60,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
     return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
   });  
   const [macros, setMacros] = useState<Macro[]>([]);  // Set macros
+  const [quickAnswers, setQuickAnswers] = useState<QuickAnswer[]>([]);
+
   // History stack for undo functionality
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -260,8 +264,21 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   const fetchMacros = async (nurseId: number) => {
     try {
       const response = await fetch(`/api/macro/list/${nurseId}`);
-      const data = await response.json();
-      setMacros(data);
+      const data: Macro[] = await response.json();
+      const savedFavorites = localStorage.getItem("favoriteMacroIds");
+      
+      // 활성화된 즐겨찾기
+      if (savedFavorites) {
+         const favoriteIds: number[] = JSON.parse(savedFavorites);
+         const filteredMacros = data.filter((macro) =>
+          favoriteIds.includes(macro.macroId)
+        );
+        setMacros(filteredMacros);
+      } else {
+        
+        // 즐겨찾기가 없으면 빈 배열로 설정
+        setMacros([]);
+      }
     } catch (error) {
       console.error("Error fetching macros:", error);
     }
@@ -298,6 +315,32 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
     } catch (error) {
       console.error("Error fetching phrase:", error);
     }
+  };
+
+  const fetchQuickAnswers = async () => {
+    try {
+      const response = await fetch(`/api/hospital-info/list/${hospitalId}`);
+      const data: QuickAnswer[] = await response.json();
+      const savedFavorites = localStorage.getItem("favoriteQuickAnswerIds");
+      if (savedFavorites) {
+        const favoriteIds: number[] = JSON.parse(savedFavorites);
+        const filtered = data.filter((qa) => favoriteIds.includes(qa.id));
+        setQuickAnswers(filtered);
+      } else {
+        setQuickAnswers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching quick answers:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuickAnswers();
+  }, [hospitalId]);
+
+  const handleQuickAnswerClick = (qa: QuickAnswer) => {
+    updateInputHistory(qa.information);
+    setInputText(qa.information);
   };
 
   {/* Hooks */}
@@ -390,6 +433,15 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
             className={"flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-primary text-white"}
           >
             {macro.macroName}
+          </div>
+        ))}
+        {quickAnswers.map((qa) => (
+          <div
+            key={qa.id}
+            onClick={() => handleQuickAnswerClick(qa)}
+            className="flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-secondary text-white"
+          >
+            {qa.title}
           </div>
         ))}
       </div>

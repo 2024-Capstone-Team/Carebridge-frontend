@@ -60,3 +60,26 @@ export interface HospitalInfo { // temporary for testing
   title: string;
   information: string;
 }
+
+// 채팅을 위한 인터페이스
+export interface ChatConversation {
+  conversationId: string;
+  patientId: number;
+  patientName: string;
+}
+
+export interface MedicalStaff {
+  medicalstaffId: number;
+  department: string;
+  hospitalId: number;
+  phraseHead: string;
+  phraseTail: string;
+}
+
+export interface QuickAnswer {
+  id: number;
+  hospitalId: number;
+  category: string;
+  title: string;
+  information: string;
+}
