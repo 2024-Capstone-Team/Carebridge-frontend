@@ -143,6 +143,7 @@ const NurseMainPage: React.FC = () => {
     setCurrentRoom(conversationId);
     setPatientName(patientNameValue);
     setPatientId(patientId);
+    console.log("conversation id: %s, patient name: %s, patientId: %d", conversationId, patientNameValue, patientId);
   };
 
   const convertStatus = (status: string): string => {
@@ -295,6 +296,7 @@ const NurseMainPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to fetch chat history", error);
+      setMessages([]);
     } finally {
       setIsLoading(false);
     }

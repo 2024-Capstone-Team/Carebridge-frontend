@@ -95,7 +95,6 @@
           case "SURGERY":
             return 60;
           case "OUTPATIENT":
-            return 30;
           case "EXAMINATION":
             return 30;
           default:
