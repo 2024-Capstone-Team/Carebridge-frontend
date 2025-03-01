@@ -16,9 +16,9 @@ const PatientLoginPage: React.FC = () => {
 
   const handleKakaoLogin = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
-      console.log("카카오 로그인 URL:", response.data);
-      const kakaoAuthUrl = response.data;
+      const kakaoResponse = await axios.get("http://localhost:8080/api/users/social-login/kakao");
+      console.log("카카오 로그인 URL:", kakaoResponse.data);
+      const kakaoAuthUrl = kakaoResponse.data;
       window.location.href = kakaoAuthUrl;
     } catch (error) {
       console.error("카카오 로그인 URL 요청 실패:", error);
