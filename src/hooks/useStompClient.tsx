@@ -9,193 +9,159 @@ interface StompSubscriptionWithUnsubscribe extends StompSubscription {
 const useStompClient = (onMessage: (message: any) => void) => {
   const stompClientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [pendingSubscriptions, setPendingSubscriptions] = useState<StompSubscriptionWithUnsubscribe[]>([]);
-  const subscribedRooms = useRef<Set<string>>(new Set()); // Track currently subscribed rooms
+  const subscribedRooms = useRef<Set<string>>(new Set());
+  const activeSubscriptions = useRef<Map<string, StompSubscriptionWithUnsubscribe>>(new Map());
 
-  // Monitor internet connectivity
-  const handleConnectionChange = useCallback(() => {
-    if (!navigator.onLine) {
-      // If offline, deactivate the WebSocket connection
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate();
-        setIsConnected(false);
-        console.log("Disconnected WebSocket due to no internet");
-      }
-    }
-  }, []);
+  const initializeStompClient = useCallback(() => {
+    if (stompClientRef.current) return; // Avoid multiple instances
 
-  useEffect(() => {
-    // Listen for online/offline changes
-    window.addEventListener("offline", handleConnectionChange);
-    window.addEventListener("online", handleConnectionChange);
-
-    // Cleanup event listeners
-    return () => {
-      window.removeEventListener("offline", handleConnectionChange);
-      window.removeEventListener("online", handleConnectionChange);
-    };
-  }, [handleConnectionChange]);
-
-  useEffect(() => {
-    const stompClient = new Client({
+    console.log("Initializing STOMP client...");
+    const client = new Client({
       brokerURL: "ws://localhost:8080/ws-stomp",
-      reconnectDelay: 5000,
+      reconnectDelay: 5000, // Handles normal disconnects
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
         console.log("Connected to WebSocket");
         setIsConnected(true);
-
-        // Re-subscribe to any pending subscriptions
-        pendingSubscriptions.forEach((subscription) => {
-          const isSubscribed = subscribedRooms.current.has(subscription.subscriptionPath);
-          if (!isSubscribed) {
-            const newSubscription = stompClientRef.current?.subscribe(
-              subscription.subscriptionPath,
-              (message) => {
-                onMessage(JSON.parse(message.body));
-              }
-            );
-            if (newSubscription) {
-              setPendingSubscriptions((prev) => [
-                ...prev,
-                {
-                  ...subscription,
-                  unsubscribe: newSubscription.unsubscribe,
-                  id: newSubscription.id,
-                },
-              ]);
-              subscribedRooms.current.add(subscription.subscriptionPath); // Mark as subscribed
-            }
-          }
-        });
-        setPendingSubscriptions([]); // Clear pending subscriptions after re-subscribing
+        resubscribeToRooms();
       },
       onDisconnect: () => {
         console.log("Disconnected from WebSocket");
         setIsConnected(false);
+        clearAllSubscriptions();
       },
-      onWebSocketError: (error) => {
-        console.error("WebSocket error:", error);
-      },
-      onStompError: (frame) => {
-        console.error("STOMP error:", frame);
-      },
+      onWebSocketError: (error) => console.error("WebSocket error:", error),
+      onStompError: (frame) => console.error("STOMP error:", frame),
     });
 
-    stompClientRef.current = stompClient;
-    stompClient.activate();
+    stompClientRef.current = client;
+    client.activate();
+  }, []);
 
-    return () => {
+  const forceReconnect = useCallback(() => {
+    if (stompClientRef.current) {
+      console.log("Forcing WebSocket reconnect...");
+      stompClientRef.current.forceDisconnect(); // Ensure it's fully stopped
+      stompClientRef.current = null;
+    }
+    setIsConnected(false);
+    initializeStompClient();
+  }, [initializeStompClient]);
+
+  const clearAllSubscriptions = () => {
+    activeSubscriptions.current.forEach((sub) => sub.unsubscribe());
+    activeSubscriptions.current.clear();
+    subscribedRooms.current.clear();
+  };
+
+  const resubscribeToRooms = useCallback(() => {
+    if (!stompClientRef.current || !isConnected) return;
+    console.log("Resubscribing to rooms...");
+    subscribedRooms.current.forEach((subscriptionPath) => {
+      subscribeToRoom(subscriptionPath);
+    });
+  }, [isConnected]);
+
+  const handleConnectionChange = useCallback(() => {
+    if (navigator.onLine) {
+      console.log("Network back online. Reconnecting WebSocket...");
+  
+      // Ensure previous STOMP client is properly deactivated before reinitializing
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate().then(() => {
+          stompClientRef.current = null;
+          initializeStompClient(); // Reinitialize after proper cleanup
+        });
+      } else {
+        initializeStompClient(); // If no client exists, just initialize
+      }
+    } else {
+      console.log("Network offline. Fully disconnecting WebSocket...");
       if (stompClientRef.current) {
         stompClientRef.current.deactivate();
         stompClientRef.current = null;
-        setIsConnected(false);
       }
-    };
-  }, []); // Runs once on mount and setup of WebSocket
-
-  const unsubscribeFromRoom = useCallback((roomId: string) => {
-    const subscription = pendingSubscriptions.find((sub) => sub.subscriptionPath === roomId);
-
-    if (subscription && subscribedRooms.current.has(roomId)) {
-      console.log(`Unsubscribing from room: ${roomId}`);
-      subscription.unsubscribe();
-      subscribedRooms.current.delete(roomId);
-    } else {
-      console.warn(`Cannot unsubscribe from room: ${roomId}. Not found.`);
+      setIsConnected(false);
     }
-  }, [pendingSubscriptions]);
+  }, [initializeStompClient]);
+  
+
+  useEffect(() => {
+    window.addEventListener("offline", handleConnectionChange);
+    window.addEventListener("online", handleConnectionChange);
+    initializeStompClient();
+
+    return () => {
+      window.removeEventListener("offline", handleConnectionChange);
+      window.removeEventListener("online", handleConnectionChange);
+      stompClientRef.current?.deactivate();
+      stompClientRef.current = null;
+      clearAllSubscriptions();
+    };
+  }, [handleConnectionChange, initializeStompClient]);
 
   const subscribeToRoom = useCallback(
     (subscriptionPath: string): StompSubscriptionWithUnsubscribe | null => {
-      if (!subscriptionPath) {
-        console.warn("Subscription path is empty. Cannot subscribe.");
-        return null;
-      }
-  
-      // Check if already subscribed
-      if (subscribedRooms.current.has(subscriptionPath)) {
-        console.log(`Already subscribed to: ${subscriptionPath}`);
-        return null;
-      }
-  
-      // Unsubscribe to be connected to single channel
-      const currentChannel = Array.from(subscribedRooms.current)[0]; 
-      if (currentChannel && currentChannel !== subscriptionPath) {
-        console.log(`Switching from: ${currentChannel} to: ${subscriptionPath}`);
-        unsubscribeFromRoom(currentChannel);
-      }
-  
-      // Check STOMP connection and subscribe
+      if (!subscriptionPath || subscribedRooms.current.has(subscriptionPath)) return null;
+
+      // Unsubscribe from all current subscriptions
+      clearAllSubscriptions();
+
       if (stompClientRef.current && isConnected) {
-        const subscription = stompClientRef.current.subscribe(
-          subscriptionPath, 
-          (message) => {
-            console.log(`Received message from ${subscriptionPath}:`, message.body);
-            onMessage(JSON.parse(message.body));
-          }
+        const subscription = stompClientRef.current.subscribe(subscriptionPath, (message) =>
+          onMessage(JSON.parse(message.body))
         );
-  
+
         subscribedRooms.current.add(subscriptionPath);
         console.log(`Subscribed to: ${subscriptionPath}`);
-  
+
         const subscriptionWithUnsubscribe: StompSubscriptionWithUnsubscribe = {
           ...subscription,
-          subscriptionPath, // roomId -> subscriptionPath 
+          subscriptionPath,
           unsubscribe: () => {
-            console.log(`Unsubscribing from: ${subscriptionPath}`);
             subscription.unsubscribe();
             subscribedRooms.current.delete(subscriptionPath);
+            activeSubscriptions.current.delete(subscriptionPath);
           },
         };
-  
-        setPendingSubscriptions((prev) => [...prev, subscriptionWithUnsubscribe]);
-  
+
+        activeSubscriptions.current.set(subscriptionPath, subscriptionWithUnsubscribe);
         return subscriptionWithUnsubscribe;
       }
-  
-      console.warn("STOMP client not connected yet. Subscription deferred.");
+
+      console.warn("STOMP client not connected. Subscription deferred.");
       return null;
     },
-    [onMessage, isConnected, unsubscribeFromRoom]
+    [onMessage, isConnected]
   );
 
-  const sendMessage = useCallback((destination: string, message: any): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (!stompClientRef.current) {
-        console.warn("STOMP client not initialized. Message not sent.");
-        reject(new Error("STOMP client not initialized"));
-        return;
-      }
-
-      // Then check if the WebSocket is connected and the device is online
-      // if (!navigator.onLine) {
-      //   console.warn("Device is offline. Message not sent.");
-      //   reject(new Error("Device is offline"));
-      //   return;
-      // }
-  
-      if (!stompClientRef.current.connected) {
-        console.warn("STOMP client not connected. Message not sent.");
-        reject(new Error("STOMP client not connected"));
-        return;
-      }
-  
-      try {
-        console.log(`Sending message to ${destination}:`, message);
-        stompClientRef.current.publish({
-          destination,
-          body: JSON.stringify(message),
-        });
-        resolve(); // Immediately resolve since there's no feedback
-      } catch (error) {
-        console.error("Error sending message:", error);
-        reject(new Error("Failed to send message"));
-      }
-    });
+  const unsubscribeFromRoom = useCallback((subscriptionPath: string) => {
+    const subscription = activeSubscriptions.current.get(subscriptionPath);
+    if (subscription) {
+      subscription.unsubscribe();
+      console.log(`Unsubscribed from: ${subscriptionPath}`);
+    }
   }, []);
+
+  const sendMessage = useCallback(
+    (destination: string, message: any): Promise<void> =>
+      new Promise((resolve, reject) => {
+        if (!stompClientRef.current || !stompClientRef.current.connected) {
+          console.warn("STOMP client not connected. Message will NOT be sent.");
+          reject(new Error("STOMP client not connected. Message discarded."));
+          return;
+        }
   
+        try {
+          stompClientRef.current.publish({ destination, body: JSON.stringify(message) });
+          resolve();
+        } catch (error) {
+          reject(new Error("Failed to send message"));
+        }
+      }),
+    []
+  );  
 
   return { subscribeToRoom, unsubscribeFromRoom, sendMessage, isConnected };
 };
