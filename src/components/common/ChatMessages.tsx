@@ -20,6 +20,17 @@ const formatTimestamp = (timestamp: string): string => {
   return messageTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
 };
 
+// Helper function to format date headers
+const formatDateHeader = (timestamp: string): string => {
+  const messageDate = new Date(timestamp);
+  return messageDate.toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 // Component for rendering each message
 const MessageBubble: React.FC<{
   message: ChatMessage;
@@ -69,12 +80,32 @@ const MessageBubble: React.FC<{
     {/* Receiver's message */}
     {!isSender && (
       <div className="flex flex-row items-end ml-3">
-        {!message.isFailed ? (  // if message sent then show time and read status
+        {message.isPending ? (  // Show spinner if the message is pending
+          <div className="flex justify-center items-center">
+            <svg
+              className="animate-spin h-5 w-5 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="4"
+                d="M4 12h16"
+              />
+            </svg>
+          </div>
+        ) : !message.isFailed ? (  // if message is not failed, show time and read status
           <>
             <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
             <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
           </>
-        ) : (  // if message failed then show failed text and button instead
+        ) : (  // if message failed, show failed text and buttons for resend/cancel
           <div className="flex items-center ml-2">
             <span className="text-xs text-red-500 mr-2">전송 실패</span>
             <button className="text-xs text-blue-500 hover:underline" onClick={() => onResend(message)}>
@@ -135,27 +166,40 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
       }
     }, [chatMessages]);
 
+    let lastDate: string | null = null;
+
     return (
       <div className={`space-y-4 overflow-y-auto scrollbar-hide ${customStyles?.container || ""}`}>
         {chatMessages.map((message, index) => {
           const isSender = message.senderId === currentUserId;
           const isRead = message.readStatus;
+          const messageDate = formatDateHeader(message.timestamp);
+          const showDateHeader = lastDate !== messageDate;
+          lastDate = messageDate; // Update last seen date
           return (
-            <MessageBubble
-              key={index}
-              message={message}
-              isSender={isSender}
-              timestamp={message.timestamp}
-              isRead={isRead}
-              onResend={onResend}
-              onCancel={onCancel}
-              senderBubbleColor={senderBubbleColor}
-              receiverBubbleColor={receiverBubbleColor}
-              senderTextColor={senderTextColor}
-              receiverTextColor={receiverTextColor}
-              customStyles={customStyles}
-            />
-          );
+            <React.Fragment key={index}>
+              {/* Date Separator */}
+              {showDateHeader && (
+                <div className="text-center text-xs text-gray-500 my-2">
+                  {messageDate}
+                </div>
+              )}
+              <MessageBubble
+                key={index}
+                message={message}
+                isSender={isSender}
+                timestamp={message.timestamp}
+                isRead={isRead}
+                onResend={onResend}
+                onCancel={onCancel}
+                senderBubbleColor={senderBubbleColor}
+                receiverBubbleColor={receiverBubbleColor}
+                senderTextColor={senderTextColor}
+                receiverTextColor={receiverTextColor}
+                customStyles={customStyles}
+              />
+              </React.Fragment>
+            );
         })}
         <div ref={messagesEndRef} />
       </div>

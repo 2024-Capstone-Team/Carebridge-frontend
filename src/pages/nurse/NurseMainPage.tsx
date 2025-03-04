@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, createContext} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
@@ -18,6 +18,8 @@ import ChatMessages from "../../components/common/ChatMessages.tsx";
 import { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, ChatConversation, MedicalStaff } from "../../types";
 import macro from "../../assets/macro.png";
 import axios from "axios";
+const WebSocketContext = createContext(null);
+
 
 const NurseMainPage: React.FC = () => {
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
@@ -295,8 +297,8 @@ const NurseMainPage: React.FC = () => {
         setMessages(messages.reverse());
       }
     } catch (error) {
-      console.error("Failed to fetch chat history", error);
       setMessages([]);
+      // console.error("Failed to fetch chat history", error);
     } finally {
       setIsLoading(false);
     }
@@ -348,6 +350,7 @@ const NurseMainPage: React.FC = () => {
       const roomsData: ChatRoom[] = await response.json();
       setRooms(roomsData);
       setIsDataFetched(true);
+      console.log("Room fetched: ", roomsData);
     } catch (error) {
       console.error("Error fetching rooms:", error);
     }
