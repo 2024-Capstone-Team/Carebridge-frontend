@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from "react";
 
-function Timer() {
-    const initialTime = 180;
-    const [remainingTime, setRemainingTime] = useState(initialTime);
+interface TimerProps {
+    remainingTime: number;
+    setRemainingTime: React.Dispatch<React.SetStateAction<number>>;
+}
 
+function Timer({ remainingTime, setRemainingTime }: TimerProps) {
     useEffect(() => {
+        if (remainingTime <= 0) return;
+
         const timer = setInterval(() => {
-            if (remainingTime > 0) {
-                setRemainingTime((prevTime) => prevTime - 1);
-            } else {
-                clearInterval(timer);
-            }
+            setRemainingTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [remainingTime]);
+    }, [remainingTime, setRemainingTime]);
 
     const formatTime = (timeInSeconds: number) => {
         const minutes = Math.floor(timeInSeconds / 60);
@@ -23,9 +23,9 @@ function Timer() {
     };
 
     return (
-        <div>
-            <h1 className="text-[13px] text-center">유효 시간<span className=' text-red-500'> {formatTime(remainingTime)}</span></h1>
-        </div>
+        <h1 className="text-[13px] text-center">
+            유효 시간<span className="text-red-500"> {formatTime(remainingTime)}</span>
+        </h1>
     );
 }
 

@@ -12,8 +12,25 @@ const PatientLoginPage: React.FC = () => {
   const { setUserId, setPatientId } = useUserContext();
   const [otp, setotp] = useState("");
   const [check, setIsCheck] = useState<boolean>(false);
+
+  //타이머 설정
+  const initialTime = 180;
+  const [remainingTime, setRemainingTime] = useState(initialTime);
   const [showTimer, setShowTimer] = useState(false);
 
+  const handleResend = () => {
+    setRemainingTime(initialTime);
+    setShowTimer(true);
+  }
+
+  useEffect(() => {
+    if (remainingTime === initialTime) {
+      setShowTimer(true);
+    }
+  }, [remainingTime]);
+
+  
+  // 카카오 로그인 API
   const handleKakaoLogin = async () => {
     try {
       const kakaoResponse = await axios.get("http://localhost:8080/api/users/social-login/kakao");
@@ -86,7 +103,7 @@ const PatientLoginPage: React.FC = () => {
     try {
       const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
-      setShowTimer(true);
+      handleResend();
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
       console.error("인증번호 전송 실패:", error);
@@ -166,7 +183,7 @@ const PatientLoginPage: React.FC = () => {
               onChange={(e) => setotp(e.target.value)}
               className="w-[65%] h-[25px] text-[13px]"
             />
-            {showTimer && <Timer />}
+            {showTimer && <Timer remainingTime={remainingTime} setRemainingTime={setRemainingTime} />}
           </div>
 
           {/* 자동 로그인 버튼 */}
