@@ -3,9 +3,10 @@ import { useEffect } from "react";
 interface TimerProps {
     remainingTime: number;
     setRemainingTime: React.Dispatch<React.SetStateAction<number>>;
+    showtimer: boolean;
 }
 
-function Timer({ remainingTime, setRemainingTime }: TimerProps) {
+function Timer({ remainingTime, setRemainingTime, showtimer }: TimerProps) {
     useEffect(() => {
         if (remainingTime <= 0) return;
 
@@ -21,6 +22,8 @@ function Timer({ remainingTime, setRemainingTime }: TimerProps) {
         const seconds = timeInSeconds % 60;
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
+
+    if(!showtimer) return null;
 
     return (
         <h1 className="text-[13px] text-center">
