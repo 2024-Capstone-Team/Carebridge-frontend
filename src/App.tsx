@@ -55,7 +55,7 @@ const App: React.FC = () => {
           <Route path="/nurse-reset-password" element={<NurseResetPasswordPage />} />
 
           {/* Patient Pages */}
-          <Route path="/api/users/social-login/kakao" element={<Redirection />} />
+          <Route path="/redirection" element={<Redirection />} />
           <Route path="/patient-login" element={<PatientLoginPage />} />
           <Route path="/patient-main" element={<PatientMainPage />} />
           <Route path="/choose-patient-type" element={<ChoosePatientType />} />
