@@ -14,21 +14,15 @@ const PatientLoginPage: React.FC = () => {
   const [check, setIsCheck] = useState<boolean>(false);
 
   //타이머 설정
+  const [showTimer, setShowTimer] = useState(false);
   const initialTime = 180;
   const [remainingTime, setRemainingTime] = useState(initialTime);
-  const [showTimer, setShowTimer] = useState(false);
+
 
   const handleResend = () => {
     setRemainingTime(initialTime);
     setShowTimer(true);
   }
-
-  useEffect(() => {
-    if (remainingTime === initialTime) {
-      setShowTimer(true);
-    }
-  }, [remainingTime]);
-
   
   // 카카오 로그인 API
   const handleKakaoLogin = async () => {
@@ -183,7 +177,12 @@ const PatientLoginPage: React.FC = () => {
               onChange={(e) => setotp(e.target.value)}
               className="w-[65%] h-[25px] text-[13px]"
             />
-            {showTimer && <Timer remainingTime={remainingTime} setRemainingTime={setRemainingTime} />}
+            {showTimer && <Timer 
+              remainingTime={remainingTime} 
+              setRemainingTime={setRemainingTime} 
+              showtimer={showTimer} 
+            />
+            }
           </div>
 
           {/* 자동 로그인 버튼 */}
