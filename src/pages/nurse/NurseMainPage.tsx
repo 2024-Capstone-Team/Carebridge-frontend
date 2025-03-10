@@ -147,7 +147,7 @@ const NurseMainPage: React.FC = () => {
     setPatientId(patientId);
 
     // 채팅 기록이 없을때 새로운 빈 채팅방 생성
-    const emptyRoom: ChatRoom = {
+    const emptyRoom: ChatRoom = {  // create empty room
       userName: patientNameValue,
       conversationId: conversationId,
       previewMessage: '',
@@ -373,7 +373,14 @@ const NurseMainPage: React.FC = () => {
       }
 
       const roomsData: ChatRoom[] = await response.json();
-      setRooms(roomsData);
+      setRooms((prevRooms) => {
+        const emptyRooms = prevRooms.filter(room => room.previewMessage === ''); // Keep old empty rooms
+        const updatedRooms = roomsData.filter(room => room.previewMessage !== ''); // New fetched rooms with messages
+      
+        // Merge fetched rooms with existing empty rooms
+        return [...emptyRooms, ...updatedRooms];
+      });
+      
       setIsDataFetched(true);
       console.log("Room fetched: ", roomsData);
     } catch (error) {
@@ -407,6 +414,10 @@ const NurseMainPage: React.FC = () => {
       setPatientName(selectedRoom.userName);
       const patientId = parseInt(roomId.split('_')[1]);
       setPatientId(patientId);
+    }
+    // If selected room is not empty room remove empty room
+    if (selectedRoom?.lastMessageTime != '') {
+      setRooms((prevRooms) => prevRooms.filter(room => !(room.lastMessageTime === '')));
     }
   };
 
