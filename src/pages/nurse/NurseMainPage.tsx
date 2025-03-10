@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, createContext} from 'react';
+import React, {useState, useEffect, useRef, createContext, useCallback} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
@@ -295,36 +295,42 @@ const NurseMainPage: React.FC = () => {
 
   {/* Handlers and Utility Functions */}
 
-  // Save messages to prevent repeated render 
-  const chatMessagesRef = useRef<ChatMessage[]>([]);
+  // useEffect(() => {
+  //   console.log("Messages updated:", messages);
+  // }, [messages]);  
   
-  const updateMessages = (newMessage: ChatMessage) => {
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  };
+  const updateMessages = useCallback((newMessage: ChatMessage) => {
+    setMessages((prevMessages) => {
+      if (prevMessages.some(msg => msg.messageId === newMessage.messageId)) return prevMessages;
+      return [...prevMessages, newMessage];
+    });
+  }, []);
     
   // Get chat history
   const fetchChatHistory = async (patientId: number) => {
-    console.log("fetching chat history");
+    console.log("Fetching chat history...");
     try {
       setIsLoading(true);
       const response = await fetch(`/api/chat/message/user?patientId=${patientId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch messages for patient: ${patientId}`);
-      }
-      const messages: ChatMessage[] = await response.json();
-
-      // 기존 데이터와 다를 때만 상태 업데이트
-      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
-        chatMessagesRef.current = messages;
-        setMessages(messages.reverse());
-      }
+      if (!response.ok) throw new Error(`Failed to fetch messages for patient: ${patientId}`);
+  
+      const newMessages: ChatMessage[] = await response.json();
+  
+      setMessages((prevMessages) => {
+        // Only update if messages have changed
+        return JSON.stringify(prevMessages) !== JSON.stringify(newMessages)
+          ? [...newMessages.reverse()]  // Reverse to maintain order
+          : prevMessages;
+      });
+  
     } catch (error) {
+      console.error("Failed to fetch chat history", error);
       setMessages([]);
-      // console.error("Failed to fetch chat history", error);
     } finally {
       setIsLoading(false);
     }
   };
+  
     
   // 웹소켓 연결 
   const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: any) => {
@@ -467,13 +473,7 @@ const NurseMainPage: React.FC = () => {
   useEffect(() => {
     if (!isConnected) return;
     subscribeToRoom(`/sub/user/chat/${nurseId}`); 
-    return () => {
-    };
   }, [isConnected]);
-
-  useEffect(() => {
-    console.log("Updated currentRoom:", currentRoom);
-  }, [currentRoom]);
 
   // Fetch chat rooms on mount
   useEffect(() => {

@@ -143,7 +143,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     useEffect(() => {
       // Instantly jump to bottom on first load (without animation)
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ block: "end" });
+        messagesEndRef.current.scrollIntoView({ behavior: "instant", block: "end" });
       }
     }, []); // Runs only on first mount
 
