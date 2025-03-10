@@ -45,7 +45,7 @@ const PatientChatPage: React.FC = () => {
       console.log("Update read status");
       setChatMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          msg.isPatient && !msg.readStatus ? { ...msg, isRead: true } : msg
+          msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg
         )
       );
     } else {
@@ -168,7 +168,7 @@ const PatientChatPage: React.FC = () => {
         senderId: userId,
         isPatient: true,
         isFailed: false,
-        isPending: false
+        isPending: true
       };
 
       // Add new message to local array
@@ -329,9 +329,12 @@ const PatientChatPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
         <ChatMessages chatMessages={chatMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage}/>
       </div>
-      <div className={`text-center ${connected ? 'text-green-500' : 'text-red-500'}`}>
+
+      {/* Debug Line */}
+      {/* <div className={`text-center ${connected ? 'text-green-500' : 'text-red-500'}`}>
         {connected ? `Connected - Room ID: ${roomId}` : "Connecting..."}
-      </div>
+      </div> */}
+
       <InputSection
         inputText={inputText}
         handleInputChange={handleInputChange}
