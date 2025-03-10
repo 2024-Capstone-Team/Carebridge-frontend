@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import ChatMessages from "../common/ChatMessages";
 import InputSection from "../../components/patient/InputSection";
 import { ChatMessage, Macro, QuickAnswer } from "../../types";
@@ -50,24 +50,22 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);  // Initially empty
   const [isLoading, setIsLoading] = useState(true);  // Loading state for chat history
   const [pendingMessages, setPendingMessages] = useState<ChatMessage[]>([]);  // Pending messages, to contain failed messages
-  const displayedMessages = [...messages, ...pendingMessages]
-  .map((msg) => ({
-    ...msg,
-    isFailed: msg.isFailed ?? false,
-    isPending: msg.isPending ?? false, 
-  }))
-  .sort((a, b) => {
-    // Place isPending messages at the bottom
-    if (a.isPending && !b.isPending) return 1;
-    if (!a.isPending && b.isPending) return -1;
+  const displayedMessages = useMemo(() => {
+    return [...messages, ...pendingMessages]
+      .map((msg) => ({
+        ...msg,
+        isFailed: msg.isFailed ?? false,
+        isPending: msg.isPending ?? false, 
+      }))
+      .sort((a, b) => {
+        if (a.isPending && !b.isPending) return 1;
+        if (!a.isPending && b.isPending) return -1;
+        if (a.isFailed && !b.isFailed) return 1;
+        if (!a.isFailed && b.isFailed) return -1;
+        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      });
+  }, [messages, pendingMessages]);
 
-    // Place failed messages above pending messages but below non-pending messages
-    if (a.isFailed && !b.isFailed) return 1;
-    if (!a.isFailed && b.isFailed) return -1;
-
-    // Otherwise, sort by timestamp
-    return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-  });
 
 
   const [macros, setMacros] = useState<Macro[]>([]);  // Set macros
