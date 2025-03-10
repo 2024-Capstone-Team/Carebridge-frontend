@@ -143,7 +143,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     useEffect(() => {
       const timeoutId = setTimeout(() => {
         if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+          messagesEndRef.current.scrollIntoView({ behavior: "instant", block: "end" });
         }
       }, 100); // Delay to ensure DOM is fully rendered
     
