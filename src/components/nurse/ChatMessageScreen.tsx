@@ -47,7 +47,6 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   {/* State Variables */}
   const [inputText, setInputText] = useState("");  // Input text
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);  // Initially empty
   const [isLoading, setIsLoading] = useState(true);  // Loading state for chat history
   const [pendingMessages, setPendingMessages] = useState<ChatMessage[]>([]);  // Pending messages, to contain failed messages
   const displayedMessages = useMemo(() => {
