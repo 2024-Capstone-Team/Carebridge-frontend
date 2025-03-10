@@ -12,7 +12,7 @@ const PatientChatPage: React.FC = () => {
   {/* Set constants */}
 
   // const { userId } =  useUserContext();
-  const [userId] = useState<number>(1);
+  const [userId] = useState<number>(5);
   const [nurseId] = useState<number>(1);
   const [hospitalId] = useState<number>(1);
   const chatMessagesRef = useRef<ChatMessage[]>([]);
