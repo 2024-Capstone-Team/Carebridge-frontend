@@ -146,6 +146,7 @@ const NurseMainPage: React.FC = () => {
     setPatientName(patientNameValue);
     setPatientId(patientId);
 
+    // 채팅 기록이 없을때 새로운 빈 채팅방 생성
     const emptyRoom: ChatRoom = {
       userName: patientNameValue,
       conversationId: conversationId,
@@ -153,6 +154,9 @@ const NurseMainPage: React.FC = () => {
       lastMessageTime: '',
       isRead: false
     }
+    // 존재하는 빈 채팅방 제거
+    setRooms((prevRooms) => prevRooms.filter(room => !(room.lastMessageTime === '')));
+    // 새로운 빈 채팅방 추가
     setRooms((prevRooms) => {
       const roomExists = prevRooms.some(room => room.conversationId === conversationId && room.previewMessage === '');
       
