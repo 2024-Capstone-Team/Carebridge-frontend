@@ -333,7 +333,7 @@ const NurseMainPage: React.FC = () => {
         setMessages((prevMessages) => [...prevMessages, message]);
         console.log("Adding message to array");
       }
-      // 채팅 메시지 처리 
+      fetchRooms();  // chatroom list 업데이트
     } else if (message.type === "REQUEST") {  // 메시지가 요청사항인지 확인 
       const request: CallBellRequest = message as CallBellRequest;
       console.log("Received a request message:", request);  
@@ -346,6 +346,9 @@ const NurseMainPage: React.FC = () => {
           !msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg
         )
       );
+      
+      fetchRooms();  // chatroom list 업데이트
+
     } else {
       console.warn("Unknown message type:", message);
     }
