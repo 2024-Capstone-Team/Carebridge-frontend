@@ -5,11 +5,14 @@ import InputSection from "../../components/patient/InputSection.tsx";
 import ChatMessages from "../../components/common/ChatMessages.tsx";
 import PatientChatHeader from "../../components/patient/PatientChatHeader.tsx";
 import FavoriteRequests from "../../components/patient/FavoriteRequests.tsx";
+import { useUserContext } from "../../context/UserContext";
 
 const PatientChatPage: React.FC = () => {
 
   {/* Set constants */}
-  const [userId] = useState<number>(5); 
+
+  // const { userId } =  useUserContext();
+  const [userId] = useState<number>(1);
   const [nurseId] = useState<number>(1);
   const [hospitalId] = useState<number>(1);
   const chatMessagesRef = useRef<ChatMessage[]>([]);

@@ -12,47 +12,32 @@ const PatientLoginPage: React.FC = () => {
   const { setUserId, setPatientId } = useUserContext();
   const [otp, setotp] = useState("");
   const [check, setIsCheck] = useState<boolean>(false);
+
+  //타이머 설정
   const [showTimer, setShowTimer] = useState(false);
-  useEffect(() => {
-    const autoLogin = localStorage.getItem("autoLogin") === "true"; // 저장된 값이 "true"인지 확인
-    console.log("autologin: ", autoLogin);
-    setIsCheck(autoLogin); // 체크박스 상태 설정
-
-    if (autoLogin) {
-      const checkSession = async () => {
-        try {
-          const response = await axios.get("http://localhost:8080/api/users/session-check", {
-            withCredentials: true,
-          });
-          console.log(response.data); 
-          
-          if (response.data) {
-            console.log("자동 로그인 성공:", localStorage.getItem("patientId"), "/ 응답: ",response.data);
-            setPatientId(localStorage.getItem("patientId"));
-            navigate("/patient-main");
-          }
-        } catch (err) {
-          console.log("자동 로그인 세션 없음", err);
-        }
-      };
-
-      checkSession();
-    }
-  }, [navigate, setPatientId]);
+  const initialTime = 180;
+  const [remainingTime, setRemainingTime] = useState(initialTime);
 
 
-
-  { /*FCM 토큰 등록 api*/}
-  const registerFcmToken = async (userId: number, token: string): Promise<void> => {
+  const handleResend = () => {
+    setRemainingTime(initialTime);
+    setShowTimer(true);
+  }
+  
+  // 카카오 로그인 API
+  const handleKakaoLogin = async () => {
     try {
-      await axios.post("/api/notification/register", { userId, token });
-      console.log("FCM 토큰 등록 성공");
+      const kakaoResponse = await axios.get("http://localhost:8080/api/users/social-login/kakao");
+      console.log("카카오 로그인 URL:", kakaoResponse.data);
+      const kakaoAuthUrl = kakaoResponse.data;
+      window.location.href = kakaoAuthUrl;
     } catch (error) {
-      console.error("FCM 토큰 등록 실패:", error);
+      console.error("카카오 로그인 URL 요청 실패:", error);
     }
-  }; 
+  };
 
-
+  
+  {/* 일반 로그인 API */}
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,6 +58,8 @@ const PatientLoginPage: React.FC = () => {
 
       // 로그인 성공 시 patientId를 받아서 상태에 저장
       const { userId, patientId } = loginResponse.data;
+      console.log("Login Response:", loginResponse);
+      console.log("Login Response Data:", loginResponse.data);
       setPatientId(patientId); //UserContext의 PatientId 업데이트
       setUserId(userId);
       localStorage.setItem("patientId", patientId);
@@ -100,7 +87,6 @@ const PatientLoginPage: React.FC = () => {
     }
   };
   
-
   {/* 인증번호 전송 API */}
   const getAuthorizeNum = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,11 +97,11 @@ const PatientLoginPage: React.FC = () => {
     try {
       const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
-      setShowTimer(true);
+      handleResend();
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
       console.error("인증번호 전송 실패:", error);
-      alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
+      alert("등록된 전화번호가 아니거나 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -123,20 +109,6 @@ const PatientLoginPage: React.FC = () => {
     e.preventDefault();
     navigate("/sign-up");
   };
-
-  {/* 카카오톡 로그인 API */}
-  const handleKakaoLogin = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/api/users/social-login/kakao");
-      console.log("카카오 로그인 URL:", response.data);
-      const kakaoAuthUrl = response.data;
-
-      window.location.href = kakaoAuthUrl;
-    } catch (error) {
-      console.error("카카오 로그인 URL 요청 실패:", error);
-    }
-  };
-  
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -205,7 +177,12 @@ const PatientLoginPage: React.FC = () => {
               onChange={(e) => setotp(e.target.value)}
               className="w-[65%] h-[25px] text-[13px]"
             />
-            {showTimer && <Timer />}
+            {showTimer && <Timer 
+              remainingTime={remainingTime} 
+              setRemainingTime={setRemainingTime} 
+              showtimer={showTimer} 
+            />
+            }
           </div>
 
           {/* 자동 로그인 버튼 */}

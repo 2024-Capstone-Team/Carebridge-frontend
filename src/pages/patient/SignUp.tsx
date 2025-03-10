@@ -66,7 +66,7 @@ const SignUp: React.FC = () => {
       alert("인증번호가 전송되었습니다.");
     } catch (error) {
       console.error("인증번호 전송 실패:", error);
-      alert("인증번호 전송에 실패했습니다. 다시 시도해주세요.");
+      alert("이미 가입된 번호입니다. 로그인하거나 다른 전화번호로 다시 시도해주세요.");
     }
   };
 
