@@ -343,7 +343,7 @@ const NurseMainPage: React.FC = () => {
       console.log("Update read status");
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          !msg.isPatient && !msg.readStatus ? { ...msg, isRead: true } : msg
+          !msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg
         )
       );
     } else {
