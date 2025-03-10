@@ -141,14 +141,11 @@ const ChatMessages: React.FC<ChatMessagesProps> =
 
     // Scroll to the bottom when the component first mounts
     useEffect(() => {
-      const timeoutId = setTimeout(() => {
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: "instant", block: "end" });
-        }
-      }, 100); // Delay to ensure DOM is fully rendered
-    
-      return () => clearTimeout(timeoutId); // Cleanup the timeout
-    }, []); // Initial mount
+      // Instantly jump to bottom on first load (without animation)
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ block: "end" });
+      }
+    }, []); // Runs only on first mount
 
     // Scroll to the latest message when chatMessages changes
     useEffect(() => {
