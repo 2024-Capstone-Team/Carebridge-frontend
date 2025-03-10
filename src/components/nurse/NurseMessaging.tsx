@@ -19,6 +19,7 @@ interface NurseMessagingProps {
   subscribeToRoom:(subscriptionPath: string) => void;
   fetchChatHistory:(patientId: number) => Promise<void>;
   updateMessages: (newMessage: ChatMessage) => void;
+  removeEmptyRoom: (conversationId: string) => void;
 }
 
 const NurseMessaging:  React.FC<NurseMessagingProps> = ({
@@ -34,6 +35,7 @@ const NurseMessaging:  React.FC<NurseMessagingProps> = ({
   subscribeToRoom,
   fetchChatHistory,
   updateMessages,
+  removeEmptyRoom,
 }) => {
 
   const selectedRoom = rooms.find((room) => room.conversationId === currentRoom);
@@ -45,6 +47,7 @@ const NurseMessaging:  React.FC<NurseMessagingProps> = ({
 
   // Handle back click
   const handleBackClick = () => {
+    removeEmptyRoom(currentRoom);
     onRoomSelect(""); // Reset selection
   };
 
