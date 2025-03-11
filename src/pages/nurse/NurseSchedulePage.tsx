@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import NurseCalendar from "../../components/nurse/Nurse_Calendar";
-import ScheduleEditForm from "../../components/nurse/Nurse_ScheduleEdit";
-import ScheduleAdd from "../../components/nurse/Nurse_ScheduleAdd";
+import NurseCalendar from "../../components/nurse/NurseCalendar";
+import ScheduleEditForm from "../../components/nurse/NurseScheduleEdit";
+import ScheduleAdd from "../../components/nurse/NurseScheduleAdd";
 import logo from "../../assets/carebridge_logo.png";
 import bar from "../../assets/hamburger bar.png";
 import home from "../../assets/home.png";
@@ -21,7 +21,9 @@ interface Patient {
 const NurseSchedulePage: React.FC = () => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
-  const [currentView, setCurrentView] = useState<"calendar" | "edit" | "add">("calendar");
+  const [modeCalendar, setModeCalendar] = useState(true);
+  const [modeEdit, setModeEdit] = useState(false);
+  const [modeAdd, setModeAdd] = useState(false);
   const { scheduleId } = useParams<{ scheduleId: string }>();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,41 +87,61 @@ const NurseSchedulePage: React.FC = () => {
     setIsDropdownVisible((prev) => !prev); 
   };
 
-  // 스케줄 수정 시 호출
-  const handleEditSchedule = (scheduleId: string) => {
+   // 스케줄 수정 시 호출
+   const handleEditSchedule = (scheduleId: string) => {
     setEditingScheduleId(scheduleId); // 수정할 스케줄 ID 저장
-    setCurrentView("edit"); // 화면을 수정 모드로 전환
+    setModeCalendar(false);
+    setModeAdd(false);
+    setModeEdit(true);
   };
 
   // 스케줄 추가 버튼 클릭 시 호출
   const handleAddSchedule = () => {
-    setCurrentView("add"); // 화면을 추가 모드로 전환
+    setModeCalendar(false);
+    setModeEdit(false);
+    setModeAdd(true);
   };
 
-  // 캔슬 버튼 클릭 시 호출
+  // 취소 버튼 클릭 시 호출
   const handleCancel = () => {
-    setCurrentView("calendar"); // 캘린더 화면으로 전환
+    setModeCalendar(true);
+    setModeEdit(false);
+    setModeAdd(false);
     setEditingScheduleId(null); // 수정 상태 초기화
   };
 
   const handleMacroClick = () => {
     navigate("/nurse-main", { state: { macroMode: true } });
   };
+
+  const handleQAClick = () => {
+    navigate("/nurse-main", { state: { QAMode: true } });
+  };
   
   const handleMenuClick = (path: string) => {
     if (path === "/nurse-schedule") {
-      setCurrentView("calendar"); // 상태 초기화
+      setModeCalendar(true);
+      setModeEdit(false);
+      setModeAdd(false);
     }
     navigate(path);
-  };
+  }
 
-  const handleViewChange = (view: "calendar" | "edit" | "add") => {
-    setCurrentView(view);
-  };
-
+  // location.state의 view 값에 따라 초기 모드 설정
   useEffect(() => {
-    if (location.pathname === "/nurse-schedule") {
-      setCurrentView("calendar");
+    if (location.state?.view === "edit" && location.state.scheduleId) {
+      setModeCalendar(false);
+      setModeEdit(true);
+      setModeAdd(false);
+      setEditingScheduleId(location.state.scheduleId);
+    } else if (location.state?.view === "add") {
+      setModeCalendar(false);
+      setModeEdit(false);
+      setModeAdd(true);
+    } else {
+      setModeCalendar(true);
+      setModeEdit(false);
+      setModeAdd(false);
     }
   }, [location]);
 
@@ -145,47 +167,28 @@ const NurseSchedulePage: React.FC = () => {
             <hr className="bg-gray-600"></hr>
 
             <ul className="py-2">
-              <li
-                className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                onClick={() => handleMenuClick("/nurse-main")}
-              >
-                <img src={home} alt="home" className="w-4 h-4 mr-2" />메인 화면
+              <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={() => handleMenuClick("/nurse-main")}>
+                <img src={home} alt="home" className="w-4 h-4 mr-2" /> 메인 화면
               </li>
-              <li
-                className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                onClick={() => handleMenuClick("/nurse-schedule")}
-              >
-                <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러
+              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={() => handleMenuClick("/nurse-schedule")}>
+                <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" /> 스케줄러
               </li>
-              <li
-                className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                onClick={handleMacroClick}
-              >
-                <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정
+              <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={handleMacroClick}>
+                <img src={macro} alt="macro" className="w-4 h-4 mr-2" /> 매크로 설정
               </li>
-              <li
-                className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-              >
-                <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정
+              <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                onClick={handleQAClick}>
+                <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" /> 빠른 답변 설정
               </li>
               <hr className="bg-gray-600"></hr>
-              <li
-                className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                onClick={() => handleMenuClick("/change-ward")}
-              >
-                병동 변경
+              <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleMenuClick("/nurse-reset-password")}> 비밀번호 재설정
               </li>
-              <li
-                className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                onClick={() => handleMenuClick("/reset-password")}
-              >
-                비밀번호 재설정
-              </li>
-              <li
-                className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                onClick={() => handleMenuClick("/nurse-login")}
-              >
-                로그아웃
+              <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleMenuClick("/nurse-login")}> 로그아웃
               </li>
             </ul>
           </div>
@@ -208,7 +211,7 @@ const NurseSchedulePage: React.FC = () => {
           <div className="flex justify-end items-center pl-2 mb-1">
             <button
               className="text-sm text-gray-600 bg-transparent hover:text-gray-400 focus:outline-none"
-              onClick={() => handleViewChange("add")}>
+              onClick={handleAddSchedule}>
               추가
             </button>
           </div>
@@ -227,11 +230,11 @@ const NurseSchedulePage: React.FC = () => {
         </div>
         
         <div className="flex flex-col flex-1 bg-white rounded-lg shadow-md mb-4 ml-2 mr-4 px-4 overflow-y-auto">
-          {currentView === "calendar" && <NurseCalendar onEdit={handleEditSchedule} />}
-          {currentView === "edit" && editingScheduleId && (
-            <ScheduleEditForm scheduleId={editingScheduleId} onCancel={handleCancel} />
-          )}
-          {currentView === "add" && <ScheduleAdd onCancel={handleCancel} />}
+          {modeCalendar && <NurseCalendar onEdit={handleEditSchedule} />}
+            {modeEdit && editingScheduleId && (
+              <ScheduleEditForm scheduleId={editingScheduleId} onCancel={handleCancel} />
+            )}
+            {modeAdd && <ScheduleAdd onCancel={handleCancel} />}
         </div>
       </div>
     </div>

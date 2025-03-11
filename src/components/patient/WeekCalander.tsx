@@ -22,15 +22,39 @@ const WeekCalendar: React.FC<WeekCalendarProps> = ({
 
   const weekDays = getWeekDays();
 
+  const handlePrevWeek = () => {
+    const prevWeekStart = dayjs(selectedDate).subtract(1, "week").startOf("week");
+    onDateSelect(prevWeekStart.format("YYYY-MM-DD"));
+  };
+
+  const handleNextWeek = () => {
+    const nextWeekStart = dayjs(selectedDate).add(1, "week").startOf("week");
+    onDateSelect(nextWeekStart.format("YYYY-MM-DD"));
+  };
+
   return (
     <div className="flex flex-col items-center">
-      {/* 요일 표시 */}
+      {/* 주간 이동 버튼 */}
       <div className="flex justify-between w-full mb-2 text-gray-500 text-sm">
-        {weekDays.map((date) => (
-          <div key={date} className="flex-1 text-center">
-            {dayjs(date).format("ddd")} {/* 요일 (일, 월, 화, ...) */}
-          </div>
-        ))}
+        <button
+          onClick={handlePrevWeek}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          &lt;
+        </button>
+        <div className="flex justify-between w-full">
+          {weekDays.map((date) => (
+            <div key={date} className="flex-1 text-center">
+              {dayjs(date).format("ddd")} {/* 요일 (일, 월, 화, ...) */}
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={handleNextWeek}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          &gt;
+        </button>
       </div>
 
       {/* 날짜 표시 */}

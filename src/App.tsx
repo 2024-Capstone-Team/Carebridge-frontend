@@ -9,6 +9,8 @@ import PreLoginPage from "./pages/PreLoginPage";
 import NurseLoginPage from "./pages/nurse/NurseLoginPage";
 import NurseMainPage from "./pages/nurse/NurseMainPage";
 import NurseSchedulePage from "./pages/nurse/NurseSchedulePage";
+import NurseFindPasswordPage from "./pages/nurse/NurseFindPassword";
+import NurseResetPasswordPage from "./pages/nurse/NurseResetPassword";
 
 /* Patient Pages */
 import Redirection from "./pages/patient/Redirection";
@@ -51,60 +53,62 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<PreLoginPage />} /> 
 
-            {/* Nurse Pages */}
-            <Route path="/nurse-login" element={<NurseLoginPage />} /> 
-            <Route path="/nurse-main" element={<NurseMainPage />} />
-            <Route path="/nurse-schedule" element={<NurseSchedulePage />} />
+          {/* Nurse Pages */}
+          <Route path="/nurse-login" element={<NurseLoginPage />} /> 
+          <Route path="/nurse-main" element={<NurseMainPage />} />
+          <Route path="/nurse-schedule" element={<NurseSchedulePage />} />
+          <Route path="/nurse-find-password" element={<NurseFindPasswordPage />} />
+          <Route path="/nurse-reset-password" element={<NurseResetPasswordPage />} />
 
-            {/* Patient Pages */}
-            <Route path="/api/users/social-login/kakao" element={<Redirection />} />
-            <Route path="/patient-login" element={<PatientLoginPage />} />
-            <Route path="/patient-main" element={<PatientMainPage />} />
-            <Route path="/choose-patient-type" element={<ChoosePatientType />} />
-            <Route path="/sign-up" element={<SignUp />} />
-            <Route path="/sign-up-check" element={<SignUpCheck />} />
-            <Route path="/patient-schedular" element={<PatientSchedular />} />
-            <Route path="/patient-setting" element={<PatientSettingPage/>} />
-            <Route path="/guardian-setting" element={<GuardiantSettingPage/>} />
-            <Route path="/change-phonenum" element={<ChangePhoneNum/>} />
-            <Route path="/app-info" element={<AppInfo/>} />
-            <Route path="/customer-service" element={<CustomerService/>} />
-            <Route path="/manage-guardian" element={<ManageGuardian/>} />
-            <Route
-              path="/schedule-today"
-              element={
-                <ScheduleToday
-                  onClose={function (): void {
-                    throw new Error("Function not implemented.");
-                  }}
-                  scheduleData={[]}
-                  selectedTags={[]}
-                  onTagClick={function (_tag: string): void {
-                    throw new Error("Function not implemented.");
-                  }}
-                />
-              }
-            />
-            <Route
-              path="/patient-chat"
-              element={
-                <FavoriteRequestsProvider>
-                  <PatientChatPage />
-                </FavoriteRequestsProvider>
-              }
-            />
-            <Route
-              path="/patient-chat-categories"
-              element={
-                <FavoriteRequestsProvider>
-                  <PatientChatCategories />
-                </FavoriteRequestsProvider>
-              }
-            />
-            <Route path="/custom-request" element={<CustomRequestPage />} />
+          {/* Patient Pages */}
+          <Route path="/redirection" element={<Redirection />} />
+          <Route path="/patient-login" element={<PatientLoginPage />} />
+          <Route path="/patient-main" element={<PatientMainPage />} />
+          <Route path="/choose-patient-type" element={<ChoosePatientType />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/sign-up-check" element={<SignUpCheck />} />
+          <Route path="/patient-schedular" element={<PatientSchedular />} />
+          <Route path="/patient-setting" element={<PatientSettingPage/>} />
+          <Route path="/guardian-setting" element={<GuardiantSettingPage/>} />
+          <Route path="/change-phonenum" element={<ChangePhoneNum/>} />
+          <Route path="/app-info" element={<AppInfo/>} />
+          <Route path="/customer-service" element={<CustomerService/>} />
+          <Route path="/manage-guardian" element={<ManageGuardian/>} />
+          <Route
+            path="/schedule-today"
+            element={
+              <ScheduleToday
+                onClose={function (): void {
+                  throw new Error("Function not implemented.");
+                }}
+                scheduleData={[]}
+                selectedTags={[]}
+                onTagClick={function (_tag: string): void {
+                  throw new Error("Function not implemented.");
+                }}
+              />
+            }
+          />
+          <Route
+            path="/patient-chat"
+            element={
+              <FavoriteRequestsProvider>
+                <PatientChatPage />
+              </FavoriteRequestsProvider>
+            }
+          />
+          <Route
+            path="/patient-chat-categories"
+            element={
+              <FavoriteRequestsProvider>
+                <PatientChatCategories />
+              </FavoriteRequestsProvider>
+            }
+          />
+          <Route path="/custom-request" element={<CustomRequestPage />} />
 
             {/* Test */}
-            <Route path='/test' element={<NurseChatPage />} />
+            {/* <Route path='/test' element={<NurseChatPage />} /> */}
             <Route path='/test-schedule' element={<ScheduleTest />} />
             
           </Routes>
