@@ -186,6 +186,9 @@ const NurseMainPage: React.FC = () => {
         return [...prevRooms, emptyRoom];
       }
     });
+
+    // 요청사항 창 닫기
+    handleCloseNotification();
   };
 
   const convertStatus = (status: string): string => {
@@ -883,7 +886,9 @@ const NurseMainPage: React.FC = () => {
                     className="px-3 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.3px] border-[#A5A1A1] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-[#8B8787] hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
                     보류
                   </button>
-                  <button className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                  <button 
+                    onClick={() => handleChatClick(requestPopup.patientId)}
+                    className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
                     채팅
                   </button>
                   <button 
