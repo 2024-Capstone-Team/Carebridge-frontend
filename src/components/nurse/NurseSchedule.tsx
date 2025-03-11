@@ -24,7 +24,7 @@ const NurseSchedule: React.FC = () => {
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
 
   const { hospitalId } = useUserContext();
-  const staffId = hospitalId;
+  const staffId = 1;
   
   const navigate = useNavigate();
 
