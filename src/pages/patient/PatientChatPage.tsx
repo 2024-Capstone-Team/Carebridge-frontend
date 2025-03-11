@@ -320,6 +320,16 @@ const PatientChatPage: React.FC = () => {
     );
     unreadMessages.forEach((message) => markMessageAsRead(message.messageId));
   }, [chatMessages, userId, markMessageAsRead]);
+
+  // For chat screen text size
+  const [textSize, setTextSize] = useState("14px");
+  const increaseTextSize = () => {
+    setTextSize((prev) => `${parseInt(prev) + 2}px`);
+  };
+
+  const decreaseTextSize = () => {
+    setTextSize((prev) => `${Math.max(parseInt(prev) - 2, 10)}px`); // Min size 10px
+  };
   
   
   return (
@@ -330,7 +340,7 @@ const PatientChatPage: React.FC = () => {
         sendFavoriteRequest={sendFavoriteRequest}
       />
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
-        <ChatMessages chatMessages={chatMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage}/>
+        <ChatMessages chatMessages={chatMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage} textSize={textSize}/>
       </div>
 
       {/* Debug Line */}
@@ -339,14 +349,17 @@ const PatientChatPage: React.FC = () => {
       </div> */}
 
       <InputSection
-        inputText={inputText}
-        handleInputChange={handleInputChange}
-        handleSendMessage={handleSendMessage}
-        minHeight="1.5rem"
-        maxHeight="10rem"
-        handleKeyDown={handleKeyDown}
-        handleCompositionStart={handleCompositionStart}
-        handleCompositionEnd={handleCompositionEnd}
+      inputText={inputText}
+      handleInputChange={handleInputChange}
+      handleSendMessage={handleSendMessage}
+      minHeight="1.5rem"
+      maxHeight="10rem"
+      handleKeyDown={handleKeyDown}
+      handleCompositionStart={handleCompositionStart}
+      handleCompositionEnd={handleCompositionEnd}
+      showTextSizeButton={true}
+      increaseTextSize={increaseTextSize}
+      decreaseTextSize={decreaseTextSize}
       />
     </div>
   );
