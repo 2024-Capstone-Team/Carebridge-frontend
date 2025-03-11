@@ -65,8 +65,6 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       });
   }, [messages, pendingMessages]);
 
-
-
   const [macros, setMacros] = useState<Macro[]>([]);  // Set macros
   const [quickAnswers, setQuickAnswers] = useState<QuickAnswer[]>([]);
 

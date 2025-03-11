@@ -45,6 +45,7 @@ const MessageBubble: React.FC<{
   senderTextColor: string;
   receiverTextColor: string;
   customStyles: { [key: string]: string } | undefined;
+  textSize?: string;
 }> = ({
   message,
   isSender,
@@ -57,6 +58,7 @@ const MessageBubble: React.FC<{
   senderTextColor,
   receiverTextColor,
   customStyles,
+  textSize,
 }) => (
   <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-4`}>
     {/* Sender's message */}
@@ -98,6 +100,7 @@ const MessageBubble: React.FC<{
       } ${isSender ? senderTextColor : receiverTextColor} ${
         customStyles?.message || ""
       } whitespace-pre-line`}
+      style={{ fontSize: textSize }} // Apply text size dynamically
     >
       {message.messageContent}
     </div>
@@ -123,6 +126,7 @@ interface ChatMessagesProps {
   receiverTextColor?: string;
   onResend: (msg: ChatMessage) => void;
   onCancel: (msg: ChatMessage) => void;
+  textSize?: string;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = 
@@ -136,6 +140,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     receiverTextColor = "text-black",
     onResend,
     onCancel,
+    textSize,
   }) => {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -185,6 +190,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                 senderTextColor={senderTextColor}
                 receiverTextColor={receiverTextColor}
                 customStyles={customStyles}
+                textSize={textSize}
               />
               </React.Fragment>
             );

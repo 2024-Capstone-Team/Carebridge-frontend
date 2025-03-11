@@ -154,13 +154,22 @@ const NurseMainPage: React.FC = () => {
       lastMessageTime: '',
       isRead: false
     }
+
     // 존재하는 빈 채팅방 제거
     setRooms((prevRooms) => prevRooms.filter(room => !(room.lastMessageTime === '')));
     // 새로운 빈 채팅방 추가
     setRooms((prevRooms) => {
-      const roomExists = prevRooms.some(room => room.conversationId === conversationId && room.previewMessage === '');
-      
+
+      // 해당 빈 채팅방이 이미 존재한다면
+      const emptyRoomExists = prevRooms.some(room => room.conversationId === conversationId && room.previewMessage === '');
+
+      // 해당 환자에 대한 채팅방이 이미 존재한다면 
+      const roomExists = prevRooms.some(room => room.conversationId === conversationId);
+
       if (roomExists) {
+        return [...prevRooms];
+      }
+      else if (emptyRoomExists) {
         return prevRooms.map(room => 
           room.conversationId === conversationId && room.previewMessage === '' ? emptyRoom : room
         );
