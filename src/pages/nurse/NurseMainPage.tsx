@@ -514,6 +514,15 @@ const NurseMainPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* 테스트 버튼 */}
+      {/*<div className="fixed inset-0 flex items-center justify-center z-40">
+        <button
+          onClick={handleTestRequest}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md text-lg hover:bg-blue-700"
+        >
+          테스트 요청 보내기
+        </button>
+      </div>*/}
 
       <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
         <div className="flex items-center mb-4" style={{ marginTop: '-60px' }}>
