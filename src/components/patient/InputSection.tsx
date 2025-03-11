@@ -36,27 +36,27 @@ const InputSection: React.FC<InputSectionProps> = ({
 
   return (
     <div className="p-4">
-      <div className={`flex items-center p-2 ${color} rounded-3xl`}>
-        {/* Text area for input */}
-        <textarea
-          ref={textareaRef}
-          value={inputText}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onCompositionStart={handleCompositionStart} // 추가
-          onCompositionEnd={handleCompositionEnd} // 추가
-          placeholder="메시지를 입력하세요..."
-          className={`flex-1 px-3 py-1 ${color} border-none rounded-3xl focus:outline-none text-black resize-none overflow-y-auto`}
-          style={{
-            minHeight, // Use the passed prop
-            maxHeight, // Use the passed prop
-          }}
-        />
-
-        {/* Send button */}
+      <div className={`flex items-center p-2 ${color} rounded-3xl relative`}>        
+        <div className="relative flex-1">
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+            placeholder="메시지를 입력하세요..."
+            className={`w-full px-3 py-1 ${color} border-none rounded-3xl focus:outline-none text-black resize-none overflow-y-auto`}
+            style={{ minHeight, maxHeight, paddingBottom: "20px" }}
+            maxLength={255} // 최대 글자 수 제한
+          />
+          <span className="absolute bottom-1 right-3 text-xs text-gray-500">
+            {inputText.length}/255
+          </span>
+        </div>
         <button
           onClick={handleSendMessage}
-          className={`ml-2 ${color} rounded-full flex items-center justify-center`}
+          className={`ml-2 ${color} rounded-full flex items-center justify-center p-2`}
         >
           <IoMdSend className="w-5 h-5 text-primary" />
         </button>

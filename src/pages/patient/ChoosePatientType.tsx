@@ -1,13 +1,16 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../../context/UserContext";
 
 // import BackButton from "../../components/common/BackButton";
 
 const ChoosePatientType: React.FC = () => {
   const navigate = useNavigate();
+  const {setIsPatient} = useUserContext();
 
-  const goMainpage = (e: React.FormEvent) => {
+  const goMainpage = (e: React.FormEvent, isPatient:boolean) => {
     e.preventDefault();
+    setIsPatient(isPatient);    
     navigate("/patient-main");
   };
 
@@ -39,7 +42,7 @@ const ChoosePatientType: React.FC = () => {
 
           {/* 환자 버튼 */}
           <button
-            onClick={goMainpage}
+            onClick={(e) => goMainpage(e, true)}
             type="submit"
             className="w-64 h-11 bg-black text-white font-semibold text-[16px] rounded-lg hover:bg-primary-dark transition-colors mb-4"
           >
@@ -48,7 +51,7 @@ const ChoosePatientType: React.FC = () => {
 
           {/* 보호자 버튼 */}
           <button
-            onClick={goMainpage}
+            onClick={(e) => goMainpage(e, false)}
             type="submit"
             className="w-64 h-11 bg-black text-white font-semibold text-[16px] rounded-lg hover:bg-primary-dark transition-colors"
           >

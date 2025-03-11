@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaChevronLeft, FaSearch } from "react-icons/fa";
 import Fuse from "fuse.js";
-import search from "../../assets/search.png";
-import back from "../../assets/back.png";
 import axios from "axios";
 
 interface PatientInfo {
@@ -29,6 +28,7 @@ interface RequestRecord {
 interface NurseDetailedPatientInfoProps {
   patientId: number; // 선택된 환자의 ID
   onBack: () => void; // 돌아가기 버튼 핸들러
+  onChatClick: (patientId: number) => void; // 채팅 버튼 클릭 시 호출
 }
 
 const formatDate = (date: string | null | undefined): string => {
@@ -40,7 +40,22 @@ const formatDate = (date: string | null | undefined): string => {
   return `${year}.${month}.${day}`;
 };
 
-const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ patientId, onBack }) => {
+const formatTime = (timeString: string | null | undefined): string => {
+  if (!timeString) return "정보 없음";
+  try {
+    const dateObj = new Date(timeString);
+    if (isNaN(dateObj.getTime())) return "정보 없음";
+    return dateObj.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (error) {
+    console.error("formatTime 처리 중 에러:", error);
+    return "정보 없음";
+  }
+};
+
+const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ patientId, onBack, onChatClick }) => {
   const navigate = useNavigate();
 
   const [patient, setPatient] = useState<PatientInfo | null>(null);
@@ -73,7 +88,13 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
       try {
         const response = await axios.get(`http://localhost:8080/api/call-bell/request/patient/${patientId}`);
         console.log("환자 요청 기록:", response.data);
-        setPatientRequests(response.data);
+        
+        // 요청 기록 최신순 정렬
+        const sortedRequests = response.data.sort(
+          (a: RequestRecord, b: RequestRecord) =>
+            new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime()
+        );
+        setPatientRequests(sortedRequests);
       } catch (error) {
         console.error("환자의 요청 기록을 가져오는 중 오류 발생:", error);
       }
@@ -81,7 +102,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     fetchPatientRequests();
   }, [patientId]);
 
-  // 검색에 사용할 전체 환자 목록 가져오기
+  // 전체 환자 목록 가져오기 (검색용)
   useEffect(() => {
     const fetchAllPatients = async () => {
       try {
@@ -118,30 +139,24 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
   return (
     <div className="h-full bg-[#DFE6EC] p-3 rounded-lg">
       <div className="flex relative mb-4">
-        <img
-          src={back}
-          alt="back"
-          className="w-[1.5em] h-[1.5em] mr-2 cursor-pointer hover:bg-white absolute -translate-x-6 translate-y-1"
-          onClick={onBack}
-        />
+        <FaChevronLeft className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute -translate-x-6 translate-y-1" onClick={onBack}/>
         <h2 className="text-lg font-bold">환자 정보</h2>
       </div>
 
-      {/* 검색 입력창 */}
+      {/* 검색 입력 창 */}
       <div className="flex bg-white w-full mb-3 px-1 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
-        <img src={search} alt="search" className="w-[1.5em] h-[1.5em] mr-2" />
-        <input
-          type="text"
-          placeholder="환자 이름을 입력해주세요."
-          className="w-60"
+        <FaSearch className="text-black mx-2 h-[20px] w-[20px] pt-1" />
+        <input 
+          type="text" 
+          placeholder="환자 이름을 입력해주세요." 
+          className="border-none outline-none w-full" 
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+          onChange={(e) => setSearchQuery(e.target.value)}/>  
       </div>
 
-      {/* 검색어가 입력된 경우, 검색 결과 목록 표시 */}
+      {/* 검색 결과 목록 */}
       {searchQuery ? (
-        <div className="space-y-4 h-[350px] overflow-y-auto">
+        <div className="space-y-4 h-[350px] overflow-y-auto scrollbar-hide">
           {filteredPatients.length > 0 ? (
             <ul className="space-y-4 w-full cursor-pointer">
               {filteredPatients.map((p) => (
@@ -149,7 +164,6 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                   key={p.patientId}
                   className="pb-2"
                   onClick={() => {
-                    // 검색 결과 선택 시 검색어 초기화 후 상세정보 페이지로 이동
                     setSearchQuery("");
                     navigate(`/nurse/patient/${p.patientId}`);
                   }}
@@ -168,12 +182,12 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
           )}
         </div>
       ) : (
-        // 검색어가 없으면 선택된 환자의 상세 정보와 요청 기록 표시
+        // 검색어가 없으면 상세 정보와 요청 기록 표시
         <>
           {!patient ? (
             <div className="text-gray-500 text-center">로딩 중...</div>
           ) : (
-            <div className="overflow-y-auto h-[350px]">
+            <div className="overflow-y-auto h-[350px] scrollbar-hide">
               <div className="mb-1">
                 <h2 className="text-lg font-semibold">{patient.name}</h2>
                 <div className="flex justify-between text-gray-500 my-1">
@@ -201,28 +215,38 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                   <p>{patient.phoneNumber || "정보 없음"}</p>
                 </div>
                 <div className="flex justify-end mt-1">
-                  <button className="bg-gray-300 border-gray-400 rounded-md border text-center px-2 w-[50px]">
+                  <button 
+                    className="bg-gray-300 border-gray-400 rounded-md border text-center px-2 w-[50px] hover:bg-gray-400"
+                    onClick={() => onChatClick(patient.patientId)}
+                  >
                     채팅
                   </button>
                 </div>
               </div>
 
-              {/* 요청 사항 기록 섹션 */}
+              {/* 요청 기록 영역 */}
               <h3 className="text-[15px] font-semibold mb-1">요청 기록</h3>
               {patientRequests.length === 0 ? (
                 <p className="text-gray-500">요청 기록이 없습니다.</p>
               ) : (
                 <ul className="text-[15px] text-gray-500">
-                    {patientRequests.map((req) => (
-                      <li key={req.requestId} className="mb-3">
-                        <p className="">{formatDate(req.requestTime)}</p>
+                  {patientRequests.map((req, index) => {
+                    const formattedDate = formatDate(req.requestTime);
+                    const showDate =
+                      index === 0 ||
+                      formattedDate !== formatDate(patientRequests[index - 1].requestTime);
+                    return (
+                      <li key={req.requestId} className="mb-5">
+                        {showDate && <p className="mb-2">{formattedDate}</p>}
+                        <p className="text-[13px]">요청 시간: {formatTime(req.requestTime)}</p>
+                        <p className="text-[13px]">완료 시간: {req.acceptTime ? formatTime(req.acceptTime) : "대기 중"}</p>
                         <p className="text-[13px]">{req.requestContent}</p>
-                        <p className="">{req.acceptTime ? formatDate(req.acceptTime) : "응답 대기 중"}</p>
                       </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           )}
         </>
       )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import search from "../../assets/search.png";
+import { FaSearch } from "react-icons/fa";
 import back from "../../assets/back.png";
 import Fuse from "fuse.js";
 import axios from "axios";
@@ -89,15 +89,19 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
     <div className="bg-[#DFE6EC] p-3 rounded-lg ">
       <h2 className="text-lg font-bold mb-4">환자 정보</h2>
 
-      {/*검색 입력창*/}
+      {/*검색 입력 창*/}
         <div className="flex bg-white w-full mb-3 px-1 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
-          <img src={search} alt="search" className="w-[1.5em] h-[1.5em] mr-2"/>
-          <input type="text" placeholder="환자 이름을 입력해주세요." className="w-60" value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}/>
+          <FaSearch className="text-gray-600 mx-2 h-[20px] w-[20px] pt-1" />
+          <input 
+            type="text" 
+            placeholder="환자 이름을 입력해주세요." 
+            className="border-none outline-none w-full" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}/>  
         </div>
 
         {/*환자 목록 영역*/}
-        <div className="space-y-4 h-[350px] overflow-y-auto">
+        <div className="space-y-4 h-[350px] overflow-y-auto scrollbar-hide">
           <ul className="space-y-4 w-full cursor-pointer">
             {filteredPatients.map((patient) => (
               <li key={patient.patientId} className="flex flex-col" onClick={() => onPatientClick(patient.patientId)}>

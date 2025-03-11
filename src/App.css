@@ -59,3 +59,7 @@
 .read-the-docs {
   color: #888;
 }
+
+.height {
+  min-height: 60px !important;
+}
