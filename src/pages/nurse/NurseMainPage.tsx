@@ -18,6 +18,7 @@ import ChatMessages from "../../components/common/ChatMessages.tsx";
 import { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, ChatConversation, MedicalStaff } from "../../types";
 import macro from "../../assets/macro.png";
 import axios from "axios";
+import { useUserContext } from "../../context/UserContext";
 const WebSocketContext = createContext(null);
 
 
@@ -38,17 +39,24 @@ const NurseMainPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const medicalStaffId = 1; // 임시 staffId
-  const hospitalId = 1; // 임시 병원 Id
+  const { hospitalId } = useUserContext();
+  const medicalStaffId = hospitalId;
 
   // 병원 이름 API 호출
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`)
-      .then(response => setHospitalName(response.data))
-      .catch(error => {
+    if (!hospitalId) return;
+  
+    const fetchHospitalName = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`);
+        setHospitalName(response.data);
+      } catch (error) {
         console.error("Error fetching hospital name:", error);
         setHospitalName("병원 정보를 불러오지 못했습니다.");
-      });
+      }
+    };
+  
+    fetchHospitalName();
   }, [hospitalId]);
 
   const handleLogoClick = () => {
@@ -145,7 +153,25 @@ const NurseMainPage: React.FC = () => {
     setCurrentRoom(conversationId);
     setPatientName(patientNameValue);
     setPatientId(patientId);
-    console.log("conversation id: %s, patient name: %s, patientId: %d", conversationId, patientNameValue, patientId);
+
+    const emptyRoom: ChatRoom = {
+      userName: patientNameValue,
+      conversationId: conversationId,
+      previewMessage: '',
+      lastMessageTime: '',
+      isRead: false
+    }
+    setRooms((prevRooms) => {
+      const roomExists = prevRooms.some(room => room.conversationId === conversationId && room.previewMessage === '');
+      
+      if (roomExists) {
+        return prevRooms.map(room => 
+          room.conversationId === conversationId && room.previewMessage === '' ? emptyRoom : room
+        );
+      } else {
+        return [...prevRooms, emptyRoom];
+      }
+    });
   };
 
   const convertStatus = (status: string): string => {
@@ -285,7 +311,7 @@ const NurseMainPage: React.FC = () => {
     console.log("fetching chat history");
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/chat/message/user?patientId=${patientId}`);
+      const response = await fetch(`http://localhost:8080/api/chat/message/user?patientId=${patientId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch messages for patient: ${patientId}`);
       }
@@ -336,7 +362,7 @@ const NurseMainPage: React.FC = () => {
   // Fetch chatrooms from the server
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`/api/chat/message/main/${nurseId}`);
+      const response = await fetch(`http://localhost:8080/api/chat/message/main/${nurseId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch rooms: ${response.statusText}`);
       }
@@ -384,6 +410,11 @@ const NurseMainPage: React.FC = () => {
       setPatientId(patientId);
     }
   };
+
+  // Remove empty rooms when leaving chat room (back click)
+  const removeEmptyRoom = (conversationId: string) => {
+    setRooms((prevRooms) => prevRooms.filter(room => !(room.conversationId === conversationId && room.lastMessageTime === '')));
+  };  
 
   // Function to mark message as read
   const markMessageAsRead = async (messageId: number) => {
@@ -590,11 +621,11 @@ const NurseMainPage: React.FC = () => {
 
       {isMacroMode ? (
         <div className="flex-1 relative w-full">
-          <NurseMacroList medicalStaffId={medicalStaffId} />
+          <NurseMacroList medicalStaffId={Number(medicalStaffId)} />
         </div>
       ) : isQAMode ? (
         <div className="flex-1 relative w-full">
-          <NurseQuickAnswerList hospitalId={hospitalId} />
+          <NurseQuickAnswerList hospitalId={Number(hospitalId)} />
         </div>
       ) : (
         <>
@@ -611,6 +642,7 @@ const NurseMainPage: React.FC = () => {
             subscribeToRoom={subscribeToRoom}
             fetchChatHistory={fetchChatHistory}
             updateMessages={updateMessages}
+            removeEmptyRoom={removeEmptyRoom}
           />
 
           {/* 환자 정보 및 스케줄러 영역 */}

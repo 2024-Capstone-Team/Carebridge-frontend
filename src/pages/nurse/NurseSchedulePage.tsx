@@ -11,6 +11,7 @@ import macro from "../../assets/macro.png";
 import dwarrows from "../../assets/down arrows.png";
 import qresponse from "../../assets/quick response.png";
 import axios from "axios";
+import { useUserContext } from "../../context/UserContext";
 
 interface Patient {
   patientId: number;
@@ -28,6 +29,9 @@ const NurseSchedulePage: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+
+  const { hospitalId } = useUserContext();
+  const staffId = hospitalId;
 
   // 생년월일 포맷 변환 함수
   const formatBirthdate = (birthdate: string | null | undefined) => {
@@ -50,7 +54,6 @@ const NurseSchedulePage: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const staffId = 1; // 임시 staff_id
         const response = await axios.get(`http://localhost:8080/api/patient/users/${staffId}`);
         console.log(response.data); // 응답 데이터 확인
         const fetchedPatients = response.data.map((patient: any) => ({

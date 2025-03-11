@@ -3,6 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import back from "../../assets/back.png";
 import Fuse from "fuse.js";
 import axios from "axios";
+import { useUserContext } from "../../context/UserContext";
 
 interface PatientInfo {
   patientId: number;
@@ -18,6 +19,9 @@ interface NursePatientInfoProps {
 const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) => {
   const [patients, setPatients] = useState<PatientInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { hospitalId } = useUserContext();
+  const staffId = hospitalId;
 
   const fuse = new Fuse(patients, {
     keys: ["name"],
@@ -55,7 +59,6 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const staffId = 1; // 임시 staff_id 값
         const response = await axios.get(`http://localhost:8080/api/patient/users/${staffId}`);
         const fetchedPatients = response.data.map((patient: any) => ({
           patientId: patient.patientId,

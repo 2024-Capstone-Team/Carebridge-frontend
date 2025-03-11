@@ -2,8 +2,8 @@
   import { useNavigate } from "react-router-dom";
   import FullCalendar from "@fullcalendar/react";
   import timeGridPlugin from "@fullcalendar/timegrid";
-  // import "../../App.css";
   import axios from "axios";
+  import { useUserContext } from "../../context/UserContext";
 
   interface ExaminationSchedule {
     id: number;
@@ -26,6 +26,9 @@
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    
+    const { hospitalId } = useUserContext();
+    const staffId = hospitalId;
     
     const calculateAge = (birthDateString: string): number => {
       const today = new Date();
@@ -65,7 +68,6 @@
   // 일정 API
   const fetchSchedules = async () => {
     try {
-      const staffId = 1; // 임시 의료진 id
       const response = await axios.get<ExaminationSchedule[]>(`http://localhost:8080/api/schedule/medical-staff/${staffId}`);
       console.log("API Response:", response.data);
 
@@ -105,10 +107,10 @@
       const fetchedEvents = schedulesWithPatientDetails.map((schedule) => {
         const startDate = new Date(schedule.scheduleDate);
 
-        // 1) 카테고리에 맞는 분 단위 duration 구하기
+        // duration 구하기기
         const durationMinutes = getDurationByCategory(schedule.category);
 
-        // 2) endDate = startDate + durationMinutes
+        // endDate = startDate + durationMinutes
         const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
     
         return {
@@ -187,11 +189,7 @@
             plugins={[timeGridPlugin]}
             initialView="timeGridWeek"
             allDaySlot={false}
-            headerToolbar={{
-              left: "prev,today,next",   // 왼쪽 영역에 '이전주', '오늘', '다음주' 버튼
-              center: "title",           // 중앙에는 현재 날짜 범위 타이틀
-              right: "timeGridWeek,timeGridDay" // 오른쪽에는 '주간/일간' 전환 버튼
-            }}
+            headerToolbar={false}
             slotLabelFormat={{
               hour: "2-digit",
               minute: "2-digit",
