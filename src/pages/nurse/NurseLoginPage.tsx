@@ -1,12 +1,13 @@
-// src/pages/NurseLoginPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useUserContext } from "../../context/UserContext";
 
 const NurseLoginPage: React.FC = () => {
   const [id, setID] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { setHospitalId } = useUserContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,22 +23,23 @@ const NurseLoginPage: React.FC = () => {
     }
 
     try {
-      // 서버로 로그인 요청
       const response = await axios.post('http://localhost:8080/api/staff/login', {
         userId: id,
         password: password,
       });
 
-      if (response.status === 200) {
-        // 로그인 성공 시 페이지 이동
-        navigate('/nurse-main');
-      }
-    } catch (error) {
-      // 로그인 실패 시 처리
-      console.error('로그인 실패:', error);
-      alert('ID 또는 비밀번호가 잘못되었습니다.');
-    }
-  };
+    const hospitalIdFromResponse = response.data;
+    const hospitalIdStr = hospitalIdFromResponse.toString();
+
+    setHospitalId(hospitalIdStr);
+    localStorage.setItem("hospitalId", hospitalIdStr);
+    
+    navigate('/nurse-main');
+  } catch (error) {
+    console.error('로그인 실패:', error);
+    alert('ID 또는 비밀번호가 잘못되었습니다.');
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

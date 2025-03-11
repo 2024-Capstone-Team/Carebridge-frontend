@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useUserContext } from "../../context/UserContext";
 
 interface ExaminationSchedule {
   id: number;
@@ -22,6 +23,9 @@ const NurseSchedule: React.FC = () => {
   const [tooltipContent, setTooltipContent] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
 
+  const { hospitalId } = useUserContext();
+  const staffId = hospitalId;
+  
   const navigate = useNavigate();
 
   const handleNavigate = () => {
@@ -94,7 +98,6 @@ const NurseSchedule: React.FC = () => {
   // 스케줄 API
   const fetchSchedules = async () => {
     try {
-      const staffId = 1; // 임시 id
       const scheduleResponse = await axios.get<ExaminationSchedule[]>(`http://localhost:8080/api/schedule/medical-staff/${staffId}`);
       const schedules = scheduleResponse.data;
       const todayDateString = new Date().toISOString().split("T")[0];
