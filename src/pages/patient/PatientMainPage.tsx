@@ -7,6 +7,7 @@ import { useUserContext } from "../../context/UserContext";
 const PatientMainPage: React.FC = () => {
   const navigate = useNavigate();
   const { setPatientId } = useUserContext();
+  const phoneNumber = localStorage.getItem("phoneNumber");
 
   const chatBot = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +26,7 @@ const PatientMainPage: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-        await axios.post('http://localhost:8080/api/users/logout');
+      await axios.post(`http://localhost:8080/api/users/logout?phoneNumber=${phoneNumber}`);
         setPatientId(null);
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");
