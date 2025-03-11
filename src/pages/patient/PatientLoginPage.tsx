@@ -46,16 +46,14 @@ const PatientLoginPage: React.FC = () => {
       }
 
       // 로그인 성공 시 patientId를 받아서 상태에 저장
-      const { userId, patientId } = loginResponse.data;
+      const { userId, patientId, phoneNumber } = loginResponse.data;
       console.log("Login Response:", loginResponse);
       console.log("Login Response Data:", loginResponse.data);
       setPatientId(patientId); //UserContext의 PatientId 업데이트
       setUserId(userId);
       localStorage.setItem("patientId", patientId);
       localStorage.setItem("userId", userId);
-      console.log("User ID:", userId);
-      console.log("Patient ID:", patientId);
-
+      localStorage.setItem("phoneNumber", phoneNumber);
       try {
         const token = await requestForToken();
         if (token) {
