@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, memo } from "react";
 import { ChatMessage } from "../../types";
+import { MdOutlineRefresh, MdClose} from "react-icons/md";  
 
 // Helper function to format timestamp
 const formatTimestamp = (timestamp: string): string => {
@@ -61,10 +62,34 @@ const MessageBubble: React.FC<{
     {/* Sender's message */}
     {isSender && (
       <div className="flex flex-row items-end mr-3">
-        <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
-        <span className="text-xs text-gray-500 ml-2">{formatTimestamp(timestamp)}</span>
+        {message.isFailed ? (
+          <div className="flex items-center">
+            <span className="text-xs text-red-500 mr-2">전송 실패</span>
+            
+            {/* Resend & Cancel Buttons (Attached, Half-Rounded) */}
+            <div className="flex border border-gray-300 rounded-full overflow-hidden shadow-sm">
+              {/* Resend Button (Left Side) */}
+              <button className="p-1 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-l-full"
+                onClick={() => onResend(message)}>
+                <MdOutlineRefresh className="w-5 h-5" />
+              </button>
+
+              {/* Cancel Button (Right Side) */}
+              <button className="p-1 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-r-full"
+                onClick={() => onCancel(message)}>
+                <MdClose className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
+            <span className="text-xs text-gray-500 ml-2">{formatTimestamp(timestamp)}</span>
+          </>
+        )}
       </div>
     )}
+
 
     {/* Sender/Receiver message bubble */}
     <div
@@ -80,42 +105,8 @@ const MessageBubble: React.FC<{
     {/* Receiver's message */}
     {!isSender && (
       <div className="flex flex-row items-end ml-3">
-        {message.isPending ? (  // Show spinner if the message is pending
-          <div className="flex justify-center items-center">
-            <svg
-              className="animate-spin h-5 w-5 text-gray-500"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="4"
-                d="M4 12h16"
-              />
-            </svg>
-          </div>
-        ) : !message.isFailed ? (  // if message is not failed, show time and read status
-          <>
-            <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
-            <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
-          </>
-        ) : (  // if message failed, show failed text and buttons for resend/cancel
-          <div className="flex items-center ml-2">
-            <span className="text-xs text-red-500 mr-2">전송 실패</span>
-            <button className="text-xs text-blue-500 hover:underline" onClick={() => onResend(message)}>
-              재전송
-            </button>
-            <button className="text-xs text-gray-500 hover:underline ml-2" onClick={() => onCancel(message)}>
-              취소
-            </button>
-          </div>
-        )}
+        <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
+        <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
       </div>
     )}
 
@@ -134,7 +125,7 @@ interface ChatMessagesProps {
   onCancel: (msg: ChatMessage) => void;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = memo(
+const ChatMessages: React.FC<ChatMessagesProps> = 
   ({
     chatMessages,
     currentUserId,
@@ -150,14 +141,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
 
     // Scroll to the bottom when the component first mounts
     useEffect(() => {
-      const timeoutId = setTimeout(() => {
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
-        }
-      }, 100); // Delay to ensure DOM is fully rendered
-    
-      return () => clearTimeout(timeoutId); // Cleanup the timeout
-    }, []); // Initial mount
+      // Instantly jump to bottom on first load (without animation)
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "instant", block: "end" });
+      }
+    }, []); // Runs only on first mount
 
     // Scroll to the latest message when chatMessages changes
     useEffect(() => {
@@ -204,18 +192,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = memo(
         <div ref={messagesEndRef} />
       </div>
     );
-  },
-  (prevProps, nextProps) => {
-    return (
-      prevProps.chatMessages.length === nextProps.chatMessages.length &&
-      prevProps.currentUserId === nextProps.currentUserId &&
-      prevProps.chatMessages.every(
-        (msg, index) =>
-          msg.messageContent === nextProps.chatMessages[index].messageContent &&
-          msg.readStatus === nextProps.chatMessages[index].readStatus // Check for isRead
-      )
-    );
-  }
-);
+  };
 
 export default ChatMessages;
