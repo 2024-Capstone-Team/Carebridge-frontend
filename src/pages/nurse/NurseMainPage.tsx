@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, createContext} from 'react';
+import React, {useState, useEffect, useRef, createContext, useCallback} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
@@ -40,7 +40,7 @@ const NurseMainPage: React.FC = () => {
   const location = useLocation();
 
   const { hospitalId } = useUserContext();
-  const medicalStaffId = hospitalId;
+  const medicalStaffId = 1;
 
   // 병원 이름 API 호출
   useEffect(() => {
@@ -154,13 +154,17 @@ const NurseMainPage: React.FC = () => {
     setPatientName(patientNameValue);
     setPatientId(patientId);
 
-    const emptyRoom: ChatRoom = {
+    // 채팅 기록이 없을때 새로운 빈 채팅방 생성
+    const emptyRoom: ChatRoom = {  // create empty room
       userName: patientNameValue,
       conversationId: conversationId,
       previewMessage: '',
       lastMessageTime: '',
       isRead: false
     }
+    // 존재하는 빈 채팅방 제거
+    setRooms((prevRooms) => prevRooms.filter(room => !(room.lastMessageTime === '')));
+    // 새로운 빈 채팅방 추가
     setRooms((prevRooms) => {
       const roomExists = prevRooms.some(room => room.conversationId === conversationId && room.previewMessage === '');
       
@@ -299,36 +303,42 @@ const NurseMainPage: React.FC = () => {
 
   {/* Handlers and Utility Functions */}
 
-  // Save messages to prevent repeated render 
-  const chatMessagesRef = useRef<ChatMessage[]>([]);
+  // useEffect(() => {
+  //   console.log("Messages updated:", messages);
+  // }, [messages]);  
   
-  const updateMessages = (newMessage: ChatMessage) => {
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  };
+  const updateMessages = useCallback((newMessage: ChatMessage) => {
+    setMessages((prevMessages) => {
+      if (prevMessages.some(msg => msg.messageId === newMessage.messageId)) return prevMessages;
+      return [...prevMessages, newMessage];
+    });
+  }, []);
     
   // Get chat history
   const fetchChatHistory = async (patientId: number) => {
-    console.log("fetching chat history");
+    console.log("Fetching chat history...");
     try {
       setIsLoading(true);
       const response = await fetch(`http://localhost:8080/api/chat/message/user?patientId=${patientId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch messages for patient: ${patientId}`);
-      }
-      const messages: ChatMessage[] = await response.json();
-
-      // 기존 데이터와 다를 때만 상태 업데이트
-      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
-        chatMessagesRef.current = messages;
-        setMessages(messages.reverse());
-      }
+      if (!response.ok) throw new Error(`Failed to fetch messages for patient: ${patientId}`);
+  
+      const newMessages: ChatMessage[] = await response.json();
+  
+      setMessages((prevMessages) => {
+        // Only update if messages have changed
+        return JSON.stringify(prevMessages) !== JSON.stringify(newMessages)
+          ? [...newMessages.reverse()]  // Reverse to maintain order
+          : prevMessages;
+      });
+  
     } catch (error) {
+      console.error("Failed to fetch chat history", error);
       setMessages([]);
-      // console.error("Failed to fetch chat history", error);
     } finally {
       setIsLoading(false);
     }
   };
+  
     
   // 웹소켓 연결 
   const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: any) => {
@@ -341,7 +351,7 @@ const NurseMainPage: React.FC = () => {
         setMessages((prevMessages) => [...prevMessages, message]);
         console.log("Adding message to array");
       }
-      // 채팅 메시지 처리 
+      fetchRooms();  // chatroom list 업데이트
     } else if (message.type === "REQUEST") {  // 메시지가 요청사항인지 확인 
       const request: CallBellRequest = message as CallBellRequest;
       console.log("Received a request message:", request);  
@@ -351,9 +361,12 @@ const NurseMainPage: React.FC = () => {
       console.log("Update read status");
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
-          !msg.isPatient && !msg.readStatus ? { ...msg, isRead: true } : msg
+          !msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg
         )
       );
+      
+      fetchRooms();  // chatroom list 업데이트
+
     } else {
       console.warn("Unknown message type:", message);
     }
@@ -374,7 +387,14 @@ const NurseMainPage: React.FC = () => {
       }
 
       const roomsData: ChatRoom[] = await response.json();
-      setRooms(roomsData);
+      setRooms((prevRooms) => {
+        const emptyRooms = prevRooms.filter(room => room.previewMessage === ''); // Keep old empty rooms
+        const updatedRooms = roomsData.filter(room => room.previewMessage !== ''); // New fetched rooms with messages
+      
+        // Merge fetched rooms with existing empty rooms
+        return [...emptyRooms, ...updatedRooms];
+      });
+      
       setIsDataFetched(true);
       console.log("Room fetched: ", roomsData);
     } catch (error) {
@@ -408,6 +428,10 @@ const NurseMainPage: React.FC = () => {
       setPatientName(selectedRoom.userName);
       const patientId = parseInt(roomId.split('_')[1]);
       setPatientId(patientId);
+    }
+    // If selected room is not empty room remove empty room
+    if (selectedRoom?.lastMessageTime != '') {
+      setRooms((prevRooms) => prevRooms.filter(room => !(room.lastMessageTime === '')));
     }
   };
 
@@ -457,13 +481,7 @@ const NurseMainPage: React.FC = () => {
   useEffect(() => {
     if (!isConnected) return;
     subscribeToRoom(`/sub/user/chat/${nurseId}`); 
-    return () => {
-    };
   }, [isConnected]);
-
-  useEffect(() => {
-    console.log("Updated currentRoom:", currentRoom);
-  }, [currentRoom]);
 
   // Fetch chat rooms on mount
   useEffect(() => {

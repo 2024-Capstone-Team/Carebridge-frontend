@@ -21,7 +21,7 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
   const [searchQuery, setSearchQuery] = useState("");
 
   const { hospitalId } = useUserContext();
-  const staffId = hospitalId;
+  const staffId = 1;
 
   const fuse = new Fuse(patients, {
     keys: ["name"],

@@ -28,7 +28,7 @@
     const navigate = useNavigate();
     
     const { hospitalId } = useUserContext();
-    const staffId = hospitalId;
+    const staffId = 1;
     
     const calculateAge = (birthDateString: string): number => {
       const today = new Date();

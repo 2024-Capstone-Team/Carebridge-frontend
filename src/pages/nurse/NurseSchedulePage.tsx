@@ -31,7 +31,7 @@ const NurseSchedulePage: React.FC = () => {
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
 
   const { hospitalId } = useUserContext();
-  const staffId = hospitalId;
+  const staffId = 1;
 
   // 생년월일 포맷 변환 함수
   const formatBirthdate = (birthdate: string | null | undefined) => {
