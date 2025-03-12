@@ -48,7 +48,7 @@ const PatientSettingPage: React.FC = () => {
   const [patientDto, setPatientDto] = useState<PatientDto | null>(null);
   const [guardianDto, setGuardianDto] = useState<GuardianDto | null>(null);
   const [hospitalName, setHospitalName] = useState<string>("");
-  const { userId } = useUserContext();
+  const { patientId } = useUserContext();
 
   // 병원 이름을 가져오는 API 호출 함수
   const fetchHospitalName = async (hospitalId: number): Promise<string> => {
@@ -74,10 +74,10 @@ const PatientSettingPage: React.FC = () => {
 
   // 환자와 보호자 정보를 함께 가져오는 통합 API 호출 함수
   const fetchPatientAndGuardianInfo = async () => {
-    if (!userId) return;
+    if (!patientId) return;
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/patient/user/${userId}`);
+      const response = await axios.get(`http://localhost:8080/api/patient/user/${patientId}`);
       const patientData = response.data;
       
       patientData.birthDate = formatDate(patientData.birthDate);
@@ -100,7 +100,7 @@ const PatientSettingPage: React.FC = () => {
   // 컴포넌트 마운트 시 데이터 로딩
   useEffect(() => {
     fetchPatientAndGuardianInfo();
-  }, [userId]);
+  }, [patientId]);
 
   // 로딩 중일 때 표시할 화면
   if (!patientDto) {
@@ -119,7 +119,7 @@ const PatientSettingPage: React.FC = () => {
           <img src="/src/assets/back.png" alt="뒤로가기" className="w-[7vw]" />
         </Link>
         <div className="flex-grow flex items-center justify-center">
-          <p className="font-bold text-black" style={{ fontSize: "5vw" }}>
+          <p className="font-bold text-black text-[18px]">
             설정
           </p>
         </div>
@@ -130,14 +130,14 @@ const PatientSettingPage: React.FC = () => {
         {/* 환자 기본 정보 섹션 */}
         <div className="flex flex-col w-full">
           <div className="flex-1 border-b border-gray-300 p-7 m-0 flex items-center">
-            <div className="flex flex-col justify-center items-start space-y-0 w-full">
-              <p className="text-black" style={{ fontSize: "5vw" }}>
+            <div className="flex flex-col justify-center items-start space-y-0 w-full gap-2">
+              <p className="text-black text-[15px]">
                 환자
               </p>
-              <p className="text-black font-bold" style={{ fontSize: "8vw" }}>
-                {patientDto.name}님, 안녕하세요.
+              <p className="text-black font-bold whitespace-nowrap text-[25px]">
+                {patientDto.name} 님, 안녕하세요.
               </p>
-              <div className="border border-[#226193] rounded-[60px] p-1">
+              <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
                   className="text-[#226193] font-normal mt-[-4px]"
                   style={{ fontSize: "3.5vw" }}
@@ -145,7 +145,7 @@ const PatientSettingPage: React.FC = () => {
                   보호자: {guardianDto?.name || "미등록"}
                 </p>
               </div>
-              <div className="border border-[#226193] rounded-[60px] p-1">
+              <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
                   className="text-[#226193] font-normal mt-[-4px]"
                   style={{ fontSize: "3.5vw" }}
@@ -153,7 +153,7 @@ const PatientSettingPage: React.FC = () => {
                   입원일: {new Date(patientDto.hospitalizationDate).toLocaleDateString()}
                 </p>
               </div>
-              <div className="border border-[#226193] rounded-[60px] p-1">
+              <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
                   className="text-[#226193] font-normal mt-[-4px]"
                   style={{ fontSize: "3.5vw" }}
@@ -214,7 +214,7 @@ const PatientSettingPage: React.FC = () => {
                   <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
                     병원
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black font-normal whitespace-nowrap" style={{ fontSize: "4vw" }}>
                     병동/호실
                   </p>
                 </div>
