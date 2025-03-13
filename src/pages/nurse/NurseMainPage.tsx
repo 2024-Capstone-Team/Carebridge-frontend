@@ -1,6 +1,5 @@
-import React, {useState, useEffect, useRef, createContext, useCallback, useMemo} from 'react';
+import React, {useState, useEffect, useRef, createContext, useCallback} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
-import { SnackbarProvider, useSnackbar } from 'notistack';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
 import Nurse_DetailedPatientInfo from '../../components/nurse/NurseDetailedPatientInfo';
@@ -23,25 +22,15 @@ import { useUserContext } from "../../context/UserContext";
 const WebSocketContext = createContext(null);
 
 
+// conversationId에서 patientId 추출
+function parsePatientId(conversationId: string) {
+  const parts = conversationId.split("_");
+  if (parts.length < 2) return 0;
+  return parseInt(parts[1], 10);
+}
+
 const NurseMainPage: React.FC = () => {
-  const { enqueueSnackbar } = useSnackbar();
-
-  // =============== 상태 관리 ===============
-  /**
-   * @description 알림 시스템 관련 상태
-   * @property notificationQueue - 대기 중인 알림 목록을 관리
-   * @property currentNotification - 현재 표시 중인 알림 정보
-   * @property unreadNotifications - 읽지 않은 알림을 저장하는 객체
-   * @property isProcessingQueue - 알림 처리 진행 상태
-   */
-  const [notificationQueue, setNotificationQueue] = useState<CallBellRequest[]>([]);
-  const [currentNotification, setCurrentNotification] = useState<CallBellRequest | null>(null);
-  const [unreadNotifications, setUnreadNotifications] = useState<{[key: number]: Date}>({});
-  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
-
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
-  const [isTimeSelection, setIsTimeSelection] = useState(false);
-  const [selectedTime, setSelectedTime] = useState<Date | null>(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); // 메뉴 팝업 표시
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 }); // 메뉴바 위치 설정
   const [isMacroMode, setIsMacroMode] = useState(false); // 매크로 설정 화면 여부
@@ -194,9 +183,6 @@ const NurseMainPage: React.FC = () => {
         return [...prevRooms, emptyRoom];
       }
     });
-
-    // 요청사항 창 닫기
-    handleCloseNotification();
   };
 
   const convertStatus = (status: string): string => {
@@ -266,61 +252,35 @@ const NurseMainPage: React.FC = () => {
       fetchRequests();
     }, [medicalStaffId]);
   
-    // useMemo를 컴포넌트 최상위 레벨로 이동
-    const uniquePatientIds = useMemo(() => 
-        Array.from(new Set(requests.map((req) => req.patientId))),
-        [requests]
-    );
-  
-    // useEffect에서는 계산된 값을 사용
     useEffect(() => {
-        uniquePatientIds.forEach((patientId) => {
-            if (!patientDetails[patientId]) {
-                fetchPatientDetail(patientId);
-            }
-        });
-    }, [uniquePatientIds, patientDetails]); // 의존성 배열 수정
+      const uniquePatientIds = Array.from(new Set(requests.map((req) => req.patientId)));
   
-  /**
-   * @description 데이터 가져오기 - 환자 상세 정보
-   * 환자의 기본 정보와 질병명을 병렬로 조회합니다.
-   */
-  const fetchPatientDetail = async (patientId: number) => {
-    try {
-      // 환자 기본 정보와 질병명을 병렬로 가져오기
-      const [patientResponse, diseaseResponse] = await Promise.all([
-        fetch(`http://localhost:8080/api/patient/user/${patientId}`),
-        fetch(`http://localhost:8080/api/medical-record/${patientId}`)
-      ]);
-
-      if (!patientResponse.ok) {
-        console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, patientResponse.status);
-        return;
-      }
-      if (!diseaseResponse.ok) {
-        console.error(`질병명 조회 API 에러 (ID: ${patientId})`, diseaseResponse.status);
-        return;
-      }
-
-      const patientData: PatientDetail = await patientResponse.json();
-      const disease = await diseaseResponse.text();
-
-      // 환자 정보와 질병명을 한 번에 업데이트
-      setPatientDetails(prevDetails => ({
-        ...prevDetails,
-        [patientId]: {
-          ...patientData,
-          disease: disease
+      uniquePatientIds.forEach((patientId) => {
+        
+        // 아직 환자의 상세 정보를 가져오지 않은 경우만 API 호출
+        if (!patientDetails[patientId]) {
+          fetchPatientDetail(patientId);
         }
-      }));
-    } catch (error) {
-      console.error(`환자 정보 가져오기 실패 (ID: ${patientId})`, error);
-    }
-  };
+      });
+    }, [requests]);
   
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedStatus(e.target.value);
-  };
+    const fetchPatientDetail = async (patientId: number) => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
+        if (!response.ok) {
+          console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, response.status);
+          return;
+        }
+        const data: PatientDetail = await response.json();
+        setPatientDetails((prev) => ({ ...prev, [patientId]: data }));
+      } catch (error) {
+        console.error(`환자 상세 정보 가져오기 실패 (ID: ${patientId})`, error);
+      }
+    };
+  
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedStatus(e.target.value);
+    };
   
     // 상태 우선순위
     const statusPriority = ['대기 중', '진행 중', '예약됨', '완료됨'];
@@ -385,6 +345,26 @@ const NurseMainPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // 콜벨 요청에서 patientId 모으기
+    const requestPatientIds = requests.map((req) => req.patientId);
+
+    // 채팅방에서 conversationId를 이용해 patientId 뽑기
+    const chatPatientIds = rooms.map((room) => {
+      return parsePatientId(room.conversationId);
+    });
+
+    // 중복 제거
+    const allPatientIds = Array.from(new Set([...requestPatientIds, ...chatPatientIds]));
+
+    // 아직 fetch하지 않은 환자만 fetch
+    allPatientIds.forEach((id) => {
+      if (id && !patientDetails[id]) {
+        fetchPatientDetail(id);
+      }
+    });
+  }, [requests, rooms]); // requests, rooms가 바뀔 때마다 실행
   
     
   // 웹소켓 연결 
@@ -401,21 +381,9 @@ const NurseMainPage: React.FC = () => {
       fetchRooms();  // chatroom list 업데이트
     } else if (message.type === "REQUEST") {  // 메시지가 요청사항인지 확인 
       const request: CallBellRequest = message as CallBellRequest;
-      console.log("요청 메시지 수신:", request);
-      
-      // 환자 정보가 없는 경우에만 fetch (질병명도 함께 가져옴)
-      if (!patientDetails[request.patientId]) {
-        fetchPatientDetail(request.patientId);
-      }
-      
-      // 현재 표시 중인 알림이 없을 때만 바로 표시
-      if (!currentNotification && !requestPopup) {
-        setRequestPopup(request);
-        setCurrentNotification(request);
-      } else {
-        // 이미 다른 알림이 표시 중이면 큐에 추가
-        addToQueue(request);
-      }
+      console.log("Received a request message:", request);  
+      // 요청 메시지 처리 (알림 띄우기)
+      setRequestPopup(message as CallBellRequest); // 요청 메시지를 팝업에 저장
     } else if (message.messageType === "NOTIFICATION") {  // 읽음 표시 업데이트 
       console.log("Update read status");
       setMessages((prevMessages) =>
@@ -427,7 +395,7 @@ const NurseMainPage: React.FC = () => {
       fetchRooms();  // chatroom list 업데이트
 
     } else {
-      console.warn("알 수 없는 메시지 타입:", message);
+      console.warn("Unknown message type:", message);
     }
   });
 
@@ -528,8 +496,6 @@ const NurseMainPage: React.FC = () => {
     }
   };
 
-  
-
 
   {/* Hooks */}
 
@@ -549,364 +515,29 @@ const NurseMainPage: React.FC = () => {
     fetchRooms();
   }, []);
 
-  // ===== 알림 큐 관련 함수들 =====
-  
-  /**
-   * 알림을 큐에 추가하는 함수
-   * @param notification 추가할 알림
-   */
-  const addToQueue = (notification: CallBellRequest) => {
-    setNotificationQueue(prev => [...prev, notification]);
-    // 미확인 알림에 추가
-    setUnreadNotifications(prev => ({
-      ...prev,
-      [notification.requestId]: new Date()
-    }));
-  };
-
-  /**
-   * 큐에서 다음 알림을 처리하는 함수
-   */
-  const processNextNotification = () => {
-    if (notificationQueue.length > 0 && !currentNotification && !requestPopup) {
-      const nextNotification = notificationQueue[0];
-      setCurrentNotification(nextNotification);
-      setRequestPopup(nextNotification);
-      setNotificationQueue(prev => prev.slice(1));
-    }
-  };
-
-  /**
-   * 알림 팝업을 닫을 때 호출되는 함수
-   */
-  const handleCloseNotification = () => {
-    setRequestPopup(null);
-    setCurrentNotification(null);
-    setIsTimeSelection(false);
-    setSelectedTime(null);
-  };
-
-  // 큐 처리를 위한 useEffect
-  useEffect(() => {
-    if (!isProcessingQueue && notificationQueue.length > 0 && !currentNotification) {
-      setIsProcessingQueue(true);
-      processNextNotification();
-      setIsProcessingQueue(false);
-    }
-  }, [notificationQueue, currentNotification, isProcessingQueue]);
-
-  // 미확인 알림 재알림을 위한 useEffect
-  useEffect(() => {
-    const checkUnreadNotifications = () => {
-      const now = new Date();
-      Object.entries(unreadNotifications).forEach(([requestId, timestamp]) => {
-        const timeDiff = now.getTime() - timestamp.getTime();
-        const minutesPassed = Math.floor(timeDiff / (1000 * 60));
-        
-        // 5분이 지난 미확인 알림 재표시
-        if (minutesPassed >= 5) {
-          const notification = requests.find(req => req.requestId === Number(requestId));
-          if (notification) {
-            // 현재 표시 중인 알림이 없을 때만 재알림
-            if (!currentNotification && !requestPopup) {
-              setRequestPopup(notification);
-              setCurrentNotification(notification);
-            } else {
-              // 이미 다른 알림이 표시 중이면 큐에 추가
-              addToQueue(notification);
-            }
-            // 타임스탬프 갱신
-            setUnreadNotifications(prev => ({
-              ...prev,
-              [requestId]: new Date()
-            }));
-          }
-        }
-      });
-    };
-
-    // 1분마다 미확인 알림 체크
-    const intervalId = setInterval(checkUnreadNotifications, 60 * 1000);
-    return () => clearInterval(intervalId);
-  }, [unreadNotifications, requests, currentNotification, requestPopup]);
-
-  // 알림 처리 완료 시 호출되는 함수들 수정
-  const handlePending = async (requestId: number) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/call-bell/request/status/${requestId}?status=PENDING`, {
-        method: 'PUT',
-      });
-      
-      if (!response.ok) {
-        console.error('보류 상태 변경 실패:', response.status);
-        enqueueSnackbar('요청 처리에 실패했습니다.', { 
-          variant: 'error',
-          autoHideDuration: 2000,
-        });
-        return;
-      }
-      
-      const responseData = await response.text();
-      console.log('요청 처리 완료:', responseData);
-      
-      // 알림 큐에서 다음 알림 처리
-      handleCloseNotification();
-      
-      // 미확인 알림 목록에서 제거
-      const { [requestId]: removed, ...remainingNotifications } = unreadNotifications;
-      setUnreadNotifications(remainingNotifications);
-      
-      enqueueSnackbar('요청이 성공적으로 보류 처리되었습니다.', { 
-        variant: 'success',
-        autoHideDuration: 2000,
-      });
-      
-    } catch (error) {
-      console.error('보류 상태 변경 중 에러 발생:', error);
-      enqueueSnackbar('요청 처리 중 오류가 발생했습니다.', { 
-        variant: 'error',
-        autoHideDuration: 2000,
-      });
-    }
-  };
-
-  const handleConfirmTime = async () => {
-    if (!selectedTime || !requestPopup) return;
-
-    try {
-      const now = new Date();
-      
-      const timeResponse = await fetch(`http://localhost:8080/api/call-bell/request/${requestPopup.requestId}?acceptTime=${now.toISOString()}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!timeResponse.ok) {
-        throw new Error('시간 설정에 실패했습니다.');
-      }
-
-      const statusResponse = await fetch(`http://localhost:8080/api/call-bell/request/status/${requestPopup.requestId}?status=SCHEDULED`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!statusResponse.ok) {
-        throw new Error('상태 변경에 실패했습니다.');
-      }
-
-      const chatRoomId = `${medicalStaffId}_${requestPopup.patientId}`;
-      const timeDiff = Math.round((selectedTime.getTime() - now.getTime()) / (1000 * 60));
-      const message = `${timeDiff}분 후 도착합니다.`;
-
-      const koreanTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-      const formattedTime = koreanTime.toISOString().replace('Z', '');
-      
-      const messageToSend = {
-        patientId: requestPopup.patientId,
-        medicalStaffId: medicalStaffId,
-        messageContent: message,
-        timestamp: formattedTime,
-        readStatus: false,
-        chatRoomId: chatRoomId,
-        senderId: medicalStaffId,
-        isPatient: false,
-        type: "TEXT",
-        hospitalId: hospitalId,
-        category: "CALLBELL_RESPONSE"
-      };
-
-      sendMessage("/pub/chat/message", messageToSend);
-      
-      // 알림 큐에서 다음 알림 처리
-      handleCloseNotification();
-      
-      // 미확인 알림 목록에서 제거
-      const { [requestPopup.requestId]: removed, ...remainingNotifications } = unreadNotifications;
-      setUnreadNotifications(remainingNotifications);
-      
-      enqueueSnackbar('요청이 성공적으로 예약되었습니다.', { 
-        variant: 'success',
-        autoHideDuration: 2000,
-      });
-      
-    } catch (error: any) {
-      console.error('요청 처리 중 에러 발생:', error);
-      enqueueSnackbar(`요청 처리 중 오류가 발생했습니다: ${error.message}`, { 
-        variant: 'error',
-        autoHideDuration: 2000,
-      });
-    }
-  };
-
   {/* 메시지 관련 코드 끝 */}
 
-  // 날짜 포맷팅 함수 추가
-  const formatRequestTime = (timeString: string): string => {
-    const date = new Date(timeString);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? '오후' : '오전';
-    const formattedHours = hours % 12 || 12;
-
-    return `${year}-${month}-${day} ${ampm} ${formattedHours}:${minutes}`;
-  };
-
-  // ===== 시간 선택 관련 함수들 =====
-  
-  // 시간 선택 화면으로 전환
-  const handleAcceptClick = () => {
-    setIsTimeSelection(true);
-    setSelectedTime(new Date());
-  };
-
-  // 시간 버튼 클릭 핸들러
-  const handleTimeButtonClick = (minutes: number) => {
-    const newTime = new Date();
-    newTime.setMinutes(newTime.getMinutes() + minutes);
-    setSelectedTime(newTime);
-  };
-
-  // 시간 포맷팅 함수
-  const formatSelectedTime = (date: Date | null) => {
-    if (!date) return "00:00";
-    return date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  };
 
   return (
     /* 전체 창*/
     <div className="flex h-screen bg-gray-100 p-6">
 
-      {/* ===== 요청 메시지 팝업 컨테이너 ===== */}
-      {requestPopup && patientDetails[requestPopup.patientId] && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          {/* ----- 팝업 메인 박스 ----- */}
-          <div className="bg-white p-6 rounded-none shadow-[0_15px_50px_rgba(0,0,0,0.4)] w-[60vw] md:w-[60vw] lg:w-[40vw] xl:w-[30vw] min-h-[334px] relative border-[1.8px] border-gray-300 flex flex-col items-center">
-            
-            {/* ----- 닫기 버튼 ----- */}
-            {/* 우측 상단에 위치한 X 버튼. 클릭 시 팝업을 닫고 시간 선택 상태를 초기화 */}
+      {/* 요청 메시지 팝업 */} 
+      {requestPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-1/3 relative">
+            {/* 닫기 버튼 */}
             <button
-              onClick={() => {
-                setRequestPopup(null);
-                setIsTimeSelection(false);
-                setSelectedTime(null);
-              }}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
+              onClick={() => setRequestPopup(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg"
             >
               ✖
             </button>
-
-            {/* ----- 요청 시간 표시 ----- */}
-            {/* 요청이 들어온 시간을 년-월-일 오전/오후 시:분 형식으로 표시 */}
-            <p className="text-center text-[18px] text-gray-600 mb-2">
-              {formatRequestTime(requestPopup.requestTime)}
+            <h3 className="text-xl font-bold text-center mb-4">🚨 요청 알림</h3>
+            <p className="text-gray-800 text-center">{requestPopup.requestContent}</p>
+            <p className="text-gray-500 text-sm text-center mt-2">
+              요청 시간: {new Date(requestPopup.requestTime).toLocaleString()}
             </p>
-
-            {/* ----- 환자 기본 정보 ----- */}
-            {/* 환자의 나이, 성별, 질병명을 한 줄로 표시 */}
-            <p className="text-center text-[18px] text-gray-700 mb-1">
-              만 {calculateAge(patientDetails[requestPopup.patientId].birthDate)}세 
-              {"  "}
-              {formatGender(patientDetails[requestPopup.patientId].gender)}
-              {"  "}
-              {patientDetails[requestPopup.patientId].disease || "질병명 로딩중..."}
-            </p>
-
-            {/* ----- 환자 이름 ----- */}
-            {/* 환자 이름을 크게 표시하고 '환자' 텍스트 추가 */}
-            <p className="text-center text-xl lg:text-2xl xl:text-3xl mb-2 font-bold text-black">
-              {patientDetails[requestPopup.patientId].name} 환자
-            </p>
-
-            {/* ----- 요청 내용 ----- */}
-            {/* 환자가 요청한 구체적인 내용을 크게 표시 */}
-            <p className="text-center text-xl lg:text-2xl xl:text-3xl mb-5 font-bold text-black">
-              {requestPopup.requestContent}
-            </p>
-
-            {/* ----- 안내 문구 ----- */}
-            {/* 시간 선택 모드에 따라 다른 안내 문구 표시 */}
-            <p className="text-center text-[18px] text-gray-700 mb-8">
-              {isTimeSelection ? "제공 가능한 시간을 입력해주세요." : "수락하시겠습니까?"}
-            </p>
-
-            {/* ===== 버튼 그룹 영역 ===== */}
-            <div className="flex flex-col items-center w-full">
-              {isTimeSelection ? (
-                // 시간 선택 모드 UI
-                <>
-                  {/* 빠른 시간 선택 버튼들 */}
-                  <div className="flex justify-between w-[60%] mb-6">
-                    <button 
-                      onClick={() => handleTimeButtonClick(5)}
-                      className="px-4 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.5px] border-[#CFC9C9] hover:bg-[#8B8787] transition-all duration-200">
-                      5분 후
-                    </button>
-                    <button 
-                      onClick={() => handleTimeButtonClick(10)}
-                      className="px-4 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.5px] border-[#CFC9C9] hover:bg-[#8B8787] transition-all duration-200">
-                      10분 후
-                    </button>
-                    <button 
-                      onClick={() => handleTimeButtonClick(30)}
-                      className="px-4 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.5px] border-[#CFC9C9] hover:bg-[#8B8787] transition-all duration-200">
-                      30분 후
-                    </button>
-                  </div>
-
-                  {/* 선택된 시간 표시 영역 */}
-                  <div className="w-[60%] bg-white border-[1.5px] border-[#A9A9A9] rounded-lg px-4 py-1 mb-6 text-center text-black font-bold text-[70px] leading-none">
-                    {formatSelectedTime(selectedTime)}
-                  </div>
-
-                  {/* 취소/확인 버튼 */}
-                  <div className="flex justify-end space-x-3 w-full">
-                    <button 
-                      onClick={() => {
-                        setIsTimeSelection(false);
-                        setSelectedTime(null);
-                      }}
-                      className="px-3 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.3px] border-[#A5A1A1] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-[#8B8787] hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
-                      취소
-                    </button>
-                    <button 
-                      onClick={handleConfirmTime}
-                      className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
-                      확인
-                    </button>
-                  </div>
-                </>
-              ) : (
-                // 기본 모드 UI
-                <div className="flex justify-end space-x-3 w-full">
-                  <button 
-                    onClick={() => handlePending(requestPopup.requestId)}
-                    className="px-3 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.3px] border-[#A5A1A1] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-[#8B8787] hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
-                    보류
-                  </button>
-                  <button 
-                    onClick={() => handleChatClick(requestPopup.patientId)}
-                    className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
-                    채팅
-                  </button>
-                  <button 
-                    onClick={handleAcceptClick}
-                    className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
-                    수락
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
@@ -1066,6 +697,7 @@ const NurseMainPage: React.FC = () => {
             fetchChatHistory={fetchChatHistory}
             updateMessages={updateMessages}
             removeEmptyRoom={removeEmptyRoom}
+            patientDetails={patientDetails}
           />
 
           {/* 환자 정보 및 스케줄러 영역 */}
