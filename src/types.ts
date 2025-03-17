@@ -51,6 +51,7 @@ export interface PatientDetail {
   email: string;
   hospitalizationDate: string;
   userId: number;
+  disease?: string;
 }
 
 export interface HospitalInfo { // temporary for testing
