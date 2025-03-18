@@ -84,9 +84,9 @@ const InputSection: React.FC<InputSectionProps> = ({
             {/* Popup for Increase/Decrease Text Size */}
             {showPopup && (
               <div
-                ref={popupRef} // Attach ref to the popup container
-                className="absolute left-0 bottom-12 bg-white border shadow-md rounded-lg p-2 flex flex-row space-x-2" // Side-by-side buttons
-              >
+                ref={popupRef}
+                className="absolute left-0 bottom-12 bg-white border shadow-md rounded-lg p-2 flex flex-row space-x-2 z-50"
+              >            
                 <button
                   onClick={increaseTextSize}
                   className="px-3 py-1 text-sm text-gray-800 hover:bg-gray-100 rounded flex items-center justify-center"

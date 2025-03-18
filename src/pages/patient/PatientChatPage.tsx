@@ -21,6 +21,24 @@ const PatientChatPage: React.FC = () => {
   {/* State Variables */}
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<ChatMessage[]>([]); //
+
+  const displayedMessages = useMemo(() => {
+      return [...chatMessages, ...pendingMessages]
+        .map((msg) => ({
+          ...msg,
+          isFailed: msg.isFailed ?? false,
+          isPending: msg.isPending ?? false, 
+        }))
+        .sort((a, b) => {
+          if (a.isPending && !b.isPending) return 1;
+          if (!a.isPending && b.isPending) return -1;
+          if (a.isFailed && !b.isFailed) return 1;
+          if (!a.isFailed && b.isFailed) return -1;
+          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        });
+    }, [chatMessages, pendingMessages]);
+
   const [inputText, setInputText] = useState<string>("");
   const [favoriteRequests, setFavoriteRequests] = useState<string[]>([
     "환자복 교체", "물 주세요", "몸이 너무 아파요"
@@ -140,6 +158,8 @@ const PatientChatPage: React.FC = () => {
         chatMessagesRef.current = messages;
         setChatMessages(messages.reverse());
       }
+      // add pending
+      setChatMessages((prev) => [...prev, ...pendingMessages]);
     } catch (error) {
       console.error("Error fetching chat history", error);
     } finally {
@@ -151,17 +171,126 @@ const PatientChatPage: React.FC = () => {
     setInputText(e.target.value);
   };
 
-  const handleSendMessage = (): void => {
-    if (inputText.trim() && isConnected) {
-      // const currentTime = new Date().toISOString().replace("Z", "");  // 한국 시간으로 수정 필요
+  // const handleSendMessage = (): void => {
+  //   if (inputText.trim()) {
+  //     const now = new Date();
+  //     const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", ""); // Korean time
+  
+  //     const newMessageId = Math.floor(Math.random() * 1_000_000_000);
+  
+  //     // Message to store locally (as pending)
+  //     const newMessage: ChatMessage = {
+  //       messageId: newMessageId,
+  //       patientId: userId,
+  //       medicalStaffId: nurseId,
+  //       messageContent: inputText,
+  //       timestamp: currentTime,
+  //       readStatus: false,
+  //       chatRoomId: `${nurseId}_${userId}`,
+  //       senderId: userId,
+  //       isPatient: true,
+  //       isFailed: false,
+  //       isPending: true,
+  //     };
+  
+  //     // Add to pending messages (instead of chatMessages)
+  //     setPendingMessages((prev) => [...prev, newMessage]);
+  
+  //     // Message to send over server
+  //     const messageToSend = {
+  //       patientId: userId,
+  //       medicalStaffId: nurseId,
+  //       messageContent: inputText,
+  //       timestamp: currentTime,
+  //       readStatus: false,
+  //       chatRoomId: `${nurseId}_${userId}`,
+  //       senderId: userId,
+  //       isPatient: true,
+  //       hospitalId: hospitalId,
+  //     };
+  
+  //     // Send message
+  //     sendMessage("/pub/chat/message", messageToSend)
+  //       .then(() => {
+  //         // Move message to chatMessages and remove from pendingMessages
+  //         setChatMessages((prev) => [...prev, { ...newMessage, isPending: false }]);
+  //         setPendingMessages((prev) => prev.filter((msg) => msg.messageId !== newMessageId));
+  //       })
+  //       .catch(() => {
+  //         console.log("Message failed to send.");
+  
+  //         // Mark message as failed in pendingMessages
+  //         setPendingMessages((prev) =>
+  //           prev.map((msg) =>
+  //             msg.messageId === newMessageId ? { ...msg, isFailed: true, isPending: false } : msg
+  //           )
+  //         );
+  //       });
+  
+  //     setInputText("");
+  //   }
+  // };
+  
+
+  // const handleResendMessage = (failedMessage: ChatMessage) => {
+  //   console.log(`Resending message with ID: ${failedMessage.messageId}`);
+  
+  //   // Get current time
+  //   const now = new Date();
+  //   const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", ""); // Korean time
+  
+  //   // Message to send over server
+  //   const messageToSend = {
+  //     patientId: failedMessage.patientId,
+  //     medicalStaffId: failedMessage.medicalStaffId,
+  //     messageContent: failedMessage.messageContent,
+  //     timestamp: currentTime,
+  //     readStatus: false,
+  //     chatRoomId: `${nurseId}_${userId}`,
+  //     senderId: userId,
+  //     isPatient: true,
+  //   };
+  
+  //   // Send message and update state accordingly
+  //   sendMessage("/pub/chat/message", messageToSend)  
+  //     .then(() => {
+  //       // If successfully sent, update isFailed and timestamp, and move the message to correct position
+  //       setChatMessages((prev) => {
+  //         const updatedMessages = prev.map((msg) =>
+  //           msg.messageId === failedMessage.messageId
+  //             ? { ...msg, isFailed: false, timestamp: currentTime }
+  //             : msg
+  //         );
+  
+  //         // Separate successful and failed messages
+  //         const successfulMessages = updatedMessages.filter((msg) => !msg.isFailed);
+  //         const failedMessages = updatedMessages.filter((msg) => msg.isFailed);
+  
+  //         // Return new order: successful messages first, then failed ones
+  //         return [...successfulMessages, ...failedMessages];
+  //       });
+  //     })
+  //     .catch(() => {
+  //       // If failed again, update the timestamp but keep isFailed as true
+  //       setChatMessages((prev) =>
+  //         prev.map((msg) =>
+  //           msg.messageId === failedMessage.messageId
+  //             ? { ...msg, timestamp: currentTime }
+  //             : msg
+  //         )
+  //       );
+  //     });
+  // };
+
+  const handleSendMessage = async (): Promise<void> => {
+    if (inputText.trim()) {
       const now = new Date();
       const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", "");  // Korean time
-
+      
       const newMessageId = Math.floor(Math.random() * 1_000_000_000);
-
-      // Message to save locally
+  
       const newMessage: ChatMessage = {
-        messageId: newMessageId, // local message id, different from backend assigned id
+        messageId: newMessageId,
         patientId: userId,
         medicalStaffId: nurseId,
         messageContent: inputText,
@@ -171,15 +300,14 @@ const PatientChatPage: React.FC = () => {
         senderId: userId,
         isPatient: true,
         isFailed: false,
-        isPending: true
+        isPending: true,
       };
-
-      // Add new message to local array
-      setChatMessages((prev) => [...prev, newMessage]);
-
+  
+      // Add message to pendingMessages
+      setPendingMessages((prev) => [...prev, newMessage]);
+  
       // Message to send over server
       const messageToSend = {
-        // type: "TALK",
         patientId: userId,
         medicalStaffId: nurseId,
         messageContent: inputText,
@@ -190,69 +318,98 @@ const PatientChatPage: React.FC = () => {
         isPatient: true,
         hospitalId: hospitalId,
       };
-
-      // Send message  
-      sendMessage("/pub/chat/message", messageToSend)  
-        .catch(() => {  // set message to failed if message failed to send
-          console.log("Message failed to send.")
-          setChatMessages((prev) =>
-            prev.map((msg) =>
-              msg.messageId === newMessageId ? { ...msg, isFailed: true } : msg
-            )
-          );
+  
+      try {
+        await sendMessage(`/pub/chat/message`, messageToSend);
+  
+        // After sending, update message to reflect successful send
+        setChatMessages((prev) => [...prev, { ...newMessage, isPending: false }]);
+  
+        // Remove from pendingMessages array
+        setPendingMessages((prev) =>
+          prev.filter((msg) => msg.messageId !== newMessageId)
+        );
+      } catch (error) {
+        console.log(`Message failed with ID: ${newMessageId}`);
+  
+        // Immediately update the pending message to failed state
+        setPendingMessages((prev) => {
+          if (prev.length === 0) return prev; // No messages to update
+        
+          return [
+            ...prev.slice(0, prev.length - 1), // Keep all previous messages unchanged
+            {
+              ...prev[prev.length - 1], // Take the last message
+              isFailed: true, // Mark it as failed
+              isPending: false,
+            },
+          ];
         });
+        
+        console.log("Updated failed message:", newMessageId);
+      }
+  
+      // Clear input after sending message
       setInputText("");
+      if (newMessage.isFailed != null) console.log("Message Status:", newMessage.messageId, newMessage.isFailed);
     }
   };
 
-  const handleResendMessage = (failedMessage: ChatMessage) => {
+  const handleResendMessage = async (failedMessage: ChatMessage) => {
     console.log(`Resending message with ID: ${failedMessage.messageId}`);
   
     // Get current time
     const now = new Date();
-    const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", ""); // Korean time
+    const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+      .toISOString()
+      .replace("Z", ""); // Korean time
   
-    // Message to send over server
+    // Temporarily set isPending: true while resending
+    setPendingMessages((prev) =>
+      prev.map((msg) =>
+        msg.messageId === failedMessage.messageId
+          ? { ...msg, timestamp:currentTime, isPending: true, isFailed: false }
+          : msg
+      )
+    );
+  
+    // Message to send over the server
     const messageToSend = {
       patientId: failedMessage.patientId,
       medicalStaffId: failedMessage.medicalStaffId,
       messageContent: failedMessage.messageContent,
       timestamp: currentTime,
       readStatus: false,
-      chatRoomId: `${nurseId}_${userId}`,
-      senderId: userId,
-      isPatient: true,
+      chatRoomId: failedMessage.chatRoomId,
+      senderId: failedMessage.senderId,
+      isPatient: failedMessage.isPatient,
+      messageId: failedMessage.messageId
     };
+
+    try {
+      await sendMessage(`/pub/chat/message`, messageToSend);
+
+      // After sending, update message to reflect successful send
+      setChatMessages((prev) => [...prev, { ...failedMessage, isPending: false, isFailed: false }]);
+
+      // Remove from pendingMessages array
+      setPendingMessages((prev) =>
+        prev.filter((msg) => msg.messageId !== failedMessage.messageId)
+      );
+    } catch (error) {
+      console.log(`Message failed with ID: ${failedMessage.messageId}`);
+
+      // Immediately update the pending message to failed state
+      setPendingMessages((prev) =>
+        prev.map((msg) =>
+          msg.messageId === failedMessage.messageId
+            ? { ...msg, isFailed: true, isPending: false }  // Mark as failed immediately
+            : msg
+        )
+      );
+      console.log("Updated failed message:", failedMessage.messageId);
+    }
   
-    // Send message and update state accordingly
-    sendMessage("/pub/chat/message", messageToSend)  
-      .then(() => {
-        // If successfully sent, update isFailed and timestamp, and move the message to correct position
-        setChatMessages((prev) => {
-          const updatedMessages = prev.map((msg) =>
-            msg.messageId === failedMessage.messageId
-              ? { ...msg, isFailed: false, timestamp: currentTime }
-              : msg
-          );
-  
-          // Separate successful and failed messages
-          const successfulMessages = updatedMessages.filter((msg) => !msg.isFailed);
-          const failedMessages = updatedMessages.filter((msg) => msg.isFailed);
-  
-          // Return new order: successful messages first, then failed ones
-          return [...successfulMessages, ...failedMessages];
-        });
-      })
-      .catch(() => {
-        // If failed again, update the timestamp but keep isFailed as true
-        setChatMessages((prev) =>
-          prev.map((msg) =>
-            msg.messageId === failedMessage.messageId
-              ? { ...msg, timestamp: currentTime }
-              : msg
-          )
-        );
-      });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -286,8 +443,10 @@ const PatientChatPage: React.FC = () => {
   };
 
   const handleCancelMessage = (failedMessage: ChatMessage) => {
-      setChatMessages((prev) => prev.filter((msg) => msg !== failedMessage));
-  };
+    setPendingMessages((prev) =>
+      prev.filter((msg) => msg.messageId !== failedMessage.messageId)
+    );
+  };  
 
 
   {/* Hooks */}
@@ -340,7 +499,7 @@ const PatientChatPage: React.FC = () => {
         sendFavoriteRequest={sendFavoriteRequest}
       />
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
-        <ChatMessages chatMessages={chatMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage} textSize={textSize}/>
+        <ChatMessages chatMessages={displayedMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage} textSize={textSize}/>
       </div>
 
       {/* Debug Line */}
