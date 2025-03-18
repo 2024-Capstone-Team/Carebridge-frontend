@@ -71,15 +71,39 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     }
     const fetchPatientDetails = async () => {
       try {
+        // 기본 환자 정보 조회
         const response = await axios.get(`http://localhost:8080/api/patient/user/${patientId}`);
-        console.log("환자 세부 정보:", response.data);
-        setPatient(response.data);
+        const fetchedPatient: PatientInfo = response.data;
+  
+        // 병명 조회
+        try {
+          const diseaseResponse = await axios.get(`http://localhost:8080/api/medical-record/${patientId}`);
+          const diseaseInfo: string | null = diseaseResponse.data;
+          fetchedPatient.diagnosis = diseaseInfo || "정보 없음";
+        } catch (error) {
+          console.error("질병 정보 조회 중 오류 발생:", error);
+          fetchedPatient.diagnosis = "정보 없음";
+        }
+  
+        // 환자 데이터를 상태에 저장
+        setPatient(fetchedPatient);
       } catch (error) {
         console.error("환자 세부 정보를 가져오는 중 오류 발생:", error);
+        setPatient({
+          patientId,
+          name: "정보 없음",
+          birthDate: "",
+          gender: "",
+          hospitalizationDate: "",
+          diagnosis: "정보 없음",
+          hospitalLocation: "정보 없음",
+          phoneNumber: "정보 없음",
+        });
       }
     };
     fetchPatientDetails();
   }, [patientId]);
+  
 
   // 선택한 환자의 요청 기록 가져오기
   useEffect(() => {
@@ -141,17 +165,6 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
       <div className="flex relative mb-4">
         <FaChevronLeft className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute -translate-x-6 translate-y-1" onClick={onBack}/>
         <h2 className="text-lg font-bold">환자 정보</h2>
-      </div>
-
-      {/* 검색 입력 창 */}
-      <div className="flex bg-white w-full mb-3 px-1 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
-        <FaSearch className="text-black mx-2 h-[20px] w-[20px] pt-1" />
-        <input 
-          type="text" 
-          placeholder="환자 이름을 입력해주세요." 
-          className="border-none outline-none w-full" 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}/>  
       </div>
 
       {/* 검색 결과 목록 */}
@@ -225,7 +238,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
               </div>
 
               {/* 요청 기록 영역 */}
-              <h3 className="text-[15px] font-semibold mb-1">요청 기록</h3>
+              <h3 className="text-[15px] font-semibold mt-2 mb-1">요청 기록</h3>
               {patientRequests.length === 0 ? (
                 <p className="text-gray-500">요청 기록이 없습니다.</p>
               ) : (

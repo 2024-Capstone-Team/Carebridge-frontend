@@ -3,10 +3,12 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface UserContextType {
+  hospitalId: string | null;
   nurseId: string | null;
   userId: String | null;
   patientId: String | null;
   isPatient: boolean; //true, false
+  setHospitalId: (id: string | null) => void;
   setNurseId: (id: string | null) => void;
   setUserId: (id: string | null) => void;
   setPatientId: (id: string | null) => void;
@@ -20,6 +22,7 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+  const [hospitalId, setHospitalId] = useState<string | null>(() => localStorage.getItem("hospitalId"));
   const [nurseId, setNurseId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(() => {
 
@@ -32,7 +35,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [isPatient, setIsPatient] = useState<boolean>(false);
 
   return (
-    <UserContext.Provider value={{nurseId, userId, patientId, isPatient, setNurseId, setUserId, setPatientId, setIsPatient }}>
+    <UserContext.Provider value={{ hospitalId, nurseId, userId, patientId, isPatient, setHospitalId, setNurseId, setUserId, setPatientId, setIsPatient }}>
       {children}
     </UserContext.Provider>
   );
