@@ -114,9 +114,9 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   };
 
   // Log pendingMessages before passing to ChatMessages
-  useEffect(() => {
-    console.log("Pending messages:", pendingMessages); // Log the messages here
-  }, [pendingMessages]); // This will log whenever pendingMessages changes
+  // useEffect(() => {
+  //   console.log("Pending messages:", pendingMessages); // Log the messages here
+  // }, [pendingMessages]); // This will log whenever pendingMessages changes
 
   const handleSendMessage = async (): Promise<void> => {
     if (inputText.trim() && patientId) {
@@ -190,7 +190,6 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       if (newMessage.isFailed != null) console.log("Message Status:", newMessage.messageId, newMessage.isFailed);
     }
   };
-  
 
   const handleResendMessage = async (failedMessage: ChatMessage) => {
     console.log(`Resending message with ID: ${failedMessage.messageId}`);
