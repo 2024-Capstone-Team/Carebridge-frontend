@@ -18,8 +18,16 @@ import ChatMessages from "../../components/common/ChatMessages.tsx";
 import { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, ChatConversation, MedicalStaff } from "../../types";
 import macro from "../../assets/macro.png";
 import axios from "axios";
+import { useUserContext } from "../../context/UserContext";
 const WebSocketContext = createContext(null);
 
+
+// conversationId에서 patientId 추출
+function parsePatientId(conversationId: string) {
+  const parts = conversationId.split("_");
+  if (parts.length < 2) return 0;
+  return parseInt(parts[1], 10);
+}
 
 const NurseMainPage: React.FC = () => {
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
@@ -38,17 +46,24 @@ const NurseMainPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const medicalStaffId = 1; // 임시 staffId
-  const hospitalId = 1; // 임시 병원 Id
+  const { hospitalId } = useUserContext();
+  const medicalStaffId = 1;
 
   // 병원 이름 API 호출
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`)
-      .then(response => setHospitalName(response.data))
-      .catch(error => {
+    if (!hospitalId) return;
+  
+    const fetchHospitalName = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`);
+        setHospitalName(response.data);
+      } catch (error) {
         console.error("Error fetching hospital name:", error);
         setHospitalName("병원 정보를 불러오지 못했습니다.");
-      });
+      }
+    };
+  
+    fetchHospitalName();
   }, [hospitalId]);
 
   const handleLogoClick = () => {
@@ -320,7 +335,7 @@ const NurseMainPage: React.FC = () => {
     console.log("Fetching chat history...");
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/chat/message/user?patientId=${patientId}`);
+      const response = await fetch(`http://localhost:8080/api/chat/message/user?patientId=${patientId}`);
       if (!response.ok) throw new Error(`Failed to fetch messages for patient: ${patientId}`);
   
       const newMessages: ChatMessage[] = await response.json();
@@ -339,6 +354,26 @@ const NurseMainPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // 콜벨 요청에서 patientId 모으기
+    const requestPatientIds = requests.map((req) => req.patientId);
+
+    // 채팅방에서 conversationId를 이용해 patientId 뽑기
+    const chatPatientIds = rooms.map((room) => {
+      return parsePatientId(room.conversationId);
+    });
+
+    // 중복 제거
+    const allPatientIds = Array.from(new Set([...requestPatientIds, ...chatPatientIds]));
+
+    // 아직 fetch하지 않은 환자만 fetch
+    allPatientIds.forEach((id) => {
+      if (id && !patientDetails[id]) {
+        fetchPatientDetail(id);
+      }
+    });
+  }, [requests, rooms]); // requests, rooms가 바뀔 때마다 실행
   
     
   // 웹소켓 연결 
@@ -376,7 +411,7 @@ const NurseMainPage: React.FC = () => {
   // Fetch chatrooms from the server
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`/api/chat/message/main/${nurseId}`);
+      const response = await fetch(`http://localhost:8080/api/chat/message/main/${nurseId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch rooms: ${response.statusText}`);
       }
@@ -515,6 +550,15 @@ const NurseMainPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* 테스트 버튼 */}
+      {/*<div className="fixed inset-0 flex items-center justify-center z-40">
+        <button
+          onClick={handleTestRequest}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md text-lg hover:bg-blue-700"
+        >
+          테스트 요청 보내기
+        </button>
+      </div>*/}
 
       <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
         <div className="flex items-center mb-4" style={{ marginTop: '-60px' }}>
@@ -640,11 +684,11 @@ const NurseMainPage: React.FC = () => {
 
       {isMacroMode ? (
         <div className="flex-1 relative w-full">
-          <NurseMacroList medicalStaffId={medicalStaffId} />
+          <NurseMacroList medicalStaffId={Number(medicalStaffId)} />
         </div>
       ) : isQAMode ? (
         <div className="flex-1 relative w-full">
-          <NurseQuickAnswerList hospitalId={hospitalId} />
+          <NurseQuickAnswerList hospitalId={Number(hospitalId)} />
         </div>
       ) : (
         <>
@@ -662,6 +706,7 @@ const NurseMainPage: React.FC = () => {
             fetchChatHistory={fetchChatHistory}
             updateMessages={updateMessages}
             removeEmptyRoom={removeEmptyRoom}
+            patientDetails={patientDetails}
           />
 
           {/* 환자 정보 및 스케줄러 영역 */}
