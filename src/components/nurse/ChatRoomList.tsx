@@ -30,9 +30,15 @@ interface ChatRoomListProps {
   rooms: ChatRoom[];
   currentRoom: string;
   onRoomSelect: (room: string) => void;
+  patientDetails: {
+    [key: number]: {
+      patientId: number;
+      name: string;
+    };
+  };
 }
 
-const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomSelect }) => {
+const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomSelect, patientDetails }) => {
   const [sortOrder, setSortOrder] = useState("latest");
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -108,6 +114,12 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
       });
   }, [rooms, sortOrder, searchQuery]);  
 
+  const parsePatientId = (conversationId: string): number => {
+    const parts = conversationId.split("_");
+    if (parts.length < 2) return 0;
+    return parseInt(parts[1], 10);
+  };
+
   return (
     <div className="flex flex-col h-full p-4 bg-primary-100 text-sm">
       {/* Title and Dropdown Button */}
@@ -163,7 +175,10 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
       {/* Chat Room List */}
       <div className="flex-1 overflow-y-auto">
         <ul className="w-full bg-zinc-50 rounded-xl max-h-[400px] overflow-auto">
-          {filteredRoomsMemo.map((room) => (
+          {filteredRoomsMemo.map((room) => {
+            const pid = parsePatientId(room.conversationId);
+            const displayName = room.userName
+            return (
             <li
               key={room.conversationId}
               className={`cursor-pointer px-4 py-2 flex items-center justify-between w-full ${
@@ -191,7 +206,8 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
                 <span className="text-xs">{formatTime(room.lastMessageTime)}</span>
               </span>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </div>
 
