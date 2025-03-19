@@ -4,6 +4,8 @@ import { useUserContext } from "../../context/UserContext";
 import axios from "axios";
 import Timer from "../../components/common/Timer";
 import { requestForToken } from "../../firebase/firebase";
+import { checkAutoLogin } from "../../hooks/useAutoLogin";
+import { refreshAccessToken } from "../../hooks/refreshToken";
 
 
 const PatientLoginPage: React.FC = () => {
@@ -17,18 +19,35 @@ const PatientLoginPage: React.FC = () => {
   const [check, setIsCheck] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  //자동 로그인 기능
+  useEffect(() => {
+    const autoLogin = async () => {
+      let isAutoLoggedIn = await checkAutoLogin();
+
+      if (!isAutoLoggedIn) {
+        // 액세스 토큰이 만료되었을 가능성이 있으므로 리프레시 토큰을 사용해 재발급 시도
+        const isRefreshed = await refreshAccessToken();
+        if (isRefreshed) {
+          isAutoLoggedIn = await checkAutoLogin();
+        }
+      }
+
+      if (isAutoLoggedIn) {
+        alert("자동 로그인 성공. 확인 버튼을 누르면 메인 화면으로 이동합니다.");
+        const phone = localStorage.getItem("phoneNumber");
+        console.log("로그인 성공: ", phone);
+        navigate("/patient-main");
+      }
+    };
+
+    autoLogin();
+  }, []);
+
 
   //타이머 설정
   const [showTimer, setShowTimer] = useState(false);
   const initialTime = 180;
   const [remainingTime, setRemainingTime] = useState(initialTime);
-
-
-  useEffect(() => {
-    // 자동 로그인 설정 확인
-    const autoLogin = localStorage.getItem("autoLogin") === "true";
-    setIsCheck(autoLogin);
-  }, []);
 
   const handleResend = () => {
     setRemainingTime(initialTime);

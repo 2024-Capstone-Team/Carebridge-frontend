@@ -33,7 +33,7 @@ import AppInfo from "./pages/patient/setting/AppInfo";
 import CustomerService from "./pages/patient/setting/CustomerService";
 
 /* hooks */
-import useAutoLogin from "./hooks/useAutoLogin";
+// import useAutoLogin from "./hooks/useAutoLogin";
 
 /* Context */
 import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
