@@ -1,13 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- 문자 인코딩을 UTF-8로 설정 -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- 모바일 브라우저에서 테마 색상을 지정 -->
+    <meta name="theme-color" content="#8C383A" />
+    <!-- 웹사이트의 기본 파비콘 설정 -->
+    <link rel="icon" href="icons/favicon.ico" />
+    <!-- 대체 파비콘 설정 (32x32 크기) -->
+    <link
+      rel="alternate icon"
+      href="icons/favicon.ico"
+      type="ico"
+      sizes="32x32"
+    />
+    <!-- 애플 기기에서 사용할 아이콘 (152x152 크기) -->
+    <link
+      rel="apple-touch-icon"
+      href="icons/icon-152x152.png"
+      sizes="152x152"
+    />
+    <!-- 뷰포트 설정으로 반응형 웹 디자인 지원 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 웹 앱 매니페스트 파일 연결 -->
+    <link rel="manifest" href="manifest.json" />
+    <!-- 페이지 제목 설정 -->
     <title>CareBridge</title>
   </head>
   <body>
+    <!-- React 애플리케이션이 렌더링될 루트 div -->
     <div id="root"></div>
+    <!-- 메인 TypeScript 파일을 모듈로 불러오기 -->
     <script type="module" src="/src/main.tsx"></script>
+    <!-- 서비스 워커 등록 스크립트 -->
+    <script>
+      // 브라우저가 서비스 워커를 지원하는지 확인
+      if ("serviceWorker" in navigator) {
+        // Firebase 메시징 서비스 워커 등록
+        navigator.serviceWorker
+          .register("/firebase-messaging-sw.js")
+          .then((registration) => {
+            // 등록 성공 시 콘솔에 메시지 출력
+            console.log("서비스 워커 등록 성공:", registration);
+          })
+          .catch((error) => {
+            // 등록 실패 시 콘솔에 에러 메시지 출력
+            console.log("서비스 워커 등록 실패:", error);
+          });
+      } else {
+        // 서비스 워커 미지원 시 콘솔에 메시지 출력
+        console.log("서비스 워커가 지원되지 않습니다.");
+      }
+    </script>
   </body>
 </html>

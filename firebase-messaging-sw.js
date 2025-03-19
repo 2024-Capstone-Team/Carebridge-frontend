@@ -19,6 +19,21 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Install 이벤트
+self.addEventListener("install", (e) => {
+  console.log("[Service Worker] installed");
+});
+
+// Activate 이벤트
+self.addEventListener("activate", (e) => {
+  console.log("[Service Worker] activated", e);
+});
+
+// Fetch 이벤트
+self.addEventListener("fetch", (e) => {
+  console.log("[Service Worker] fetched resource " + e.request.url);
+});
+
 messaging.onBackgroundMessage((payload) => {
   console.log("백그라운드 메시지 수신:", payload);
   self.registration.showNotification(payload.notification.title, {
