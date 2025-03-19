@@ -44,6 +44,10 @@ const formatDate = (date: string): string => date.split("T")[0];
 
 // 환자 설정 페이지 메인 컴포넌트
 const PatientSettingPage: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+
   // 상태 관리를 위한 useState 훅 정의
   const [patientDto, setPatientDto] = useState<PatientDto | null>(null);
   const [guardianDto, setGuardianDto] = useState<GuardianDto | null>(null);
@@ -53,7 +57,7 @@ const PatientSettingPage: React.FC = () => {
   // 병원 이름을 가져오는 API 호출 함수
   const fetchHospitalName = async (hospitalId: number): Promise<string> => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`);
+      const response = await axios.get(`${API_BASE_URL}/hospital/name/${hospitalId}`);
       return response.data;
     } catch (error) {
       console.error("병원 정보 조회 중 오류 발생:", error);
@@ -64,7 +68,7 @@ const PatientSettingPage: React.FC = () => {
   // 보호자 정보를 가져오는 API 호출 함수
   const fetchGuardianInfo = async (guardianContact: string) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/guardian/info/${guardianContact}`);
+      const response = await axios.get(`${API_BASE_URL}/guardian/info/${guardianContact}`);
       return response.data;
     } catch (error) {
       console.error("보호자 정보 조회 중 오류 발생:", error);
@@ -77,7 +81,7 @@ const PatientSettingPage: React.FC = () => {
     if (!patientId) return;
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/patient/user/${patientId}`);
+      const response = await axios.get(`${API_BASE_URL}/patient/user/${patientId}`);
       const patientData = response.data;
       
       patientData.birthDate = formatDate(patientData.birthDate);
