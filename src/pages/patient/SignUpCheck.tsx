@@ -6,6 +6,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 function SignUpCheck() {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location;
@@ -50,7 +54,7 @@ function SignUpCheck() {
     };
 
     try{
-      const response = await axios.post("http://localhost:8080/api/users/sign-up", userData);
+      const response = await axios.post(`${API_BASE_URL}/users/sign-up`, userData);
       console.log("회원가입에 성공하였습니다. 다시 로그인해주세요.", response.data);
       navigate("/patient-login");
     } catch (error: any) {

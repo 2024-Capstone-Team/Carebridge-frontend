@@ -32,6 +32,9 @@ import ManageGuardian from "./pages/patient/setting/ManageGuardian";
 import AppInfo from "./pages/patient/setting/AppInfo";
 import CustomerService from "./pages/patient/setting/CustomerService";
 
+/* hooks */
+import useAutoLogin from "./hooks/useAutoLogin";
+
 /* Context */
 import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
 import { UserProvider } from "./context/UserContext";  
@@ -42,6 +45,7 @@ import NurseChatPage from "./components/nurse/NurseMessaging";
 import ScheduleTest from "./pages/patient/ScheduleTest";
 
 const App: React.FC = () => {
+ 
   return (
     <SnackbarProvider 
       maxSnack={3} 

@@ -30,6 +30,9 @@ function parsePatientId(conversationId: string) {
 }
 
 const NurseMainPage: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); // 메뉴 팝업 표시
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 }); // 메뉴바 위치 설정
@@ -55,7 +58,7 @@ const NurseMainPage: React.FC = () => {
   
     const fetchHospitalName = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`);
+        const response = await axios.get(`${API_BASE_URL}/hospital/name/${hospitalId}`);
         setHospitalName(response.data);
       } catch (error) {
         console.error("Error fetching hospital name:", error);
@@ -76,7 +79,7 @@ const NurseMainPage: React.FC = () => {
   useEffect(() => {
     const fetchMedicalStaff = async () => {
       try {
-        const response = await axios.get<MedicalStaff[]>(`http://localhost:8080/api/medical-staff/${hospitalId}`);
+        const response = await axios.get<MedicalStaff[]>(`${API_BASE_URL}/medical-staff/${hospitalId}`);
         setMedicalStaffList(response.data);
       } catch (error){
         console.error("의료진 분과 데이터를 가져오는 중 오류 발생:", error);
@@ -237,7 +240,7 @@ const NurseMainPage: React.FC = () => {
   useEffect(() => {
       const fetchRequests = async () => {
         try {
-          const response = await fetch(`http://localhost:8080/api/call-bell/request/staff/${medicalStaffId}`);
+          const response = await fetch(`${API_BASE_URL}/call-bell/request/staff/${medicalStaffId}`);
           if (!response.ok) {
             console.error("호출 요청 API 에러", response.status);
             return;
@@ -266,7 +269,7 @@ const NurseMainPage: React.FC = () => {
   
     const fetchPatientDetail = async (patientId: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
+        const response = await fetch(`${API_BASE_URL}/patient/user/${patientId}`);
         if (!response.ok) {
           console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, response.status);
           return;
@@ -326,7 +329,7 @@ const NurseMainPage: React.FC = () => {
     console.log("Fetching chat history...");
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:8080/api/chat/message/user?patientId=${patientId}`);
+      const response = await fetch(`${API_BASE_URL}/chat/message/user?patientId=${patientId}`);
       if (!response.ok) throw new Error(`Failed to fetch messages for patient: ${patientId}`);
   
       const newMessages: ChatMessage[] = await response.json();
@@ -402,7 +405,7 @@ const NurseMainPage: React.FC = () => {
   // Fetch chatrooms from the server
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/chat/message/main/${nurseId}`);
+      const response = await fetch(`${API_BASE_URL}/chat/message/main/${nurseId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch rooms: ${response.statusText}`);
       }
@@ -471,7 +474,7 @@ const NurseMainPage: React.FC = () => {
   const markMessageAsRead = async (messageId: number) => {
     console.log("Marking message as read.");
     try {
-      const url = `http://localhost:8080/api/chat/message/read?messageId=${messageId}`;
+      const url = `${API_BASE_URL}/chat/message/read?messageId=${messageId}`;
       const response = await fetch(url, {
         method: "PUT",
         headers: {
