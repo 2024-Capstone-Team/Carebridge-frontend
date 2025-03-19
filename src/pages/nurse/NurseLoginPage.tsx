@@ -4,6 +4,9 @@ import axios from 'axios';
 import { useUserContext } from "../../context/UserContext";
 
 const NurseLoginPage: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+
   const [id, setID] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -23,7 +26,7 @@ const NurseLoginPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/api/staff/login', {
+      const response = await axios.post(`${API_BASE_URL}/staff/login`, {
         userId: id,
         password: password,
       });
