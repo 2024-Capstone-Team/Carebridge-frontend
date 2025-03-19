@@ -7,17 +7,28 @@ import { requestForToken } from "../../firebase/firebase";
 
 
 const PatientLoginPage: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
   const { setUserId, setPatientId } = useUserContext();
   const [otp, setotp] = useState("");
   const [check, setIsCheck] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
 
   //타이머 설정
   const [showTimer, setShowTimer] = useState(false);
   const initialTime = 180;
   const [remainingTime, setRemainingTime] = useState(initialTime);
 
+
+  useEffect(() => {
+    // 자동 로그인 설정 확인
+    const autoLogin = localStorage.getItem("autoLogin") === "true";
+    setIsCheck(autoLogin);
+  }, []);
 
   const handleResend = () => {
     setRemainingTime(initialTime);
@@ -27,7 +38,7 @@ const PatientLoginPage: React.FC = () => {
   // 카카오 로그인 API
   const handleKakaoLogin = async () => {
     try {
-      const kakaoResponse = await axios.get("http://localhost:8080/api/users/social-login/kakao");
+      const kakaoResponse = await axios.get(`${API_BASE_URL}/users/social-login/kakao`);
       console.log("카카오 로그인 URL:", kakaoResponse.data);
       const kakaoAuthUrl = kakaoResponse.data;
       window.location.href = kakaoAuthUrl;
@@ -47,28 +58,33 @@ const PatientLoginPage: React.FC = () => {
     }
 
     try {
-      const loginResponse = await axios.post("http://localhost:8080/api/users/login", {
+      const loginResponse = await axios.post(`${API_BASE_URL}/users/login`, {
         phone,
         otp,
       });
       if (!loginResponse.data) {
-        alert("인증번호가 올바르지 않거나 다른 문제가 발생했습니다.");
+        setErrorMessage("인증번호가 올바르지 않거나 다른 문제가 발생했습니다.");
         return;
       }
 
-      // 로그인 성공 시 patientId를 받아서 상태에 저장
-      const { userId, patientId, phoneNumber } = loginResponse.data;
-      console.log("Login Response:", loginResponse);
-      console.log("Login Response Data:", loginResponse.data);
-      setPatientId(patientId); //UserContext의 PatientId 업데이트
+      const { userId, patientId, phoneNumber, accessToken, refreshToken } = loginResponse.data;
+
+      setPatientId(patientId);
       setUserId(userId);
-      localStorage.setItem("patientId", patientId);
-      localStorage.setItem("userId", userId);
+      localStorage.setItem("patientId", String(patientId));
+      localStorage.setItem("userId", String(userId));
       localStorage.setItem("phoneNumber", phoneNumber);
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      if (check) {
+        localStorage.setItem("autoLogin", "true");
+      }
+      
       try {
         const token = await requestForToken();
         if (token) {
-          await axios.post("http://localhost:8080/api/notification/register", {
+          await axios.post(`${API_BASE_URL}/notification/register`, {
             userId,
             token
           });
@@ -79,9 +95,28 @@ const PatientLoginPage: React.FC = () => {
       }
 
       navigate("/choose-patient-type");
-    } catch (error) {
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        switch (error.response.status) {
+          case 400:
+            setErrorMessage("잘못된 요청입니다. 입력값을 확인해주세요.");
+            break;
+          case 401:
+            setErrorMessage("인증 실패! OTP를 다시 확인해주세요.");
+            break;
+          case 404:
+            setErrorMessage("등록된 환자를 찾을 수 없습니다.");
+            break;
+          case 500:
+            setErrorMessage("서버 오류 발생. 잠시 후 다시 시도해주세요.");
+            break;
+          default:
+            setErrorMessage("알 수 없는 오류가 발생했습니다.");
+        }
+      } else {
+        setErrorMessage("네트워크 오류 발생. 인터넷 연결을 확인해주세요.");
+      }
       console.error("로그인 실패:", error);
-      alert("로그인에 실패했습니다. 다시 시도해주세요.");
     }
   };
   
@@ -93,13 +128,30 @@ const PatientLoginPage: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=false`);
+      const response = await axios.post(`${API_BASE_URL}/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
       handleResend();
       alert("인증번호가 전송되었습니다.");
-    } catch (error) {
+    } catch (error: any) {
       console.error("인증번호 전송 실패:", error);
-      alert("등록된 전화번호가 아니거나 오류가 발생했습니다. 다시 시도해주세요.");
+  
+      if (axios.isAxiosError(error) && error.response) {
+        switch (error.response.status) {
+          case 400:
+            alert("잘못된 요청입니다. 입력값을 확인해주세요.");
+            break;
+          case 404:
+            alert("등록된 전화번호가 없습니다.");
+            break;
+          case 500:
+            alert("서버 오류로 인해 인증번호를 전송할 수 없습니다. 잠시 후 다시 시도해주세요.");
+            break;
+          default:
+            alert("알 수 없는 오류가 발생했습니다.");
+        }
+      } else {
+        alert("네트워크 오류 발생. 인터넷 연결을 확인해주세요.");
+      }
     }
   };
 
