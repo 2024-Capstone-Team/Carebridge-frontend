@@ -20,6 +20,8 @@ interface Patient {
 }
 
 const NurseSchedulePage: React.FC = () => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const [modeCalendar, setModeCalendar] = useState(true);
@@ -54,7 +56,7 @@ const NurseSchedulePage: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/patient/users/${staffId}`);
+        const response = await axios.get(`${API_BASE_URL}/patient/users/${staffId}`);
         console.log(response.data); // 응답 데이터 확인
         const fetchedPatients = response.data.map((patient: any) => ({
           patientId: patient.patientId,

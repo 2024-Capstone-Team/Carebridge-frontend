@@ -7,9 +7,13 @@ import axios from "axios";
 import Timer from "../../components/common/Timer";
 
 const SignUp: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
   
   const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
+
+  const [remainingTime, setRemainingTime] = useState(300);
   const [showTimer, setShowTimer] = useState(false);
 
   // 버튼 클릭 핸들러
@@ -60,7 +64,7 @@ const SignUp: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`http://localhost:8080/api/users/send-otp/${phone}?isSignup=true`);
+      const response = await axios.post(`${API_BASE_URL}/users/send-otp/${phone}?isSignup=true`);
       console.log("인증번호 전송 성공:", response.data);
       setShowTimer(true);
       alert("인증번호가 전송되었습니다.");
@@ -78,7 +82,7 @@ const SignUp: React.FC = () => {
       }
     
       try {
-        const response = await axios.post("http://localhost:8080/api/users/verify-otp", {
+        const response = await axios.post(`${API_BASE_URL}/users/verify-otp`, {
           phone,
           otp: authCode,
         });
@@ -295,7 +299,7 @@ const SignUp: React.FC = () => {
             </button>
           </div>          
         </div>
-        {showTimer && <Timer />}
+        {showTimer && <Timer remainingTime={remainingTime} setRemainingTime={setRemainingTime} showtimer={showTimer} />}
         <div>
         <button
           onClick={() => {

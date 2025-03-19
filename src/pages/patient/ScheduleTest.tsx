@@ -11,6 +11,9 @@ interface Schedule {
 }
 
 const ScheduleTest: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +23,7 @@ const ScheduleTest: React.FC = () => {
     const fetchSchedules = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:8080/api/schedule/patient/1098765432");
+        const response = await axios.get(`${API_BASE_URL}/api/schedule/patient/1098765432`);
         setSchedules(response.data);
         setError(null);
       } catch (err) {
