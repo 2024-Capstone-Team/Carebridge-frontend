@@ -18,6 +18,9 @@ interface Schedule {
 }
 
 const PatientSchedular: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const currentDate = dayjs().format("YYYY-MM-DD");
 
   // 일정 데이터
@@ -46,7 +49,7 @@ const PatientSchedular: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`http://localhost:8080/api/schedule/patient/${patientId}`);
+        const response = await axios.get(`${API_BASE_URL}/schedule/patient/${patientId}`);
 
         console.log("API 응답 데이터:", response.data);
         setScheduleData(response.data);

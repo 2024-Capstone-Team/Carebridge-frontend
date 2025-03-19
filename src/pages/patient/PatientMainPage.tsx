@@ -5,6 +5,9 @@ import axios from "axios";
 import { useUserContext } from "../../context/UserContext";
 
 const PatientMainPage: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const navigate = useNavigate();
   const { setPatientId } = useUserContext();
   const phoneNumber = localStorage.getItem("phoneNumber");
@@ -26,7 +29,7 @@ const PatientMainPage: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/users/logout?phoneNumber=${phoneNumber}`);
+      await axios.post(`${API_BASE_URL}/users/logout?phoneNumber=${phoneNumber}`);
         setPatientId(null);
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");
