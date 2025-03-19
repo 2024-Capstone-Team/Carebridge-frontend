@@ -15,6 +15,8 @@ interface NurseMacroEditProps {
 }
 
 const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId, macro }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [macroName, setMacroName] = useState(macro.macroName);
   const [text, setText] = useState(macro.text);
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
 
     try {
       // 동일 제목의 매크로 체크
-      const response = await axios.get(`http://localhost:8080/api/macro/list/${medicalStaffId}`);
+      const response = await axios.get(`${API_BASE_URL}/macro/list/${medicalStaffId}`);
       const existingMacros: Macro[] = response.data;
 
       const duplicate = existingMacros.find(
@@ -48,7 +50,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
         return;
       }
 
-      const responseUpdate = await axios.put(`http://localhost:8080/api/macro/${medicalStaffId}`, {
+      const responseUpdate = await axios.put(`${API_BASE_URL}/macro/${medicalStaffId}`, {
         macroId: macro.macroId,
         medicalStaffId: medicalStaffId,
         macroName: macroName,
