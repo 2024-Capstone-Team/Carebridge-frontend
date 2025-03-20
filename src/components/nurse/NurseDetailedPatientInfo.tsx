@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaChevronLeft, FaSearch } from "react-icons/fa";
+import { formatTime } from "../../utils/commonUtils";
 import Fuse from "fuse.js";
 import axios from "axios";
 
@@ -40,30 +41,15 @@ const formatDate = (date: string | null | undefined): string => {
   return `${year}.${month}.${day}`;
 };
 
-const formatTime = (timeString: string | null | undefined): string => {
-  if (!timeString) return "정보 없음";
-  try {
-    const dateObj = new Date(timeString);
-    if (isNaN(dateObj.getTime())) return "정보 없음";
-    return dateObj.toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch (error) {
-    console.error("formatTime 처리 중 에러:", error);
-    return "정보 없음";
-  }
-};
-
 const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ patientId, onBack, onChatClick }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
-  const navigate = useNavigate();
 
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [allPatients, setAllPatients] = useState<PatientInfo[]>([]);
   const [patientRequests, setPatientRequests] = useState<RequestRecord[]>([]);
+
+  const navigate = useNavigate();
 
   // 선택한 환자의 상세 정보 가져오기
   useEffect(() => {
@@ -133,7 +119,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     const fetchAllPatients = async () => {
       try {
         const staffId = 1; // 임시 staff_id 값
-        const response = await axios.get(`${API_BASE_URL}/patient/users/${staffId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/patient/users/${staffId}`);
         const fetchedPatients = response.data.map((p: any) => ({
           patientId: p.patientId,
           name: p.name,

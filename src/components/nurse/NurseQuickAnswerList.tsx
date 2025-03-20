@@ -19,13 +19,14 @@ interface NurseQuickAnswerListProps {
 
 const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+  
   const [quickAnswers, setQuickAnswers] = useState<QuickAnswer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedQuickAnswer, setSelectedQuickAnswer] = useState<QuickAnswer | null>(null);
   const [toggledStars, setToggledStars] = useState<Record<number, boolean>>({});
+
 
   const fetchQuickAnswers = async () => {
     try {
@@ -42,7 +43,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
     if (savedFavorites) {
       const favorites: number[] = JSON.parse(savedFavorites);
       
-      // 초기 Stars 상태 설정정
+      // 초기 Stars 상태 설정
       const initialStars: Record<number, boolean> = {};
       favorites.forEach((id) => {
         initialStars[id] = true;
@@ -51,6 +52,8 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
     }
   }, [hospitalId]);
 
+
+  // 빠른 답변 삭제
   const handleDelete = async (title: string) => {
     if (!window.confirm(`정말로 '${title}' 빠른 답변을 삭제하시겠습니까?`)) {
       return;
@@ -69,7 +72,8 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
     setIsEditing(true);
   };
 
-  const handleModalClose = () => {
+  // 빠른 답변 창을 닫을 때 빠른 답변 목록 새로고침
+  const handleQARefresh = () => {
     setIsAdding(false);
     setIsEditing(false);
     setSelectedQuickAnswer(null);
@@ -88,18 +92,21 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
     });
   };
 
+
   return (
     <div className="w-full h-full bg-[#DFE6EC] p-6 rounded-lg">
+      
       {isAdding ? (
-        <NurseQuickAnswerAdd onClose={handleModalClose} hospitalId={hospitalId} />
+        <NurseQuickAnswerAdd onClose={handleQARefresh} hospitalId={hospitalId} />
       ) : isEditing && selectedQuickAnswer ? (
         <NurseQuickAnswerEdit 
-          onClose={handleModalClose} 
+          onClose={handleQARefresh} 
           hospitalId={hospitalId} 
           quickAnswer={selectedQuickAnswer} 
         />
       ) : (
         <>
+
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold mb-4">빠른 답변 설정</h2>
             <button 
@@ -110,6 +117,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
             </button>
           </div>
           <hr className="mb-4 border border-gray-300" />
+
           {error ? (
             <p className="text-red-500 text-center">{error}</p>
           ) : (
@@ -120,6 +128,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
                     <h3 className="text-[17px] font-semibold">{qa.title}</h3>
                     <p className="text-[14px] text-gray-500">{qa.information}</p>
                   </div>
+                  
                   <div className="flex space-x-2">
                     <img 
                       src={toggledStars[qa.id] ? ystar : star}
@@ -127,6 +136,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
                       className="h-[20px] w-[20px] mt-2 mr-1 cursor-pointer"
                       onClick={() => toggleStar(qa.id)}
                     />
+
                     <button 
                       onClick={() => handleEdit(qa)}
                       className="bg-gray-200 text-gray-700 text-[17px] h-[40px] w-[70px] rounded-md hover:bg-gray-300"
@@ -140,6 +150,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
                       삭제
                     </button>
                   </div>
+                  
                 </div>
               ))}
             </div>

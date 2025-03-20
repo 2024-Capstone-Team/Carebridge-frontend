@@ -7,20 +7,16 @@ import NurseMacroList from '../../components/nurse/NurseMacroList';
 import NurseQuickAnswerList from '../../components/nurse/NurseQuickAnswerList';
 import NurseMessaging from '../../components/nurse/NurseMessaging';
 import logo from "../../assets/carebridge_logo.png";
-import bar from "../../assets/hamburger bar.png";
-import home from "../../assets/home.png";
-import schedular from "../../assets/schedular.png";
-import dbarrows from "../../assets/double arrows.png";
-import dwarrows from "../../assets/down arrows.png";
-import qresponse from "../../assets/quick response.png";
+import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu } from "react-icons/fi";
+import { BsStopwatch } from "react-icons/bs";
 import useStompClient from "../../hooks/useStompClient";
 import ChatMessages from "../../components/common/ChatMessages.tsx";
 import { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, ChatConversation, MedicalStaff } from "../../types";
-import macro from "../../assets/macro.png";
 import axios from "axios";
 import { useUserContext } from "../../context/UserContext";
-const WebSocketContext = createContext(null);
+import { calculateAge, formatBirthdate, formatGender, formatTime } from '../../utils/commonUtils.ts';
 
+const WebSocketContext = createContext(null);
 
 // conversationId에서 patientId 추출
 function parsePatientId(conversationId: string) {
@@ -31,8 +27,7 @@ function parsePatientId(conversationId: string) {
 
 const NurseMainPage: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
-
+  
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); // 메뉴 팝업 표시
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 }); // 메뉴바 위치 설정
@@ -69,12 +64,6 @@ const NurseMainPage: React.FC = () => {
     fetchHospitalName();
   }, [hospitalId]);
 
-  const handleLogoClick = () => {
-    setIsMacroMode(false);
-    setIsQAMode(false);
-    navigate('/nurse-main');
-  };
-
   // 분과 API
   useEffect(() => {
     const fetchMedicalStaff = async () => {
@@ -89,12 +78,7 @@ const NurseMainPage: React.FC = () => {
   }, [hospitalId]);
 
 
-  const handleHamburgerClick = (event: React.MouseEvent<HTMLImageElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left });
-    setIsDropdownVisible(prev => !prev);
-  };
-
+  // 메인화면 날짜, 시간 표시
   useEffect(() => {
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timerId);
@@ -110,6 +94,7 @@ const NurseMainPage: React.FC = () => {
     minute: '2-digit',
   });
 
+
   // 스케줄 페이지에서 매크로 설정 이동
   useEffect(() => {
     if (location.state && location.state.macroMode) {
@@ -124,6 +109,19 @@ const NurseMainPage: React.FC = () => {
     }
   }, [location]);
 
+
+  const handleLogoClick = () => {
+    setIsMacroMode(false);
+    setIsQAMode(false);
+    navigate('/nurse-main');
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<SVGElement, MouseEvent>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left });
+    setIsDropdownVisible(prev => !prev);
+  };
+
   const handleMacroClick = () => {
     setIsMacroMode(true);
     setIsQAMode(false);
@@ -136,7 +134,7 @@ const NurseMainPage: React.FC = () => {
     setIsDropdownVisible(false);
   };
 
-  const handleMenuClick = (path: string) => {
+  const handleMenuMoveClick = (path: string) => {
     setIsDropdownVisible(false);
     setIsMacroMode(false);
     setIsQAMode(false);
@@ -197,53 +195,14 @@ const NurseMainPage: React.FC = () => {
     });
   };
 
+
+  {/* 콜벨서비스 코드 시작 */}
   const convertStatus = (status: string): string => {
     if (status === "PENDING") return "대기 중";
     if (status === "COMPLETED") return "완료됨";
     if (status === "IN_PROGRESS") return "진행 중";
     if (status === "SCHEDULED") return "예약됨";
     return status;
-  };
-
-  const calculateAge = (birthDateString: string): number | string => {
-    if (!birthDateString) return "정보 없음";
-    const birthDate = new Date(birthDateString);
-    if (isNaN(birthDate.getTime())) return "정보 없음";
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const isBeforeBirthday =
-      today.getMonth() < birthDate.getMonth() ||
-      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
-    if (isBeforeBirthday) age--;
-    return age;
-  };
-
-  const formatBirthdate = (birthdate: string | null | undefined) => {
-    if (!birthdate) return "정보 없음";
-    try {
-      const trimmedDate = birthdate.split("T")[0];
-      const [year, month, day] = trimmedDate.split("-");
-      return year && month && day ? `${year}.${month}.${day}` : "정보 없음";
-    } catch (error) {
-      console.error("formatBirthdate 처리 중 에러:", error);
-      return "정보 없음";
-    }
-  };
-
-  const formatGender = (gender: string): string => {
-    return gender === "Male" ? "남" : gender === "Female" ? "여" : "정보 없음";
-  };
-
-  const formatTime = (timeString: string | null | undefined): string => {
-    if (!timeString) return "정보 없음";
-    try {
-      const dateObj = new Date(timeString);
-      if (isNaN(dateObj.getTime())) return "정보 없음";
-      return dateObj.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
-    } catch (error) {
-      console.error("formatTime 처리 중 에러:", error);
-      return "정보 없음";
-    }
   };
 
   useEffect(() => {
@@ -303,7 +262,9 @@ const NurseMainPage: React.FC = () => {
         statusPriority.indexOf(convertStatus(a.status)) - statusPriority.indexOf(convertStatus(b.status))
       )
     : requests.filter(req => convertStatus(req.status) === selectedStatus);
-  
+
+  {/* 콜벨서비스 코드 끝 */}
+
 
   {/* 메시지 관련 코드 시작 */}
 
@@ -553,6 +514,8 @@ const NurseMainPage: React.FC = () => {
           </div>
         </div>
       )}
+
+
       {/* 테스트 버튼 */}
       {/*<div className="fixed inset-0 flex items-center justify-center z-40">
         <button
@@ -563,11 +526,23 @@ const NurseMainPage: React.FC = () => {
         </button>
       </div>*/}
 
+
+      {/* 메뉴바 아이콘 */}
       <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
         <div className="flex items-center mb-4" style={{ marginTop: '-60px' }}>
-          <img src={isDropdownVisible ? dwarrows : bar} alt="hamburger bar"
-               className="relative w-[1.7em] h-[1.7em] mr-2 cursor-pointer"
-               onClick={handleHamburgerClick} />
+        {isDropdownVisible ? (
+          <FiChevronsDown
+            className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer"
+            onClick={handleMenuClick}
+          />
+        ) : (
+          <FiMenu
+            className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer"
+            onClick={handleMenuClick}
+          />
+        )}
+
+        {/* 메뉴바 클릭 시 팝업 */}
           {isDropdownVisible && (
             <div className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
                  style={{ top: dropdownPosition.top, left: dropdownPosition.left }}>
@@ -581,38 +556,41 @@ const NurseMainPage: React.FC = () => {
 
               <ul className="py-2">
                 <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                    onClick={() => handleMenuClick("/nurse-main")}>
-                  <img src={home} alt="home" className="w-4 h-4 mr-2" />메인 화면
+                    onClick={() => handleMenuMoveClick("/nurse-main")}>
+                  <FiHome className="w-4 h-4 mr-2" />메인 화면
                 </li>
                 <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                    onClick={() => handleMenuClick("/nurse-schedule")}>
-                  <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" />스케줄러
+                    onClick={() => handleMenuMoveClick("/nurse-schedule")}>
+                  <FiCalendar className="w-4 h-4 mr-2" />스케줄러
                 </li>
                 <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
                     onClick={handleMacroClick}>
-                  <img src={macro} alt="macro" className="w-4 h-4 mr-2" />매크로 설정
+                  <FiCpu className="w-4 h-4 mr-2" />매크로 설정
                 </li>
                 <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
                     onClick={handleQAClick}>
-                  <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" />빠른 답변 설정
+                  <BsStopwatch className="w-4 h-4 mr-2" />빠른 답변 설정
                 </li>
                 <hr className="bg-gray-600" />
 
                 <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleMenuClick("/nurse-reset-password")}>비밀번호 재설정</li>
+                    onClick={() => handleMenuMoveClick("/nurse-reset-password")}>비밀번호 재설정</li>
                 <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleMenuClick("/nurse-login")}>로그아웃</li>
+                    onClick={() => handleMenuMoveClick("/nurse-login")}>로그아웃</li>
               </ul>
             </div>
           )}
+
           <img src={logo} alt="CareBridge 로고" className="w-[7.5em] h-[7.5em] cursor-pointer" onClick={handleLogoClick} />
         </div>
 
+        {/* 날짜 표시 영역 */}
         <div className="flex text-center text-gray-600 mb-4" style={{ marginTop: '-40px' }}>
           <p className="text-black font-semibold mr-2">{formattedDate}</p>
           <p className="text-gray-600 font-[12px]">{formattedTime}</p>
         </div>
 
+        {/* 병원 정보 표시 영역 */}
         <p className="text-black font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
         <p className="text-gray-600 text-[12px]">{medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}</p>
 
@@ -685,6 +663,7 @@ const NurseMainPage: React.FC = () => {
         </div>
       </div>
 
+      {/* 매크로, 빠른 답변 화면 전환 */}
       {isMacroMode ? (
         <div className="flex-1 relative w-full">
           <NurseMacroList medicalStaffId={Number(medicalStaffId)} />

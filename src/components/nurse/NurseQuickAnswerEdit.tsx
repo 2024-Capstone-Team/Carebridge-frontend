@@ -71,6 +71,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
             className="w-full border p-2"
           />
         </div>
+
         <div>
           <label className="block font-semibold text-black mb-2">카테고리</label>
           <select
@@ -83,6 +84,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
             <option value="Specialty">Specialty</option>
           </select>
         </div>
+        
         <div>
           <label className="block font-semibold text-black mb-2">내용</label>
           <textarea
