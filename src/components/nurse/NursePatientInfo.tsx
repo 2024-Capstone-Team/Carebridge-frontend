@@ -4,6 +4,7 @@ import back from "../../assets/back.png";
 import Fuse from "fuse.js";
 import axios from "axios";
 import { useUserContext } from "../../context/UserContext";
+import { formatBirthdate, formatGender } from "../../utils/commonUtils";
 
 interface PatientInfo {
   patientId: number;
@@ -18,7 +19,7 @@ interface NursePatientInfoProps {
 
 const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+  
   const [patients, setPatients] = useState<PatientInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -29,32 +30,6 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
     keys: ["name"],
     threshold: 0.3, // 검색 정확도 설정
   });
-
-
-  // 생년월일 포맷 변환 함수
-  const formatBirthdate = (birthdate: string | null | undefined) => {
-    if (!birthdate) return "정보 없음";
-
-    try {
-      // 'T' 이후를 제거하고 날짜만 추출
-      const trimmedDate = birthdate.split("T")[0];
-      const [year, month, day] = trimmedDate.split("-");
-      if (year && month && day) {
-        return `${year}.${month}.${day}`;
-      }
-      return "정보 없음";
-    } catch (error) {
-      console.error("formatBirthdate 처리 중 에러:", error);
-      return "정보 없음";
-    }
-  };
-
-
-  // 성별 변환 함수
-  const formatGender = (gender: string | undefined) => {
-    if (!gender) return "정보 없음";
-    return gender === "Male" ? "남" : gender === "Female" ? "여" : "정보 없음";
-  };
 
 
   // API로부터 환자 데이터 가져오기
@@ -119,6 +94,7 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
             ))}
           </ul>
         </div>   
+        
       </div>
   );
 };

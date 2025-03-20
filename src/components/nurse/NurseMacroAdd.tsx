@@ -15,7 +15,7 @@ interface NurseMacroProps {
 
 const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+  
   const [macroName, setMacroName] = useState('');
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,6 +47,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
         return;
       }
 
+      // 매크로 추가
       await axios.post(`${API_BASE_URL}/macro/${medicalStaffId}`, {
         macroName,
         text
@@ -55,10 +56,9 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       onClose();
     } catch (err) {
       setError('매크로 추가 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
     }
   };
+
 
   return (
     <div className="w-full h-full bg-[#DFE6EC] rounded-lg">
@@ -91,19 +91,20 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       <div className="flex justify-center space-x-4">
         <button
           onClick={onClose}
-          className="bg-white border border-gray-300 shadow-lg text-lg rounded-md px-2 mx-1 w-[65px] h-[40px] hover:bg-gray-200"
+          className={"bg-white border border-gray-300 shadow-lg text-lg rounded-md px-2 mx-1 w-[65px] h-[40px] hover:bg-gray-200"}
           disabled={loading}
         >
           취소
         </button>
         <button
           onClick={handleSave}
-          className="bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 w-[65px] h-[40px]"
+          className={"bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 h-[40px] ${loading ? 'w-[100px]' : 'w-[65px]'}"}
           disabled={loading}
         >
           {loading ? '저장 중...' : '저장'}
         </button>
       </div>
+      
     </div>
   );
 };

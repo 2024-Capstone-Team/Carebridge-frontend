@@ -16,16 +16,18 @@ interface NurseMacroEditProps {
 
 const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId, macro }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+  
   const [macroName, setMacroName] = useState(macro.macroName);
   const [text, setText] = useState(macro.text);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
   useEffect(() => {
     setMacroName(macro.macroName);
     setText(macro.text);
   }, [macro]);
+
 
   const handleUpdate = async () => {
     if (!macroName.trim() || !text.trim()) {
@@ -37,7 +39,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
     setError(null);
 
     try {
-      // 동일 제목의 매크로 체크
+      // 매크로 중복 체크
       const response = await axios.get(`${API_BASE_URL}/macro/list/${medicalStaffId}`);
       const existingMacros: Macro[] = response.data;
 
@@ -67,6 +69,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
       setLoading(false);
     }
   };
+
 
   return (
     <div className="w-full h-full bg-[#DFE6EC] rounded-lg">
@@ -103,12 +106,13 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
         </button>
         <button
           onClick={handleUpdate}
-          className="bg-[#6990B6] text-white text-lg rounded-md w-[65px] h-[40px]"
+          className={"bg-[#6990B6] text-white text-lg rounded-md h-[40px] ${loading ? 'w-[100px]' : 'w-[65px]'}"}
           disabled={loading}
         >
           {loading ? '저장 중...' : '저장'}
         </button>
       </div>
+      
     </div>
   );
 };

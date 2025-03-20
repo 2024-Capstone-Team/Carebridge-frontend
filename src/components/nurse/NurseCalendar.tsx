@@ -4,6 +4,7 @@
   import timeGridPlugin from "@fullcalendar/timegrid";
   import axios from "axios";
   import { useUserContext } from "../../context/UserContext";
+  import { formatBirthdate, formatGender, calculateAge } from "../../utils/commonUtils";
 
   interface ExaminationSchedule {
     id: number;
@@ -19,9 +20,8 @@
   }
 
   const NurseCalendar: React.FC<{ onEdit: (scheduleId: string) => void }> = ({ onEdit }) => {
-
     const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+    
     const [events, setEvents] = useState<any[]>([]); // 캘린더 이벤트 상태
     const [selectedEvent, setSelectedEvent] = useState<any | null>(null); // 선택된 이벤트
     const [isPopupOpen, setIsPopupOpen] = useState(false); // 팝업 상태
@@ -33,6 +33,7 @@
     const { hospitalId } = useUserContext();
     const staffId = 1;
     
+    // 만 나이 계산
     const calculateAge = (birthDateString: string): number => {
       const today = new Date();
       const birthDate = new Date(birthDateString);
@@ -46,71 +47,50 @@
       }
       return age;
     };
+    
+    // 일정 API
+    const fetchSchedules = async () => {
+      try {
+        const response = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/schedule/medical-staff/${staffId}`);
+        console.log("API Response:", response.data);
 
-  // 생년월일 포맷 변환 함수
-  const formatBirthdate = (birthdate: string | null | undefined) => {
-    if (!birthdate) return "정보 없음";
-
-    try {
-      const trimmedDate = birthdate.split("T")[0];
-      const [year, month, day] = trimmedDate.split("-");
-      if (year && month && day) {
-        return `${year}.${month}.${day}`;
-      }
-      return "정보 없음";
-    } catch (error) {
-      console.error("formatBirthdate 처리 중 에러:", error);
-      return "정보 없음";
-    }
-  };
-
-  const formatGender = (gender: string): string => {
-    return gender === "Male" ? "남" : gender === "Female" ? "여" : "정보 없음";
-  };
-
-  // 일정 API
-  const fetchSchedules = async () => {
-    try {
-      const response = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/schedule/medical-staff/${staffId}`);
-      console.log("API Response:", response.data);
-
-      // 환자 상세 정보 API
-      const schedulesWithPatientDetails = await Promise.all(
-        response.data.map(async (schedule) => {
-          try {
-            const patientResponse = await axios.get(`${API_BASE_URL}/patient/user/${schedule.patientId}`);
-            const patient = patientResponse.data;
-            return {
-              ...schedule,
-              patientName: patient.name,
-              birthDate: formatBirthdate(patient.birthDate),
-              gender: formatGender(patient.gender),
-              age: calculateAge(patient.birthDate),
-            };
-          } catch (error) {
-            console.error(`환자 ${schedule.patientId} 정보 호출 에러:`, error);
-            return schedule;
+        // 환자 상세 정보 API
+        const schedulesWithPatientDetails = await Promise.all(
+          response.data.map(async (schedule) => {
+            try {
+              const patientResponse = await axios.get(`${API_BASE_URL}/patient/user/${schedule.patientId}`);
+              const patient = patientResponse.data;
+              return {
+                ...schedule,
+                patientName: patient.name,
+                birthDate: formatBirthdate(patient.birthDate),
+                gender: formatGender(patient.gender),
+                age: calculateAge(patient.birthDate),
+              };
+            } catch (error) {
+              console.error(`환자 ${schedule.patientId} 정보 호출 에러:`, error);
+              return schedule;
+            }
+          })
+        );
+        
+        // category별로 duration 반환
+        function getDurationByCategory(category: string): number {
+          switch (category) {
+            case "SURGERY":
+              return 60;
+            case "OUTPATIENT":
+            case "EXAMINATION":
+              return 30;
+            default:
+              return 20; 
           }
-        })
-      );
-
-      // category별로 duration 반환
-      function getDurationByCategory(category: string): number {
-        switch (category) {
-          case "SURGERY":
-            return 60;
-          case "OUTPATIENT":
-          case "EXAMINATION":
-            return 30;
-          default:
-            return 20; 
         }
-      }
-
-      const fetchedEvents = schedulesWithPatientDetails.map((schedule) => {
+        
+        const fetchedEvents = schedulesWithPatientDetails.map((schedule) => {
         const startDate = new Date(schedule.scheduleDate);
 
-        // duration 구하기기
+        // duration 구하기
         const durationMinutes = getDurationByCategory(schedule.category);
 
         // endDate = startDate + durationMinutes
@@ -146,46 +126,46 @@
   useEffect(() => {
     fetchSchedules();
   }, []);
+  
+  const handleEventClick = (clickInfo: any) => {
+    const event = clickInfo.event;
+    const rect = clickInfo.el.getBoundingClientRect();
+    setPopupPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
     
-    const handleEventClick = (clickInfo: any) => {
-      const event = clickInfo.event;
-      const rect = clickInfo.el.getBoundingClientRect();
-      setPopupPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
-    
-      // 선택된 이벤트 데이터 설정
-      setSelectedEvent({
-        id: event.id,
-        title: event.title,
-        start: event.start?.toLocaleString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        patientName: event.extendedProps.patientName,
-        birthDate: event.extendedProps.birthDate,
-        gender: event.extendedProps.gender,
-        age: event.extendedProps.age,
-        details: event.extendedProps.details,
-      });
-      setIsPopupOpen(true);
+    // 선택된 이벤트 데이터 설정
+    setSelectedEvent({
+      id: event.id,
+      title: event.title,
+      start: event.start?.toLocaleString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      patientName: event.extendedProps.patientName,
+      birthDate: event.extendedProps.birthDate,
+      gender: event.extendedProps.gender,
+      age: event.extendedProps.age,
+      details: event.extendedProps.details,
+    });
+    setIsPopupOpen(true);
+  };
+  
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedEvent(null);
+    setPopupPosition(null);
     };
 
-    const closePopup = () => {
-      setIsPopupOpen(false);
-      setSelectedEvent(null);
-      setPopupPosition(null);
-      };
+   const handleEdit = () => {
+    if (selectedEvent) {
+      onEdit(selectedEvent.id); // scheduleId 전달
+    }
+  };
+  
 
-    const handleEdit = () => {
-      if (selectedEvent) {
-        onEdit(selectedEvent.id); // scheduleId 전달
-      }
-    };
-
-
-    return (
+  return (
       <div className="height h-full py-4 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <FullCalendar
