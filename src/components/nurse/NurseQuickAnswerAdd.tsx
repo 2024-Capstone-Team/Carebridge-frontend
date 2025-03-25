@@ -7,12 +7,16 @@ interface NurseQuickAnswerAddProps {
 }
 
 const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hospitalId }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+  
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('General'); // 기본값: General
   const [information, setInformation] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) {
@@ -25,16 +29,22 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
-      // 병원에 등록된 빠른 답변 목록을 가져와서 중복 제목 체크
-      const response = await axios.get(`http://localhost:8080/api/hospital-info/list/${hospitalId}`);
+      // 빠른 답변 중복 체크
+      const response = await axios.get(`${API_BASE_URL}/hospital-info/list/${hospitalId}`);
       const existingQuickAnswers = response.data;
+
       const duplicate = existingQuickAnswers.find((qa: { title: string }) => qa.title === title);
       if (duplicate) {
         setError('동일한 제목의 빠른 답변이 존재합니다');
+        setLoading(false);
         return;
       }
 
+      // 추가 데이터
       const newInfo = {
         hospitalId,
         title,
@@ -42,8 +52,8 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
         information,
       };
 
-      // POST 요청으로 DB에 새 빠른 답변을 추가합니다.
-      await axios.post('http://localhost:8080/api/hospital-info', newInfo);
+      // 빠른 답변 추가
+      await axios.post(`${API_BASE_URL}/hospital-info`, newInfo);
       alert('병원 정보가 성공적으로 추가되었습니다.');
       onClose();
     } catch (err) {
@@ -52,12 +62,13 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
     }
   };
 
+
   return (
     <div className="w-full h-full bg-[#DFE6EC]">
       <h2 className="text-lg font-semibold mb-4">빠른 답변 추가</h2>
       <hr className="mb-4 border border-gray-300" />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSave} className="space-y-4">
         <div>
           <label className="text-black font-semibold block mb-2">제목</label>
           <input 
@@ -71,6 +82,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
             }}
           />
         </div>
+
         <div>
           <label className="block font-semibold text-black mb-2">카테고리</label>
           <select
@@ -83,6 +95,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
             <option value="Specialty">Specialty</option>
           </select>
         </div>
+
         <div>
           <label className="text-black font-semibold block mb-2">내용</label>
           <textarea

@@ -17,6 +17,8 @@ interface NurseMacroListProps {
 }
 
 const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+  
   const [macros, setMacros] = useState<Macro[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -26,7 +28,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
 
   const fetchMacros = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/macro/list/${medicalStaffId}`);
+      const response = await axios.get(`${API_BASE_URL}/macro/list/${medicalStaffId}`);
       setMacros(response.data);
     } catch (err) {
       setError('매크로 목록을 불러오는 중 오류가 발생했습니다.');
@@ -49,12 +51,14 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
     }
   }, [medicalStaffId]);
 
+
+  // 매크로 삭제
   const handleDelete = async (macroName: string) => {
     const confirmDelete = window.confirm(`정말로 '${macroName}' 매크로를 삭제하시겠습니까?`);
     if (!confirmDelete) return;
     
     try {
-      await axios.delete(`http://localhost:8080/api/macro/${medicalStaffId}/${macroName}`);
+      await axios.delete(`${API_BASE_URL}/macro/${medicalStaffId}/${macroName}`);
       setMacros((prev) => prev.filter(macro => macro.macroName !== macroName));
       alert('매크로가 삭제되었습니다.');
     } catch (err) {
@@ -67,8 +71,8 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
     setIsEditing(true);
   };
 
-  // 매크로 창을 닫을 때 매크로 목록을 새로 불러옴
-  const handleModalClose = () => {
+  // 매크로 창을 닫을 때 매크로 목록 새로고침
+  const handleMacroRefresh = () => {
     setIsAdding(false);
     setIsEditing(false);
     setSelectedMacro(null);
@@ -87,18 +91,20 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
     });
   };
 
+
   return (
     <div className="w-full h-full bg-[#DFE6EC] p-6 z-50 rounded-lg">
       {isAdding ? (
-        <NurseMacro onClose={handleModalClose} medicalStaffId={medicalStaffId} />
+        <NurseMacro onClose={handleMacroRefresh} medicalStaffId={medicalStaffId} />
       ) : isEditing && selectedMacro ? (
         <NurseMacroEdit 
-          onClose={handleModalClose} 
+          onClose={handleMacroRefresh} 
           medicalStaffId={medicalStaffId} 
           macro={selectedMacro} 
         />
       ) : (
         <>
+
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold mb-4">스크립트 매크로 설정</h2>
             <button 
@@ -108,6 +114,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
             </button>
           </div>
           <hr className="mb-4 border border-gray-300" />
+          
           {error ? (
             <p className="text-red-500 text-center">{error}</p>
           ) : (
@@ -118,6 +125,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                     <h3 className="text-[17px] font-semibold">{macro.macroName}</h3>
                     <p className="text-[14px] text-gray-500 turncate">{macro.text}</p>
                   </div>
+
                   <div className="flex space-x-2">
                     <img 
                       src={toggledStars[macro.macroId] ? ystar : star} 
@@ -125,6 +133,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                       className="h-[20px] w-[20px] mt-2 mr-1 cursor-pointer"
                       onClick={() => toggleStar(macro.macroId)}
                     />
+                    
                     <button 
                       className="bg-gray-200 text-gray-700 text-[17px] h-[40px] w-[70px] rounded-md hover:bg-gray-300"
                       onClick={() => handleEdit(macro)}>
@@ -136,6 +145,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                       삭제
                     </button>
                   </div>
+                  
                 </div>
               ))}
             </div>
