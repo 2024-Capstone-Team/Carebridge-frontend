@@ -33,6 +33,8 @@ const PatientMainPage: React.FC = () => {
         setPatientId(null);
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         alert("로그아웃 완료. 확인 버튼을 누르면 로그인 화면으로 돌아갑니다.")
         console.log('로그아웃 성공');
         navigate('/patient-login');
