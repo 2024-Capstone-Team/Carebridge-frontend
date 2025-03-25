@@ -112,7 +112,7 @@ const NurseSchedulePage: React.FC = () => {
     navigate(path);
   }
 
-  // location.state의 view 값에 따라 초기 모드 설정
+  // view 값에 따라 초기 모드 설정
   useEffect(() => {
     if (location.state?.view === "edit" && location.state.scheduleId) {
       setModeCalendar(false);
