@@ -4,14 +4,11 @@ import NurseCalendar from "../../components/nurse/NurseCalendar";
 import ScheduleEditForm from "../../components/nurse/NurseScheduleEdit";
 import ScheduleAdd from "../../components/nurse/NurseScheduleAdd";
 import logo from "../../assets/carebridge_logo.png";
-import bar from "../../assets/hamburger bar.png";
-import home from "../../assets/home.png";
-import schedular from "../../assets/schedular.png";
-import macro from "../../assets/macro.png";
-import dwarrows from "../../assets/down arrows.png";
-import qresponse from "../../assets/quick response.png";
+import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu } from "react-icons/fi";
+import { BsStopwatch } from "react-icons/bs";
 import axios from "axios";
 import { useUserContext } from "../../context/UserContext";
+import { formatBirthdate } from "../../utils/commonUtils";
 
 interface Patient {
   patientId: number;
@@ -34,23 +31,6 @@ const NurseSchedulePage: React.FC = () => {
 
   const { hospitalId } = useUserContext();
   const staffId = 1;
-
-  // 생년월일 포맷 변환 함수
-  const formatBirthdate = (birthdate: string | null | undefined) => {
-    if (!birthdate) return "정보 없음";
-
-    try {
-      const trimmedDate = birthdate.split("T")[0];
-      const [year, month, day] = trimmedDate.split("-");
-      if (year && month && day) {
-        return `${year}.${month}.${day}`;
-      }
-      return "정보 없음";
-    } catch (error) {
-      console.error("formatBirthdate 처리 중 에러:", error);
-      return "정보 없음";
-    }
-  };
 
   // API 호출하여 환자 데이터 가져오기
   useEffect(() => {
@@ -86,7 +66,7 @@ const NurseSchedulePage: React.FC = () => {
     navigate('/nurse-main');
   };
 
-  const handleHamburgerClick = (event: React.MouseEvent<HTMLImageElement>) => {
+  const handleMenuClick = (event: React.MouseEvent<SVGElement, MouseEvent>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     setDropdownPosition({ top: rect.bottom + window.scrollY, left: rect.left });
     setIsDropdownVisible((prev) => !prev); 
@@ -123,7 +103,7 @@ const NurseSchedulePage: React.FC = () => {
     navigate("/nurse-main", { state: { QAMode: true } });
   };
   
-  const handleMenuClick = (path: string) => {
+  const handleMenuMoveClick = (path: string) => {
     if (path === "/nurse-schedule") {
       setModeCalendar(true);
       setModeEdit(false);
@@ -132,7 +112,7 @@ const NurseSchedulePage: React.FC = () => {
     navigate(path);
   }
 
-  // location.state의 view 값에 따라 초기 모드 설정
+  // view 값에 따라 초기 모드 설정
   useEffect(() => {
     if (location.state?.view === "edit" && location.state.scheduleId) {
       setModeCalendar(false);
@@ -151,17 +131,23 @@ const NurseSchedulePage: React.FC = () => {
   }, [location]);
 
   return (
-    /*전체 페이지 창*/
+    /* 전체 페이지 창 */
     <div className="flex flex-col h-screen bg-[#DFE6EC] overflow-hidden">
       
-      {/*햄버거바 + 로고 영역*/}
+      {/* 메뉴 바 + 로고 영역*/}
       <div className="flex items-center pl-7">
-        <img
-          src={isDropdownVisible ? dwarrows : bar}
-          alt="hamburger bar"
-          className="relative w-[1.7em] h-[1.7em] mr-2 cursor-pointer"
-          onClick={handleHamburgerClick}
-        />
+        {isDropdownVisible ? (
+          <FiChevronsDown
+          className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer"
+          onClick={handleMenuClick}
+          />
+        ) : (
+          <FiMenu
+          className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer"
+          onClick={handleMenuClick}
+          />
+          )}
+
         {isDropdownVisible && (
           <div
             className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
@@ -173,42 +159,39 @@ const NurseSchedulePage: React.FC = () => {
 
             <ul className="py-2">
               <li className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                onClick={() => handleMenuClick("/nurse-main")}>
-                <img src={home} alt="home" className="w-4 h-4 mr-2" /> 메인 화면
+                onClick={() => handleMenuMoveClick("/nurse-main")}>
+                <FiHome className="w-4 h-4 mr-2" /> 메인 화면
               </li>
               <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                onClick={() => handleMenuClick("/nurse-schedule")}>
-                <img src={schedular} alt="schedular" className="w-4 h-4 mr-2" /> 스케줄러
+                onClick={() => handleMenuMoveClick("/nurse-schedule")}>
+                <FiCalendar className="w-4 h-4 mr-2" /> 스케줄러
               </li>
               <li className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
                 onClick={handleMacroClick}>
-                <img src={macro} alt="macro" className="w-4 h-4 mr-2" /> 매크로 설정
+                <FiCpu className="w-4 h-4 mr-2" /> 매크로 설정
               </li>
               <li className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
                 onClick={handleQAClick}>
-                <img src={qresponse} alt="qresponse" className="w-4 h-4 mr-2" /> 빠른 답변 설정
+                <BsStopwatch className="w-4 h-4 mr-2" /> 빠른 답변 설정
               </li>
               <hr className="bg-gray-600"></hr>
               <li className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                onClick={() => handleMenuClick("/nurse-reset-password")}> 비밀번호 재설정
+                onClick={() => handleMenuMoveClick("/nurse-reset-password")}> 비밀번호 재설정
               </li>
               <li className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
-                onClick={() => handleMenuClick("/nurse-login")}> 로그아웃
+                onClick={() => handleMenuMoveClick("/nurse-login")}> 로그아웃
               </li>
             </ul>
           </div>
         )}
-        <img
-          src={logo}
-          alt="CareBridge 로고"
-          className="w-[7.5em] h-[7.5em] cursor-pointer"
-          onClick={handleLogoClick}
-        />  
+        
+        <img src={logo} alt="CareBridge 로고" className="w-[7.5em] h-[7.5em] cursor-pointer" onClick={handleLogoClick}/>  
       </div>
 
-      {/*스케줄 메인 페이지 영역*/}
+      {/* 스케줄 메인 페이지 영역 */}
       <div className="flex flex-1 overflow-hidden">
-        {/*환자 목록 영역*/}
+
+        {/* 환자 목록 영역 */}
         <div className="flex flex-col bg-[#96B2C7] w-1/6 rounded-lg px-2 mb-4 ml-4 mr-2 shadow-md overflow-hidden">
           <h2 className="text-black font-semibold text-lg mt-2 pl-2">환자 목록</h2>
 
@@ -221,7 +204,7 @@ const NurseSchedulePage: React.FC = () => {
             </button>
           </div>
 
-          {/*환자 목록 영역*/}
+          {/* 환자 목록 영역 */}
           <div className="h-[calc(100vh-14rem)] bg-white rounded-lg p-2 shadow-md overflow-y-auto">
             <ul>
               {patients.map((patient) => (
