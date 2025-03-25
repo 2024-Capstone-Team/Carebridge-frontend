@@ -26,6 +26,9 @@ const NurseSchedule: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
   
   const { hospitalId } = useUserContext();
   const staffId = 1;
@@ -138,14 +141,11 @@ const NurseSchedule: React.FC = () => {
     fetchSchedules();
   }, []);
 
-  const currentDate = new Date();
-  const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
-
   if (loading) return <div>로딩 중...</div>;
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="flex flex-col bg-[#DFE6EC] rounded-lg p-4 max-h-full cursor-pointer" onClick={() => navigateToSchedule}>
+    <div className="flex flex-col bg-[#DFE6EC] rounded-lg p-4 max-h-full cursor-pointer" onClick={() => navigateToSchedule()}>
       
       <div className="flex items-center">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">스케줄</h2>

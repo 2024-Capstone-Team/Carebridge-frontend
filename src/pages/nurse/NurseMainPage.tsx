@@ -152,6 +152,9 @@ const NurseMainPage: React.FC = () => {
 
   // 채팅 버튼 클릭 시 해당 환자 정보 이동
   const handleChatClick = (patientId: number) => {
+    setIsMacroMode(false);
+    setIsQAMode(false);
+
     console.log("채팅 버튼 클릭: 환자 ID", patientId);
     const patientDetail = patientDetails[patientId];
     const patientNameValue = patientDetail ? patientDetail.name : "Unknown";
