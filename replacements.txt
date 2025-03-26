@@ -1,3 +1,0 @@
-"768da1f894b3af2fb2def46769412550"==REDACTED
-"http://3.35.233.198/api/users/social-login/kakao"==REDACTED
-"NCSBS5C0EM7CVVRK"==REDACTED
