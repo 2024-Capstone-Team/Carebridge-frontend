@@ -98,7 +98,7 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
           type="text"
           className="border items-center w-[300px] p-2"
           value={patientName}
-          onChange={(e) => setPatientId(Number(e.target.value))}
+          readOnly
         />
       </div>
 
