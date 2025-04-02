@@ -9,7 +9,8 @@ const PatientMainPage: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const navigate = useNavigate();
-  const { setPatientId } = useUserContext();
+  const { setPatientId, isPatient } = useUserContext();
+
   const phoneNumber = localStorage.getItem("phoneNumber");
 
   const chatBot = (e: React.FormEvent) => {
@@ -24,7 +25,12 @@ const PatientMainPage: React.FC = () => {
 
   const setting = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/patient-setting");
+
+    if (isPatient) {
+      navigate("/patient-setting");
+    } else {
+      navigate("/guardian-setting");
+    }
   };
 
   const handleLogout = async () => {

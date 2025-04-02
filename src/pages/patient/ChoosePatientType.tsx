@@ -10,7 +10,9 @@ const ChoosePatientType: React.FC = () => {
 
   const goMainpage = (e: React.FormEvent, isPatient:boolean) => {
     e.preventDefault();
-    setIsPatient(isPatient);    
+    setIsPatient(isPatient);
+    localStorage.setItem("isPatient", isPatient ? "true" : "false");
+    console.log("isPatient: ", isPatient);
     navigate("/patient-main");
   };
 
