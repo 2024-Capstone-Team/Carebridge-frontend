@@ -7,8 +7,6 @@ interface NurseQuickAnswerAddProps {
 }
 
 const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hospitalId }) => {
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('General'); // 기본값: General
   const [information, setInformation] = useState('');
@@ -34,7 +32,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
 
     try {
       // 빠른 답변 중복 체크
-      const response = await axios.get(`${API_BASE_URL}/hospital-info/list/${hospitalId}`);
+      const response = await axios.get(`/api/hospital-info/list/${hospitalId}`);
       const existingQuickAnswers = response.data;
 
       const duplicate = existingQuickAnswers.find((qa: { title: string }) => qa.title === title);
@@ -53,7 +51,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
       };
 
       // 빠른 답변 추가
-      await axios.post(`${API_BASE_URL}/hospital-info`, newInfo);
+      await axios.post(`/api/hospital-info`, newInfo);
       alert('병원 정보가 성공적으로 추가되었습니다.');
       onClose();
     } catch (err) {

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const  NurseResetPasswordPage: React.FC = () => {
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
   const [id, setID] = useState('');
   const [oldPassword, setOldPassword] = useState(''); // 현재 비밀번호
   const [newPassword, setNewPassword] = useState(''); // 새 비밀번호
@@ -20,7 +18,7 @@ const  NurseResetPasswordPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.put(`${API_BASE_URL}/staff/reset-password?newPassword=${newPassword}`,
+      const response = await axios.put(`/api/staff/reset-password?newPassword=${newPassword}`,
         {
           userId: id,
           password: oldPassword,

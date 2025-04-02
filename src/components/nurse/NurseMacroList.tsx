@@ -17,8 +17,6 @@ interface NurseMacroListProps {
 }
 
 const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
   const [macros, setMacros] = useState<Macro[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -28,7 +26,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
 
   const fetchMacros = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/macro/list/${medicalStaffId}`);
+      const response = await axios.get(`/api/macro/list/${medicalStaffId}`);
       setMacros(response.data);
     } catch (err) {
       setError('매크로 목록을 불러오는 중 오류가 발생했습니다.');
@@ -58,7 +56,7 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
     if (!confirmDelete) return;
     
     try {
-      await axios.delete(`${API_BASE_URL}/macro/${medicalStaffId}/${macroName}`);
+      await axios.delete(`/api/macro/${medicalStaffId}/${macroName}`);
       setMacros((prev) => prev.filter(macro => macro.macroName !== macroName));
       alert('매크로가 삭제되었습니다.');
     } catch (err) {

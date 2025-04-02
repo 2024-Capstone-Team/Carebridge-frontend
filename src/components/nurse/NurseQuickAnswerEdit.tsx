@@ -14,8 +14,6 @@ interface NurseQuickAnswerEditProps {
 }
 
 const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, hospitalId, quickAnswer }) => {
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
   const [title, setTitle] = useState(quickAnswer.title);
   const [information, setInformation] = useState(quickAnswer.information);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +27,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
     }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/hospital-info/list/${hospitalId}`);
+      const response = await axios.get(`/api/hospital-info/list/${hospitalId}`);
       const existingQuickAnswers = response.data;
       const duplicate = existingQuickAnswers.find(
         (qa: { id: number; title: string }) => qa.title === title && qa.id !== quickAnswer.id
@@ -39,7 +37,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
         return;
       }
 
-      await axios.put(`${API_BASE_URL}/hospital-info/${hospitalId}/${quickAnswer.id}`, null, {
+      await axios.put(`/api/hospital-info/${hospitalId}/${quickAnswer.id}`, null, {
         params: {
           title,
           information,
