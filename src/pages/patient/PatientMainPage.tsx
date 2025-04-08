@@ -35,7 +35,7 @@ const PatientMainPage: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/users/logout?phoneNumber=${phoneNumber}`);
+      await axios.post(`${API_BASE_URL}/api/users/logout?phoneNumber=${phoneNumber}`);
         setPatientId(null);
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");

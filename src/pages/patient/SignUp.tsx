@@ -64,7 +64,7 @@ const SignUp: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/users/send-otp/${phone}?isSignup=true`);
+      const response = await axios.post(`${API_BASE_URL}/api/users/send-otp/${phone}?isSignup=true`);
       console.log("인증번호 전송 성공:", response.data);
       setShowTimer(true);
       alert("인증번호가 전송되었습니다.");
@@ -82,7 +82,7 @@ const SignUp: React.FC = () => {
       }
     
       try {
-        const response = await axios.post(`${API_BASE_URL}/users/verify-otp`, {
+        const response = await axios.post(`${API_BASE_URL}/api/users/verify-otp`, {
           phone,
           otp: authCode,
         });

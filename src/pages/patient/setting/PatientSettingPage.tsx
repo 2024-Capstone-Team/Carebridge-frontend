@@ -57,7 +57,7 @@ const PatientSettingPage: React.FC = () => {
   // 병원 이름을 가져오는 API 호출 함수
   const fetchHospitalName = async (hospitalId: number): Promise<string> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/hospital/name/${hospitalId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/hospital/name/${hospitalId}`);
       return response.data;
     } catch (error) {
       console.error("병원 정보 조회 중 오류 발생:", error);
@@ -68,7 +68,7 @@ const PatientSettingPage: React.FC = () => {
   // 보호자 정보를 가져오는 API 호출 함수
   const fetchGuardianInfo = async (guardianContact: string) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/guardian/info/${guardianContact}`);
+      const response = await axios.get(`${API_BASE_URL}/api/guardian/info/${guardianContact}`);
       return response.data;
     } catch (error) {
       console.error("보호자 정보 조회 중 오류 발생:", error);
@@ -81,7 +81,7 @@ const PatientSettingPage: React.FC = () => {
     if (!patientId) return;
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/patient/user/${patientId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/patient/user/${patientId}`);
       const patientData = response.data;
       
       patientData.birthDate = formatDate(patientData.birthDate);
