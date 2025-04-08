@@ -49,7 +49,7 @@ const PatientSchedular: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${API_BASE_URL}/schedule/patient/${patientId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/schedule/patient/${patientId}`);
 
         console.log("API 응답 데이터:", response.data);
         setScheduleData(response.data);

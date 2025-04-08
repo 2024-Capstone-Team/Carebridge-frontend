@@ -12,6 +12,8 @@ interface Guardian {
 }
 
 const ManageGuardian: React.FC = () => {
+    const API_BASE_URL = import.meta.env.VITE_BACKEND_HOST;
+
     const [guardians, setGuardians] = useState<Guardian[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedGuardian, setSelectedGuardian] = useState<Guardian | null>(null);
@@ -23,7 +25,7 @@ const ManageGuardian: React.FC = () => {
 
     const fetchGuardians = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/guardian/list/${userId}`);
+            const response = await axios.get(`${API_BASE_URL}/api/guardian/list/${userId}`);
             setGuardians(response.data);
         } catch (error) {
             console.error('보호자 목록 불러오기 실패:', error);
@@ -43,7 +45,7 @@ const ManageGuardian: React.FC = () => {
     const confirmDisconnect = async () => {
         try {
             if (selectedGuardian) {
-                await axios.delete(`http://localhost:8080/api/guardian/${selectedGuardian.phoneNumber}`);
+                await axios.delete(`${API_BASE_URL}/api/guardian/${selectedGuardian.phoneNumber}`);
                 setGuardians(guardians.filter(g => g.phoneNumber !== selectedGuardian.phoneNumber));
                 setShowModal(false);
             }
@@ -64,7 +66,7 @@ const ManageGuardian: React.FC = () => {
     const confirmAddGuardian = async () => {
         try {
             await axios.post(
-                `http://localhost:8080/api/guardian/${userId}`,
+                `${API_BASE_URL}/api/guardian/${userId}`,
                 { name: newGuardianName, phoneNumber: newGuardianPhoneNumber},
                 { headers: { "Content-Type": "application/json" } }
             );

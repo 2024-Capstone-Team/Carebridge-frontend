@@ -10,7 +10,7 @@ import { refreshAccessToken } from "../../hooks/refreshToken";
 
 const PatientLoginPage: React.FC = () => {
 
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_HOST;
 
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ const PatientLoginPage: React.FC = () => {
   // 카카오 로그인 API
   const handleKakaoLogin = async () => {
     try {
-      const kakaoResponse = await axios.get(`${API_BASE_URL}/users/social-login/kakao`);
+      const kakaoResponse = await axios.get(`${API_BASE_URL}/api/users/social-login/kakao`);
       console.log("카카오 로그인 URL:", kakaoResponse.data);
       const kakaoAuthUrl = kakaoResponse.data;
       window.location.href = kakaoAuthUrl;
@@ -77,7 +77,7 @@ const PatientLoginPage: React.FC = () => {
     }
 
     try {
-      const loginResponse = await axios.post(`${API_BASE_URL}/users/login`, {
+      const loginResponse = await axios.post(`${API_BASE_URL}/api/users/login`, {
         phone,
         otp,
       });
@@ -103,7 +103,7 @@ const PatientLoginPage: React.FC = () => {
       try {
         const token = await requestForToken();
         if (token) {
-          await axios.post(`${API_BASE_URL}/notification/register`, {
+          await axios.post(`${API_BASE_URL}/api/notification/register`, {
             userId,
             token
           });
@@ -147,7 +147,7 @@ const PatientLoginPage: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/users/send-otp/${phone}?isSignup=false`);
+      const response = await axios.post(`${API_BASE_URL}/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
       handleResend();
       alert("인증번호가 전송되었습니다.");

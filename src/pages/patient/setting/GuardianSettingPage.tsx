@@ -78,7 +78,7 @@ const GuardianSettingPage: React.FC = () => {
    */
   const fetchGuardianPhoneNumber = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/guardian/phone/${guardianContact}`);
+      const response = await axios.get(`${API_BASE_URL}/api/guardian/phone/${guardianContact}`);
       setguardianContact(response.data);
     } catch (error) {
       console.error("보호자 전화번호 조회 중 오류 발생:", error);
@@ -92,7 +92,7 @@ const GuardianSettingPage: React.FC = () => {
    */
   const fetchHospitalName = async (hospitalId: number): Promise<string> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/hospital/name/${hospitalId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/hospital/name/${hospitalId}`);
       return response.data;
     } catch (error) {
       console.error("병원 정보 조회 중 오류 발생:", error);
@@ -107,12 +107,12 @@ const GuardianSettingPage: React.FC = () => {
   const fetchGuardianAndPatientInfo = async () => {
     try {
       // 보호자 정보 조회
-      const guardianResponse = await axios.get(`${API_BASE_URL}/guardian/info/${guardianContact}`);
+      const guardianResponse = await axios.get(`${API_BASE_URL}/api/guardian/info/${guardianContact}`);
       const guardianData = guardianResponse.data;
       setGuardianInfo(guardianData);
 
       // 환자 정보 조회
-      const patientResponse = await axios.get(`${API_BASE_URL}/patient/user/${guardianData.patientId}`);
+      const patientResponse = await axios.get(`${API_BASE_URL}/api/patient/user/${guardianData.patientId}`);
       const patientData = patientResponse.data;
       
       // 날짜 형식 변환
