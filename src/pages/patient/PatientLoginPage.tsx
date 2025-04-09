@@ -104,8 +104,8 @@ const PatientLoginPage: React.FC = () => {
         const token = await requestForToken();
         if (token) {
           await axios.post(`${API_BASE_URL}/api/notification/register`, {
+            token,
             userId,
-            token
           });
           console.log("FCM 토큰 등록 성공");
         }
