@@ -16,7 +16,7 @@ const NurseFindPasswordPage: React.FC = () => {
   // 비밀번호 찾기
   const handleFindPassword = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/staff/find-password`, {params: { Id: id },});
+      const response = await axios.get(`${API_BASE_URL}/api/staff/find-password`, {params: { Id: id },});
       
       setPassword(response.data);
     } catch (error: any) {

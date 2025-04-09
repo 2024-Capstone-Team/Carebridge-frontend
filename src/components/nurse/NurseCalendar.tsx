@@ -51,14 +51,14 @@
     // 일정 API
     const fetchSchedules = async () => {
       try {
-        const response = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/schedule/medical-staff/${staffId}`);
+        const response = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/api/schedule/medical-staff/${staffId}`);
         console.log("API Response:", response.data);
 
         // 환자 상세 정보 API
         const schedulesWithPatientDetails = await Promise.all(
           response.data.map(async (schedule) => {
             try {
-              const patientResponse = await axios.get(`${API_BASE_URL}/patient/user/${schedule.patientId}`);
+              const patientResponse = await axios.get(`${API_BASE_URL}/api/patient/user/${schedule.patientId}`);
               const patient = patientResponse.data;
               return {
                 ...schedule,

@@ -37,7 +37,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
 
     try {
       // 매크로 중복 체크
-      const response = await axios.get(`${API_BASE_URL}/macro/list/${medicalStaffId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/macro/list/${medicalStaffId}`);
       const existingMacros: Macro[] = response.data;
 
       const duplicate = existingMacros.find((macro) => macro.macroName === macroName);
@@ -48,7 +48,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       }
 
       // 매크로 추가
-      await axios.post(`${API_BASE_URL}/macro/${medicalStaffId}`, {
+      await axios.post(`${API_BASE_URL}/api/macro/${medicalStaffId}`, {
         macroName,
         text
       });

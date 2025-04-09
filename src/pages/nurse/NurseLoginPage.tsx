@@ -25,7 +25,7 @@ const NurseLoginPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/staff/login`, {
+      const response = await axios.post(`${API_BASE_URL}/api/staff/login`, {
         userId: id,
         password: password,
       });
