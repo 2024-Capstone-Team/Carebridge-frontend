@@ -44,7 +44,7 @@ const NurseMessaging:  React.FC<NurseMessagingProps> = ({
   removeEmptyRoom,
   patientDetails,
 }) => {
-
+  
   const selectedRoom = rooms.find((room) => room.conversationId === currentRoom);
 
   // Handle room selection

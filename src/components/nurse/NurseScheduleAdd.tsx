@@ -13,6 +13,8 @@ interface ScheduleAddProps {
 }
 
 const ScheduleAdd: React.FC<ScheduleAddProps> = ({ patients, medicalStaffId, onCancel }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [patientId, setPatientId] = useState<number>(0);
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -33,7 +35,7 @@ const ScheduleAdd: React.FC<ScheduleAddProps> = ({ patients, medicalStaffId, onC
     console.log("payload:", payload);
   
     try {
-      const res = await axios.post(`/api/schedule`, payload);
+      const res = await axios.post(`${API_BASE_URL}/api/schedule`, payload);
       alert("스케줄을 성공적으로 추가하였습니다.");
       onCancel();
     } catch (error: any) {

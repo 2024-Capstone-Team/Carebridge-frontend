@@ -42,6 +42,8 @@ const formatDate = (date: string | null | undefined): string => {
 };
 
 const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ patientId, onBack, onChatClick }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [allPatients, setAllPatients] = useState<PatientInfo[]>([]);
@@ -58,12 +60,12 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     const fetchPatientDetails = async () => {
       try {
         // 기본 환자 정보 조회
-        const response = await axios.get(`/api/patient/user/${patientId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/patient/user/${patientId}`);
         const fetchedPatient: PatientInfo = response.data;
   
         // 병명 조회
         try {
-          const diseaseResponse = await axios.get(`/api/medical-record/${patientId}`);
+          const diseaseResponse = await axios.get(`${API_BASE_URL}/api/medical-record/${patientId}`);
           const diseaseInfo: string | null = diseaseResponse.data;
           fetchedPatient.diagnosis = diseaseInfo || "정보 없음";
         } catch (error) {
@@ -96,7 +98,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     if (!patientId) return;
     const fetchPatientRequests = async () => {
       try {
-        const response = await axios.get(`/api/call-bell/request/patient/${patientId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/call-bell/request/patient/${patientId}`);
         console.log("환자 요청 기록:", response.data);
         
         // 요청 기록 최신순 정렬
@@ -117,7 +119,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     const fetchAllPatients = async () => {
       try {
         const staffId = 1; // 임시 staff_id 값
-        const response = await axios.get(`/api/patient/users/${staffId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/patient/users/${staffId}`);
         const fetchedPatients = response.data.map((p: any) => ({
           patientId: p.patientId,
           name: p.name,

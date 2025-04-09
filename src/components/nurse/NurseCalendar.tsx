@@ -20,6 +20,8 @@
   }
 
   const NurseCalendar: React.FC<{ onEdit: (scheduleId: string) => void }> = ({ onEdit }) => {
+    const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
     const [events, setEvents] = useState<any[]>([]); // 캘린더 이벤트 상태
     const [selectedEvent, setSelectedEvent] = useState<any | null>(null); // 선택된 이벤트
     const [isPopupOpen, setIsPopupOpen] = useState(false); // 팝업 상태
@@ -49,14 +51,14 @@
     // 일정 API
     const fetchSchedules = async () => {
       try {
-        const response = await axios.get<ExaminationSchedule[]>(`/api/schedule/medical-staff/${staffId}`);
+        const response = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/api/schedule/medical-staff/${staffId}`);
         console.log("API Response:", response.data);
 
         // 환자 상세 정보 API
         const schedulesWithPatientDetails = await Promise.all(
           response.data.map(async (schedule) => {
             try {
-              const patientResponse = await axios.get(`/api/patient/user/${schedule.patientId}`);
+              const patientResponse = await axios.get(`${API_BASE_URL}/api/patient/user/${schedule.patientId}`);
               const patient = patientResponse.data;
               return {
                 ...schedule,
@@ -169,7 +171,7 @@
     if (!confirmResult) return;
 
     try {
-      await axios.delete(`/api/schedule/${selectedEvent.id}`);
+      await axios.delete(`${API_BASE_URL}/api/schedule/${selectedEvent.id}`);
       alert("스케줄이 삭제되었습니다.");
       closePopup();
       

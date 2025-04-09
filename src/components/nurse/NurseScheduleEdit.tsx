@@ -7,6 +7,8 @@ interface ScheduleEditFormProps {
 }
 
 const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCancel }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [patientId, setPatientId] = useState<number>(0);
   const [patientName, setPatientName] = useState<string>(""); // 환자 이름
   const [medicalStaffId, setMedicalStaffId] = useState<number>(0);
@@ -16,7 +18,7 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
 
   useEffect(() => {
     if (scheduleId) {
-      axios.get(`/api/schedule/${scheduleId}`)
+      axios.get(`${API_BASE_URL}/api/schedule/${scheduleId}`)
         .then((res) => {
           const data = res.data;
           setPatientId(data.patientId);
@@ -34,7 +36,7 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
           setPatientName(data.patientName);
         } else {
           axios
-            .get(`/api/patient/user/${data.patientId}`)
+            .get(`${API_BASE_URL}/api/patient/user/${data.patientId}`)
             .then((patientRes) => {
               const patientData = patientRes.data;
               setPatientName(patientData.name);
@@ -73,7 +75,7 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
     };
 
     try {
-      await axios.put(`/api/schedule`, payload);
+      await axios.put(`${API_BASE_URL}/api/schedule`, payload);
       alert("스케줄이 수정되었습니다.");
       onCancel(); // 수정 완료 후 닫기
     } catch (error: any) {

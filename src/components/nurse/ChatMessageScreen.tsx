@@ -37,6 +37,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   updateMessages,  
 }) => {
 
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   {/* Set constants */}
   // Set nurse ID, hospital ID, patient 
   const { nurseId } = useUserContext();
@@ -267,7 +269,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   {/* Fetch macros when nurseId is available */}
   const fetchMacros = async (nurseId: number) => {
     try {
-      const response = await fetch(`/api/macro/list/${nurseId}`);
+      const response = await fetch(`${API_BASE_URL}/api/macro/list/${nurseId}`);
       const data: Macro[] = await response.json();
       const savedFavorites = localStorage.getItem("favoriteMacroIds");
       
@@ -291,7 +293,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   {/* Use macro */}
   const handleMacroClick = async (macroName: string) => {
     try {
-      const response = await fetch(`/api/macro/${nurseId}/${macroName}`);
+      const response = await fetch(`${API_BASE_URL}/api/macro/${nurseId}/${macroName}`);
       const data = await response.text();
 
       updateInputHistory(data);
@@ -323,7 +325,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   const fetchQuickAnswers = async () => {
     try {
-      const response = await fetch(`/api/hospital-info/list/${hospitalId}`);
+      const response = await fetch(`${API_BASE_URL}/api/hospital-info/list/${hospitalId}`);
       const data: QuickAnswer[] = await response.json();
       const savedFavorites = localStorage.getItem("favoriteQuickAnswerIds");
       if (savedFavorites) {
@@ -457,11 +459,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
           { label: "실행취소", onClick: handleUndo },
           {
             label: "인사문구 추가",
-            onClick: () => handlePhraseUpdate(`/api/macro/phrase-head/${nurseId}`, "prepend"),
+            onClick: () => handlePhraseUpdate(`${API_BASE_URL}/api/macro/phrase-head/${nurseId}`, "prepend"),
           },
           {
             label: "맺음문구 추가",
-            onClick: () => handlePhraseUpdate(`/api/macro/phrase-tail/${nurseId}`, "append"),
+            onClick: () => handlePhraseUpdate(`${API_BASE_URL}/api/macro/phrase-tail/${nurseId}`, "append"),
           },
         ].map((action, index) => (
           <div

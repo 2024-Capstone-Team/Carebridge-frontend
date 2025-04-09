@@ -14,6 +14,8 @@ interface NurseMacroProps {
 }
 
 const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [macroName, setMacroName] = useState('');
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
 
     try {
       // 매크로 중복 체크
-      const response = await axios.get(`/api/macro/list/${medicalStaffId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/macro/list/${medicalStaffId}`);
       const existingMacros: Macro[] = response.data;
 
       const duplicate = existingMacros.find((macro) => macro.macroName === macroName);
@@ -46,7 +48,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       }
 
       // 매크로 추가
-      await axios.post(`/api/macro/${medicalStaffId}`, {
+      await axios.post(`${API_BASE_URL}/api/macro/${medicalStaffId}`, {
         macroName,
         text
       });

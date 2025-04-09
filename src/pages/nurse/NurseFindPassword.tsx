@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const NurseFindPasswordPage: React.FC = () => {
- const [id, setID] = useState('');
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const [id, setID] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
@@ -14,7 +16,7 @@ const NurseFindPasswordPage: React.FC = () => {
   // 비밀번호 찾기
   const handleFindPassword = async () => {
     try {
-      const response = await axios.get(`/api/staff/find-password`, {params: { Id: id },});
+      const response = await axios.get(`${API_BASE_URL}/api/staff/find-password`, {params: { Id: id },});
       
       setPassword(response.data);
     } catch (error: any) {

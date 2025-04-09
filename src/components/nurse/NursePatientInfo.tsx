@@ -18,6 +18,8 @@ interface NursePatientInfoProps {
 }
 
 const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) => {
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [patients, setPatients] = useState<PatientInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -34,7 +36,7 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get(`/api/patient/users/${staffId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/patient/users/${staffId}`);
         const fetchedPatients = response.data.map((patient: any) => ({
           patientId: patient.patientId,
           name: patient.name,
