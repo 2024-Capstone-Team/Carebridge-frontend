@@ -93,7 +93,7 @@ const NurseSchedule: React.FC = () => {
   // 스케줄 API
   const fetchSchedules = async () => {
     try {
-      const scheduleResponse = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/schedule/medical-staff/${staffId}`);
+      const scheduleResponse = await axios.get<ExaminationSchedule[]>(`${API_BASE_URL}/api/schedule/medical-staff/${staffId}`);
       const schedules = scheduleResponse.data;
       const todayDateString = new Date().toISOString().split("T")[0];
       
@@ -106,7 +106,7 @@ const NurseSchedule: React.FC = () => {
       const schedulesWithPatientDetails = await Promise.all(
         todaysSchedules.map(async (schedule) => {
           try {
-            const patientResponse = await axios.get(`${API_BASE_URL}/patient/user/${schedule.patientId}`);
+            const patientResponse = await axios.get(`${API_BASE_URL}/api/patient/user/${schedule.patientId}`);
             const patient = patientResponse.data;
             return {
               ...schedule,

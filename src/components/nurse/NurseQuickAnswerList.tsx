@@ -30,7 +30,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
 
   const fetchQuickAnswers = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/hospital-info/list/${hospitalId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/hospital-info/list/${hospitalId}`);
       setQuickAnswers(response.data);
     } catch (err) {
       setError('빠른 답변 목록을 불러오는 중 오류가 발생했습니다.');
@@ -59,7 +59,7 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
       return;
     }
     try {
-      await axios.delete(`${API_BASE_URL}/hospital-info/${hospitalId}/${title}`);
+      await axios.delete(`${API_BASE_URL}/api/hospital-info/${hospitalId}/${title}`);
       setQuickAnswers((prev) => prev.filter((qa) => qa.title !== title));
       alert('빠른 답변이 삭제되었습니다.');
     } catch (err) {

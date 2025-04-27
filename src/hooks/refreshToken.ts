@@ -7,7 +7,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
   if (!refreshToken) return false;
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/users/refresh`, null, {
+    const response = await axios.post(`${API_BASE_URL}/api/users/refresh`, null, {
       params: { refreshToken },
     });
 

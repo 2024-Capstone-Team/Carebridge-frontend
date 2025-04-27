@@ -20,7 +20,7 @@ const  NurseResetPasswordPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.put(`${API_BASE_URL}/staff/reset-password?newPassword=${newPassword}`,
+      const response = await axios.put(`${API_BASE_URL}/api/staff/reset-password?newPassword=${newPassword}`,
         {
           userId: id,
           password: oldPassword,

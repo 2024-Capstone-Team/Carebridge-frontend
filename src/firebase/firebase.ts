@@ -21,9 +21,18 @@ export const requestForToken = async () => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
+      const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+
+      if (!registration) {
+        console.warn("Service Worker가 등록되지 않았습니다.");
+        return null;
+      }
+
       const token = await getToken(messaging, {
         vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration,
       });
+
       console.log("FCM 토큰:", token);
       return token;
     } else {
@@ -35,6 +44,7 @@ export const requestForToken = async () => {
     return null;
   }
 };
+
 
 export const onMessageListener = () =>
   new Promise((resolve) => {
