@@ -9,7 +9,7 @@ export const checkAutoLogin = async (): Promise<boolean> => {
 
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/users/auto-login`,
+      `${API_BASE_URL}/api/users/auto-login`,
       {}, // 요청 본문 없이
       {
         headers: {
