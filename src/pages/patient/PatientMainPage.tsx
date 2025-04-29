@@ -9,7 +9,8 @@ const PatientMainPage: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const navigate = useNavigate();
-  const { setPatientId } = useUserContext();
+  const { setPatientId, isPatient } = useUserContext();
+
   const phoneNumber = localStorage.getItem("phoneNumber");
 
   const chatBot = (e: React.FormEvent) => {
@@ -24,15 +25,22 @@ const PatientMainPage: React.FC = () => {
 
   const setting = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/patient-setting");
+
+    if (isPatient) {
+      navigate("/patient-setting");
+    } else {
+      navigate("/guardian-setting");
+    }
   };
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/users/logout?phoneNumber=${phoneNumber}`);
+      await axios.post(`${API_BASE_URL}/api/users/logout?phoneNumber=${phoneNumber}`);
         setPatientId(null);
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         alert("로그아웃 완료. 확인 버튼을 누르면 로그인 화면으로 돌아갑니다.")
         console.log('로그아웃 성공');
         navigate('/patient-login');

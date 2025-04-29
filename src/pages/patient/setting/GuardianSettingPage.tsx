@@ -60,12 +60,17 @@ const formatDate = (date: string): string => date.split("T")[0];
  * 보호자 설정 페이지 메인 컴포넌트
  */
 const GuardianSettingPage: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   // 상태 관리
-  const [guardianPhoneNumber, setGuardianPhoneNumber] = useState<string | null>(null);  // 보호자 전화번호 상태
+  const [guardianContact, setguardianContact] = useState<string | null>(null);  // 보호자 전화번호 상태
   const [guardianInfo, setGuardianInfo] = useState<GuardianDto | null>(null);          // 보호자 정보 상태
   const [patientInfo, setPatientInfo] = useState<PatientDto | null>(null);             // 환자 정보 상태
   const [hospitalName, setHospitalName] = useState<string>("");                         // 병원 이름 상태
   const userId = useUserContext().userId;                                               // 현재 로그인한 사용자 ID
+
+  
 
   /**
    * 보호자 전화번호를 조회하는 함수
@@ -73,8 +78,8 @@ const GuardianSettingPage: React.FC = () => {
    */
   const fetchGuardianPhoneNumber = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/guardian/phone/${userId}`);
-      setGuardianPhoneNumber(response.data);
+      const response = await axios.get(`${API_BASE_URL}/api/guardian/phone/${guardianContact}`);
+      setguardianContact(response.data);
     } catch (error) {
       console.error("보호자 전화번호 조회 중 오류 발생:", error);
     }
@@ -87,7 +92,7 @@ const GuardianSettingPage: React.FC = () => {
    */
   const fetchHospitalName = async (hospitalId: number): Promise<string> => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/hospital/name/${hospitalId}`);
+      const response = await axios.get(`${API_BASE_URL}/api/hospital/name/${hospitalId}`);
       return response.data;
     } catch (error) {
       console.error("병원 정보 조회 중 오류 발생:", error);
@@ -102,12 +107,12 @@ const GuardianSettingPage: React.FC = () => {
   const fetchGuardianAndPatientInfo = async () => {
     try {
       // 보호자 정보 조회
-      const guardianResponse = await axios.get(`http://localhost:8080/api/guardian/info/${guardianPhoneNumber}`);
+      const guardianResponse = await axios.get(`${API_BASE_URL}/api/guardian/info/${guardianContact}`);
       const guardianData = guardianResponse.data;
       setGuardianInfo(guardianData);
 
       // 환자 정보 조회
-      const patientResponse = await axios.get(`http://localhost:8080/api/patient/user/${guardianData.patientId}`);
+      const patientResponse = await axios.get(`${API_BASE_URL}/api/patient/user/${guardianData.patientId}`);
       const patientData = patientResponse.data;
       
       // 날짜 형식 변환
@@ -133,10 +138,10 @@ const GuardianSettingPage: React.FC = () => {
 
   // 보호자 전화번호가 있을 때 관련 정보 조회
   useEffect(() => {
-    if(guardianPhoneNumber) {
+    if(guardianContact) {
       fetchGuardianAndPatientInfo();
     }
-  }, [guardianPhoneNumber]);
+  }, [guardianContact]);
 
   // 데이터 로딩 중일 때 로딩 화면 표시
   if (!guardianInfo || !patientInfo) {

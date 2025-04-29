@@ -4,11 +4,13 @@ import { useUserContext } from "../../context/UserContext";
 import axios from "axios";
 import Timer from "../../components/common/Timer";
 import { requestForToken } from "../../firebase/firebase";
+import { checkAutoLogin } from "../../hooks/useAutoLogin";
+import { refreshAccessToken } from "../../hooks/refreshToken";
 
 
 const PatientLoginPage: React.FC = () => {
 
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_HOST;
 
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
@@ -17,18 +19,35 @@ const PatientLoginPage: React.FC = () => {
   const [check, setIsCheck] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  //자동 로그인 기능
+  useEffect(() => {
+    const autoLogin = async () => {
+      let isAutoLoggedIn = await checkAutoLogin();
+
+      if (!isAutoLoggedIn) {
+        // 액세스 토큰이 만료되었을 가능성이 있으므로 리프레시 토큰을 사용해 재발급 시도
+        const isRefreshed = await refreshAccessToken();
+        if (isRefreshed) {
+          isAutoLoggedIn = await checkAutoLogin();
+        }
+      }
+
+      if (isAutoLoggedIn) {
+        alert("자동 로그인 성공. 확인 버튼을 누르면 메인 화면으로 이동합니다.");
+        const phone = localStorage.getItem("phoneNumber");
+        console.log("로그인 성공: ", phone);
+        navigate("/patient-main");
+      }
+    };
+
+    autoLogin();
+  }, []);
+
 
   //타이머 설정
   const [showTimer, setShowTimer] = useState(false);
   const initialTime = 180;
   const [remainingTime, setRemainingTime] = useState(initialTime);
-
-
-  useEffect(() => {
-    // 자동 로그인 설정 확인
-    const autoLogin = localStorage.getItem("autoLogin") === "true";
-    setIsCheck(autoLogin);
-  }, []);
 
   const handleResend = () => {
     setRemainingTime(initialTime);
@@ -38,7 +57,7 @@ const PatientLoginPage: React.FC = () => {
   // 카카오 로그인 API
   const handleKakaoLogin = async () => {
     try {
-      const kakaoResponse = await axios.get(`${API_BASE_URL}/users/social-login/kakao`);
+      const kakaoResponse = await axios.get(`${API_BASE_URL}/api/users/social-login/kakao`);
       console.log("카카오 로그인 URL:", kakaoResponse.data);
       const kakaoAuthUrl = kakaoResponse.data;
       window.location.href = kakaoAuthUrl;
@@ -58,7 +77,7 @@ const PatientLoginPage: React.FC = () => {
     }
 
     try {
-      const loginResponse = await axios.post(`${API_BASE_URL}/users/login`, {
+      const loginResponse = await axios.post(`${API_BASE_URL}/api/users/login`, {
         phone,
         otp,
       });
@@ -84,7 +103,7 @@ const PatientLoginPage: React.FC = () => {
       try {
         const token = await requestForToken();
         if (token) {
-          await axios.post(`${API_BASE_URL}/notification/register`, {
+          await axios.post(`${API_BASE_URL}/api/notification/register`, {
             userId,
             token
           });
@@ -128,7 +147,7 @@ const PatientLoginPage: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/users/send-otp/${phone}?isSignup=false`);
+      const response = await axios.post(`${API_BASE_URL}/api/users/send-otp/${phone}?isSignup=false`);
       console.log("인증번호 전송 성공:", response.data);
       handleResend();
       alert("인증번호가 전송되었습니다.");

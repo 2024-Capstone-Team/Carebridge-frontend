@@ -4,6 +4,8 @@ import { useUserContext } from "../../../context/UserContext";
 import axios from "axios";
 import { AxiosError } from "axios";
 
+
+
 // 상수 정의
 const ROUTES = {
   PATIENT_SETTING: "/patient-setting",
@@ -50,6 +52,8 @@ const Header: React.FC = () => (
 );
 
 const ChangePhoneNum: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
   // 상태 관리
   const [phoneNumber, setPhoneNumber] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -63,8 +67,8 @@ const ChangePhoneNum: React.FC = () => {
   // API 요청 처리
   const updatePhoneNumber = async () => {
     const endpoint = isPatient
-      ? `http://localhost:8080/api/patient/phone/${userId}`
-      : `http://localhost:8080/api/guardian/phone/${userId}`;
+      ? `${API_BASE_URL}/api/patient/phone/${userId}`
+      : `${API_BASE_URL}/api/guardian/phone/${userId}`;
 
     const response = await axios.put(endpoint, { phoneNumber });
     return response.data;
