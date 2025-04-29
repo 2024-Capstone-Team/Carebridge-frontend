@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef, createContext, useCallback} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
+import { SnackbarProvider, useSnackbar } from 'notistack';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
 import Nurse_DetailedPatientInfo from '../../components/nurse/NurseDetailedPatientInfo';
@@ -25,9 +26,9 @@ function parsePatientId(conversationId: string) {
   return parseInt(parts[1], 10);
 }
 
-const NurseMainPage: React.FC = () => {
+const NurseMainPage: React.FC = () => {  
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); // 메뉴 팝업 표시
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 }); // 메뉴바 위치 설정

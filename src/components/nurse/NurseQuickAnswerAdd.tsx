@@ -8,7 +8,7 @@ interface NurseQuickAnswerAddProps {
 
 const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hospitalId }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('General'); // 기본값: General
   const [information, setInformation] = useState('');

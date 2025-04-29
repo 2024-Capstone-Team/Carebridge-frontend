@@ -20,7 +20,7 @@ interface ExaminationSchedule {
 
 const NurseSchedule: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [scheduleData, setScheduleData] = useState<ExaminationSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

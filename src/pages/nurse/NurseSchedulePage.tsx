@@ -220,9 +220,13 @@ const NurseSchedulePage: React.FC = () => {
         <div className="flex flex-col flex-1 bg-white rounded-lg shadow-md mb-4 ml-2 mr-4 px-4 overflow-y-auto">
           {modeCalendar && <NurseCalendar onEdit={handleEditSchedule} />}
             {modeEdit && editingScheduleId && (
-              <ScheduleEditForm scheduleId={editingScheduleId} onCancel={handleCancel} />
+              <ScheduleEditForm scheduleId={Number(editingScheduleId)} onCancel={handleCancel} />
             )}
-            {modeAdd && <ScheduleAdd onCancel={handleCancel} />}
+            {modeAdd && <ScheduleAdd
+            patients={patients}
+            medicalStaffId={staffId}
+            onCancel={handleCancel}
+            />}
         </div>
       </div>
     </div>

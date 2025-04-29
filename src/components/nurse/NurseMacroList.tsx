@@ -18,7 +18,7 @@ interface NurseMacroListProps {
 
 const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [macros, setMacros] = useState<Macro[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
