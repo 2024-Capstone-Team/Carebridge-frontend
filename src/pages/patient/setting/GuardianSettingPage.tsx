@@ -9,34 +9,33 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useUserContext } from "../../../context/UserContext";
 
-// 보호자 정보 타입 정의
-interface GuardianDto {
-  guardianId: string;      // 보호자 고유 식별자
-  name: string;            // 보호자 이름
-  patientId: number;       // 담당 환자 ID
-  phoneNumber: string;     // 보호자 전화번호
-}
-
-// 환자 정보 타입 정의
+// 환자 정보를 담는 인터페이스 정의
 interface PatientDto {
-  patientId: number;           // 환자 고유 식별자
-  phoneNumber: string;         // 환자 전화번호
-  name: string;               // 환자 이름
-  birthDate: string;          // 생년월일
+  patientId: number;      // 환자 고유 ID
+  phoneNumber: string;    // 전화번호
+  name: string;          // 환자 이름
+  birthDate: string;     // 생년월일
   gender: "Male" | "Female";  // 성별
   guardianContact: string;    // 보호자 연락처
   hospitalId: number;         // 병원 ID
   hospitalLocation: string;   // 병실 위치
   chatRoomId: string;        // 채팅방 ID
-  department: string;         // 병동 정보
-  email: string;             // 이메일 주소
-  hospitalizationDate: string; // 입원일
-  userId: number;            // 사용자 ID
+  department: string;        // 병동
+  email: string;            // 이메일
+  hospitalizationDate: string;  // 입원일
+  userId: number;           // 사용자 ID
 }
 
-// 공통으로 사용되는 상수 정의
-const LOADING_MESSAGE = "Loading...";              // 로딩 시 표시될 메시지
-const DEFAULT_HOSPITAL_NAME = "병원 정보 없음";    // 병원 정보가 없을 때 표시될 기본값
+// 보호자 정보를 담는 인터페이스 정의
+interface GuardianDto {
+  guardianId: string;    // 보호자 ID
+  name: string;          // 보호자 이름
+  patientId: number;     // 환자 ID
+  phoneNumber: string;   // 보호자 전화번호
+}
+
+const LOADING_MESSAGE = "Loading...";
+const DEFAULT_HOSPITAL_NAME = "병원 정보 없음";
 
 /**
  * 입원일로부터 현재까지의 일수를 계산하는 함수
@@ -46,7 +45,8 @@ const DEFAULT_HOSPITAL_NAME = "병원 정보 없음";    // 병원 정보가 없
 const calculateDaysSinceHospitalization = (hospitalizationDate: string): number => {
   const hospitalizationDateObj = new Date(hospitalizationDate);
   const currentDate = new Date();
-  return Math.floor((currentDate.getTime() - hospitalizationDateObj.getTime()) / (1000 * 3600 * 24));
+  const timeDiff = currentDate.getTime() - hospitalizationDateObj.getTime();
+  return Math.floor(timeDiff / (1000 * 3600 * 24));
 };
 
 /**
