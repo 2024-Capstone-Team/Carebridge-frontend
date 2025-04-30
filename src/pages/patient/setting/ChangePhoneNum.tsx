@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; 
 import { useUserContext } from "../../../context/UserContext";
 import axios from "axios";
 import { AxiosError } from "axios";
@@ -8,7 +8,7 @@ import { AxiosError } from "axios";
 
 // 상수 정의
 const ROUTES = {
-  PATIENT_SETTING: "/patient-setting",
+  // SETTING: "/patient-setting",
   BACK_ICON: "src/assets/back.png"
 } as const;
 
@@ -40,16 +40,23 @@ const Modal: React.FC<ModalProps> = ({ message, onClose }) => (
 );
 
 // 헤더 컴포넌트
-const Header: React.FC = () => (
-  <div className="relative flex items-center p-2 w-full max-w-sm md:max-w-md lg:max-w-lg bg-white">
-    <Link to={ROUTES.PATIENT_SETTING} className="absolute left-2 top-1/2 transform -translate-y-1/2">
-      <img src={ROUTES.BACK_ICON} alt="뒤로가기" className="w-7" />
-    </Link>
-    <div className="flex-grow flex items-center justify-center">
-      <p className="font-bold text-black">전화번호 수정</p>
+const Header: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="relative flex items-center p-2 w-full max-w-sm md:max-w-md lg:max-w-lg bg-white">
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute left-2 top-1/2 transform -translate-y-1/2"
+      >
+        <img src={ROUTES.BACK_ICON} alt="뒤로가기" className="w-7" />
+      </button>
+      <div className="flex-grow flex items-center justify-center">
+        <p className="font-bold text-black">전화번호 수정</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ChangePhoneNum: React.FC = () => {
 

@@ -51,6 +51,7 @@ const PatientSettingPage: React.FC = () => {
   // 상태 관리를 위한 useState 훅 정의
   const [patientDto, setPatientDto] = useState<PatientDto | null>(null);
   const [guardianDto, setGuardianDto] = useState<GuardianDto | null>(null);
+  const [patientInfo, setPatientInfo] = useState<PatientDto | null>(null);
   const [hospitalName, setHospitalName] = useState<string>("");
   const { patientId } = useUserContext();
 
