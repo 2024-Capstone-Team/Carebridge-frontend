@@ -102,39 +102,39 @@ const PatientSettingPage: React.FC = () => {
     }
   };
 
-  // // 컴포넌트 마운트 시 데이터 로딩
-  // useEffect(() => {
-  //   fetchPatientAndGuardianInfo();
-  // }, [patientId]);
-
+  // 컴포넌트 마운트 시 데이터 로딩
   useEffect(() => {
-    const dummyPatient: PatientDto = {
-      patientId: 1,
-      phoneNumber: "01012345678",
-      name: "홍길동",
-      birthDate: "1990-05-01",
-      gender: "Male",
-      guardianContact: "01098765432",
-      hospitalId: 101,
-      hospitalLocation: "301호",
-      chatRoomId: "room123",
-      department: "내과",
-      email: "hong@test.com",
-      hospitalizationDate: "2024-04-20",
-      userId: 1,
-    };
+    fetchPatientAndGuardianInfo();
+  }, [patientId]);
+
+  // useEffect(() => {
+  //   const dummyPatient: PatientDto = {
+  //     patientId: 1,
+  //     phoneNumber: "01012345678",
+  //     name: "홍길동",
+  //     birthDate: "1990-05-01",
+  //     gender: "Male",
+  //     guardianContact: "01098765432",
+  //     hospitalId: 101,
+  //     hospitalLocation: "301호",
+  //     chatRoomId: "room123",
+  //     department: "내과",
+  //     email: "hong@test.com",
+  //     hospitalizationDate: "2024-04-20",
+  //     userId: 1,
+  //   };
   
-    const dummyGuardian: GuardianDto = {
-      guardianId: "g1",
-      name: "김보호자",
-      patientId: 1,
-      phoneNumber: "01098765432"
-    };
+  //   const dummyGuardian: GuardianDto = {
+  //     guardianId: "g1",
+  //     name: "김보호자",
+  //     patientId: 1,
+  //     phoneNumber: "01098765432"
+  //   };
   
-    setPatientDto(dummyPatient);
-    setGuardianDto(dummyGuardian);
-    setHospitalName("서울대학교병원");
-  }, []);
+  //   setPatientDto(dummyPatient);
+  //   setGuardianDto(dummyGuardian);
+  //   setHospitalName("서울대학교병원");
+  // }, []);
 
   // 로딩 중일 때 표시할 화면
   if (!patientDto) {
