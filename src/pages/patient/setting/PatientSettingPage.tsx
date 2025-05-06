@@ -118,10 +118,10 @@ const PatientSettingPage: React.FC = () => {
       {/* 헤더 섹션 - 뒤로가기 버튼과 '설정' 타이틀 */}
       <div className="relative flex items-center p-2 w-full mb-8">
         <Link
-          to="/patient-main"
-          className="absolute left-2 top-1/2 transform -translate-y-1/2"
+        to="/patient-main"
+        className="absolute left-2 top-1/2 transform -translate-y-1/2"
         >
-          <img src="/src/assets/back.png" alt="뒤로가기" className="w-[7vw]" />
+          <img src="/src/assets/back.png" alt="뒤로가기" className="w-[30px] h-auto" />
         </Link>
         <div className="flex-grow flex items-center justify-center">
           <p className="font-bold text-black text-[18px]">
