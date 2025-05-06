@@ -10,7 +10,7 @@ import { refreshAccessToken } from "../../hooks/refreshToken";
 
 const PatientLoginPage: React.FC = () => {
 
-  const API_BASE_URL = import.meta.env.VITE_BACKEND_HOST;
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const [phone, setPhoneNum] = useState("");
   const navigate = useNavigate();
