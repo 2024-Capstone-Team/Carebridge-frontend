@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback, useContext } from "react";
+import FavoriteRequestsContext from "../../context/FavoriteRequestsContext";
 import { ChatMessage } from "../../types";
 import useStompClient from "../../hooks/useStompClient";
 import InputSection from "../../components/patient/InputSection.tsx";
@@ -40,9 +41,9 @@ const PatientChatPage: React.FC = () => {
     }, [chatMessages, pendingMessages]);
 
   const [inputText, setInputText] = useState<string>("");
-  const [favoriteRequests, setFavoriteRequests] = useState<string[]>([
-    "환자복 교체", "물 주세요", "몸이 너무 아파요"
-  ]);  // placeholders
+  const context = useContext(FavoriteRequestsContext);
+  if (!context) throw new Error("PatientChatPage must be used within a FavoriteRequestsProvider");
+  const { favoriteRequests } = context;
   const [connected, setConnected] = useState<boolean>(false);
   const [isComposing, setIsComposing] = useState(false);
   
@@ -466,12 +467,6 @@ const PatientChatPage: React.FC = () => {
     setConnected(isConnected);
   }, [isConnected]);
 
-  useEffect(() => {
-    const storedFavoriteRequests = localStorage.getItem("favoriteRequests");
-    if (storedFavoriteRequests) {
-      setFavoriteRequests(JSON.parse(storedFavoriteRequests));
-    }
-  }, []);
 
   useEffect(() => {
     const unreadMessages = chatMessages.filter(

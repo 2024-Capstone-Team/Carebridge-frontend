@@ -1,4 +1,5 @@
 import React, { createContext, useState, ReactNode } from "react";
+const BASE_FAVORITES = ["환자복 교체", "물 주세요", "몸이 너무 아파요"];
 
 type FavoriteRequestsContextType = {
   favoriteRequests: string[];
@@ -8,10 +9,10 @@ type FavoriteRequestsContextType = {
 const FavoriteRequestsContext = createContext<FavoriteRequestsContextType | undefined>(undefined);
 
 export const FavoriteRequestsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Load favorite requests from local storage when the component mounts
+  // Load favorite requests from local storage, fallback to base favorites only on first load
   const loadFavoriteRequestsFromLocalStorage = () => {
     const savedFavorites = localStorage.getItem('favoriteRequests');
-    return savedFavorites ? JSON.parse(savedFavorites) : [];
+    return savedFavorites ? JSON.parse(savedFavorites) : BASE_FAVORITES;
   };
 
   const [favoriteRequests, setFavoriteRequests] = useState<string[]>(loadFavoriteRequestsFromLocalStorage);
@@ -21,8 +22,6 @@ export const FavoriteRequestsProvider: React.FC<{ children: ReactNode }> = ({ ch
       const updatedFavorites = prev.includes(request)
         ? prev.filter((item) => item !== request)
         : [...prev, request];
-
-      // Update local storage when the favorite requests list changes
       localStorage.setItem('favoriteRequests', JSON.stringify(updatedFavorites));
       return updatedFavorites;
     });
