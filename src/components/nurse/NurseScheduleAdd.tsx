@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { formatBirthdate, formatGender } from "../../utils/commonUtils";
 import axios from "axios";
 
 export interface Patient {
@@ -16,9 +17,49 @@ const ScheduleAdd: React.FC<ScheduleAddProps> = ({ patients, medicalStaffId, onC
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const [patientId, setPatientId] = useState<number>(0);
+  const [birthDate, setBirthDate] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [age, setAge] = useState<number>(0);
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [category, setCategory] = useState<"SURGERY"|"OUTPATIENT"|"EXAMINATION">("SURGERY");
+
+  const calculateAge = (birthDateString: string): number => {
+    const today = new Date();
+    const birthDate = new Date(birthDateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const isBeforeBirthday =
+      today.getMonth() < birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+
+    if (isBeforeBirthday) {
+      age--;
+    }
+    return age;
+  };
+
+  useEffect(() => {
+    if (patientId > 0) {
+      axios
+        .get(`${API_BASE_URL}/api/patient/user/${patientId}`)
+        .then((res) => {
+          const p = res.data;
+          setBirthDate(formatBirthdate(p.birthDate));
+          setGender(formatGender(p.gender));
+          setAge(calculateAge(p.birthDate));
+        })
+        .catch((err) => {
+          console.error("환자 정보 불러오기 실패:", err);
+          setBirthDate("");
+          setGender("");
+          setAge(0);
+        });
+    } else {
+      setBirthDate("");
+      setGender("");
+      setAge(0);
+    }
+  }, [patientId]);
 
   const handleSave = async () => {
     if (!patientId) return alert("환자를 선택해주세요.");
@@ -63,6 +104,13 @@ const ScheduleAdd: React.FC<ScheduleAddProps> = ({ patients, medicalStaffId, onC
             <option key={p.patientId} value={p.patientId}>{p.name}</option>
             ))}
         </select>
+
+        {patientId > 0 && (
+          <div className="text-gray-400 text-[13px] ml-2">
+            <span>{birthDate}  만 {age}세  {gender}</span>
+            </div>
+          )}
+        
       </div>
        
       <div className="flex mb-5 items-center">

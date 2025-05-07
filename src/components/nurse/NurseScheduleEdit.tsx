@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { formatBirthdate, formatGender } from "../../utils/commonUtils";
 
 interface ScheduleEditFormProps {
   scheduleId: number;      // 수정할 스케줄의 ID
@@ -11,48 +12,59 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
 
   const [patientId, setPatientId] = useState<number>(0);
   const [patientName, setPatientName] = useState<string>(""); // 환자 이름
+  const [birthDate, setBirthDate] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [age, setAge] = useState<number>(0);
   const [medicalStaffId, setMedicalStaffId] = useState<number>(0);
   const [startTime, setStartTime] = useState<string>("");
   const [details, setDetails] = useState<string>("");
   const [category, setCategory] = useState<"SURGERY" | "OUTPATIENT" | "EXAMINATION">("SURGERY");
 
+  const calculateAge = (birthDateString: string): number => {
+    const today = new Date();
+    const birthDate = new Date(birthDateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const isBeforeBirthday =
+      today.getMonth() < birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+
+    if (isBeforeBirthday) {
+      age--;
+    }
+    return age;
+  };
+
   useEffect(() => {
     if (scheduleId) {
+      // 스케줄 정보 조회
       axios.get(`${API_BASE_URL}/api/schedule/${scheduleId}`)
         .then((res) => {
           const data = res.data;
           setPatientId(data.patientId);
           setMedicalStaffId(data.medicalStaffId);
-
-          // scheduleDate를 datetime-local에 맞게 변환
-          if (data.scheduleDate) {
-            setStartTime(formatDateTimeLocal(data.scheduleDate));
-          }
           setDetails(data.details);
           setCategory(data.category);
 
-         // 환자 ID를 이용해 환자 이름 조회
-         if (data.patientName) {
-          setPatientName(data.patientName);
-        } else {
-          axios
-            .get(`${API_BASE_URL}/api/patient/user/${data.patientId}`)
-            .then((patientRes) => {
-              const patientData = patientRes.data;
-              setPatientName(patientData.name);
-            })
-            .catch((err) => {
-              console.error("환자 정보 불러오기 실패:", err);
-              setPatientName("알 수 없음");
-            });
-        }
-      })
-      .catch((err) => {
-        console.error("스케줄 불러오기 실패:", err);
-        alert("스케줄 정보를 불러오는 중 오류가 발생했습니다.");
-      });
-  }
-}, [scheduleId]);
+          if (data.scheduleDate) {
+            setStartTime(formatDateTimeLocal(data.scheduleDate));
+          }
+
+          // 환자 정보 조회
+          return axios.get(`${API_BASE_URL}/api/patient/user/${data.patientId}`);
+        })
+        .then((patientRes) => {
+          const p = patientRes.data;
+          setPatientName(p.name);
+          setBirthDate(formatBirthdate(p.birthDate));
+          setGender(formatGender(p.gender));
+          setAge(calculateAge(p.birthDate));
+        })
+        .catch((err) => {
+          console.error("정보 불러오기 실패:", err);
+          alert("스케줄 또는 환자 정보를 불러오는 중 오류가 발생했습니다.");
+        });
+    }
+  }, [scheduleId]);
 
   function formatDateTimeLocal(dateString: string) {
     const date = new Date(dateString);
@@ -102,6 +114,10 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
           value={patientName}
           readOnly
         />
+        <div className="text-gray-400 text-[13px] ml-2">
+          <span> {birthDate} 만 {age}세 {gender} </span>
+        </div>
+
       </div>
 
       <div className="flex mb-5 items-center">
