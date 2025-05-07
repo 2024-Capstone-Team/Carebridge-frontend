@@ -1,12 +1,31 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext";
+import axios from "axios";
 
 // import BackButton from "../../components/common/BackButton";
 
 const ChoosePatientType: React.FC = () => {
   const navigate = useNavigate();
   const {setIsPatient} = useUserContext();
+  const [patientName, setPatientName]= useState("");
+
+  useEffect(() => {
+    const fetchPatientName = async() => {
+      const patient_id = localStorage.getItem("patientId");
+      if (!patient_id) return;
+
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/patient/user/${patient_id}`);
+        setPatientName(response.data.name)
+      } catch (error) {
+        console.error("환자 이름 조회 실패: ", error);
+      }
+    };
+
+    fetchPatientName();
+  })
 
   const goMainpage = (e: React.FormEvent, isPatient:boolean) => {
     e.preventDefault();
@@ -37,7 +56,7 @@ const ChoosePatientType: React.FC = () => {
             style={{ fontFamily: "TAEBAEKfont" }}
           >
             <div className="leading-relaxed text-base">
-              OOO님, 환영합니다. <br />
+            {patientName ? `${patientName}님, 환영합니다.` : "환영합니다."} <br />
               서비스를 이용하는 대상을 골라주세요.
             </div>
           </h1>
