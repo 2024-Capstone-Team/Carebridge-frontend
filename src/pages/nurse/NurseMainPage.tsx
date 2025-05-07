@@ -268,7 +268,7 @@ const NurseMainPage: React.FC = () => {
     setPendingRequest(null);
   };
 
-  // 수락 클릭 시 
+  // 팝업: 수락 클릭 시
   const handleAccept = () => {
     if (!pendingRequest) return;
     const acceptTime = getKstIso();
@@ -300,7 +300,7 @@ const NurseMainPage: React.FC = () => {
             });
           };
 
-  // 보류 클릭 시
+  // 팝업: 보류 클릭 시
   const handleHold = () => {
     setIsPendingModalOpen(false);
     setScheduleTime("");
@@ -352,29 +352,29 @@ const NurseMainPage: React.FC = () => {
     if (!window.confirm("요청을 완료하시겠습니까?")) return;
 
      axios.put(`${API_BASE_URL}/api/call-bell/request/status/${requestId}?status=COMPLETED`)
-     .then(() => {
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.requestId === requestId
-          ? { ...r, status: "COMPLETED" }
-          : r
-        )
-      );
-    })
-    .catch((err) => {
-      console.error(err);
-      alert("상태 업데이트 실패");
-    });
-  };
+      .then(() => {
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.requestId === requestId
+            ? { ...r, status: "COMPLETED" }
+            : r
+          )
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("상태 업데이트 실패");
+      });
+    };
   
-    // 상태 변환 : 예약됨 -> 완료됨
+    // 예약됨 -> 완료됨
     useEffect(() => {
       const timer = setInterval(() => {
         requests.forEach((req) => {
           if (req.status === "SCHEDULED" && req.acceptTime) {
             const acceptTs = new Date(req.acceptTime).getTime();
             
-            // 30분 초과과
+            // 30분 초과
             if (Date.now() - acceptTs > 30 * 60 * 1000) {
               axios.put(`${API_BASE_URL}/api/call-bell/request/status/${req.requestId}?status=COMPLETED`)
                 .then(() => {
@@ -826,51 +826,51 @@ const NurseMainPage: React.FC = () => {
         </div>
 
         {/* 팝업: 대기 중 → 수락/보류 */}
-      {isPendingModalOpen && pendingRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
-            <button
-              onClick={closeAllModals}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-            >
-              ✖
-            </button>
-            <div className="text-center">
-              <p className="text-[15px] text-gray-600 mb-1">
-                {formatTime(pendingRequest.requestTime)}
-              </p>
-              <p className="text-[20px] font-bold text-black mb-1">
-                {patientDetails[pendingRequest.patientId]?.name} 환자
-              </p>
-              <p className="text-[15px] text-gray-600 mb-4">{pendingRequest.requestContent}</p>
-              <p className="text-[15px] text-gray-600 mb-4">수락하시겠습니까?</p>
-            </div>
-            <div className="flex justify-between">
+        {isPendingModalOpen && pendingRequest && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
               <button
-                onClick={handleHold}
-                className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                onClick={closeAllModals}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
               >
-                보류
+                ✖
               </button>
-              <button
-                onClick={() => {
-                  handleChatClick(pendingRequest.patientId);
-                  closeAllModals();
-                }}
-                className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                채팅
-              </button>
-              <button
-                onClick={handleAccept}
-                className="px-4 py-1 bg-[#417BB4] border border-[#306292] text-white rounded hover:bg-blue-600"
-              >
-                수락
-              </button>
+              <div className="text-center">
+                <p className="text-[15px] text-gray-600 mb-1">
+                  {formatTime(pendingRequest.requestTime)}
+                </p>
+                <p className="text-[20px] font-bold text-black mb-1">
+                  {patientDetails[pendingRequest.patientId]?.name} 환자
+                </p>
+                <p className="text-[15px] text-gray-600 mb-4">{pendingRequest.requestContent}</p>
+                <p className="text-[15px] text-gray-600 mb-4">수락하시겠습니까?</p>
+              </div>
+              <div className="flex justify-between">
+                <button
+                  onClick={handleHold}
+                  className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  보류
+                </button>
+                <button
+                  onClick={() => {
+                    handleChatClick(pendingRequest.patientId);
+                    closeAllModals();
+                  }}
+                  className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  채팅
+                </button>
+                <button
+                  onClick={handleAccept}
+                  className="px-4 py-1 bg-[#417BB4] border border-[#306292] text-white rounded hover:bg-blue-600"
+                >
+                  수락
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* 팝업: 예약 시간 선택 */}
       {isScheduleModalOpen && pendingRequest && (
