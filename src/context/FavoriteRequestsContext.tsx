@@ -9,22 +9,21 @@ type FavoriteRequestsContextType = {
 const FavoriteRequestsContext = createContext<FavoriteRequestsContextType | undefined>(undefined);
 
 export const FavoriteRequestsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Load favorite requests from local storage and merge with base favorites
+  // Load favorite requests from local storage, fallback to base favorites only on first load
   const loadFavoriteRequestsFromLocalStorage = () => {
     const savedFavorites = localStorage.getItem('favoriteRequests');
-    const parsed = savedFavorites ? JSON.parse(savedFavorites) : [];
-    return Array.from(new Set([...BASE_FAVORITES, ...parsed]));
+    return savedFavorites ? JSON.parse(savedFavorites) : BASE_FAVORITES;
   };
 
   const [favoriteRequests, setFavoriteRequests] = useState<string[]>(loadFavoriteRequestsFromLocalStorage);
 
   const toggleFavoriteRequest = (request: string) => {
     setFavoriteRequests((prev) => {
-      const withoutRequest = prev.filter((item) => item !== request);
-      const updatedFavorites = prev.includes(request) ? withoutRequest : [...prev, request];
-      const merged = Array.from(new Set([...BASE_FAVORITES, ...updatedFavorites]));
-      localStorage.setItem('favoriteRequests', JSON.stringify(merged));
-      return merged;
+      const updatedFavorites = prev.includes(request)
+        ? prev.filter((item) => item !== request)
+        : [...prev, request];
+      localStorage.setItem('favoriteRequests', JSON.stringify(updatedFavorites));
+      return updatedFavorites;
     });
   };
 
