@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from "../../assets/carebridge_logo.png";
 import axios from 'axios';
 
 const NurseFindPasswordPage: React.FC = () => {
@@ -32,7 +33,7 @@ const NurseFindPasswordPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white px-8 rounded-[20px] shadow-lg w-[1200px] h-[700px]">
         <div className='flex justify-start items-center'>
-          <img src='src/assets/carebridge_logo.png' className='w-[170px] cursor-pointer' alt="Carebridge Logo" onClick={handleBackToLogin} />
+          <img src={logo} alt="CareBridge 로고" className='w-[170px] cursor-pointer' onClick={handleBackToLogin} />
         </div>
 
         <p className='flex justify-center items-center text-[27px] font-bold mb-10'>
