@@ -30,7 +30,9 @@ const PatientLoginPage: React.FC = () => {
   //자동 로그인 기능
   useEffect(() => {
     const autoLogin = async () => {
+      const autoLogin = localStorage.getItem("autoLogin");
       let isAutoLoggedIn = await checkAutoLogin();
+      if (autoLogin !== "true") return;
 
       if (!isAutoLoggedIn) {
         // 액세스 토큰이 만료되었을 가능성이 있으므로 리프레시 토큰을 사용해 재발급 시도
@@ -106,6 +108,8 @@ const PatientLoginPage: React.FC = () => {
 
       if (check) {
         localStorage.setItem("autoLogin", "true");
+      } else {
+        localStorage.setItem("autoLogin", "false");
       }
       
       try {
