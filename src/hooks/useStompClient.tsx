@@ -12,8 +12,8 @@ const useStompClient = (onMessage: (message: any) => void) => {
   const subscribedRooms = useRef<Set<string>>(new Set());
   const activeSubscriptions = useRef<Map<string, StompSubscriptionWithUnsubscribe>>(new Map());
 
-const BASE_URL = "52.79.234.250/"
-// const BASE_URL = import.meta.env.VITE_API_HOST + "/";
+  // const BASE_URL = "52.79.234.250/"
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL.replace(/^https?:\/\//, "").replace(/\/$/, "") + "/";// const BASE_URL = import.meta.env.VITE_API_HOST + "/";
 
   const initializeStompClient = useCallback(() => {
     if (stompClientRef.current) return; // Avoid multiple instances
