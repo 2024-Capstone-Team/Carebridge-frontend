@@ -19,20 +19,24 @@ const PatientLoginPage: React.FC = () => {
   const [check, setIsCheck] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-    // 자동 로그인 체크 상태 초기화 (로컬스토리지에서 가져오기)
-    useEffect(() => {
-      const autoLogin = localStorage.getItem("autoLogin");
-      if (autoLogin === "true") {
-        setIsCheck(true);
-      }
-    }, []);
+  // 자동 로그인 체크 상태 초기화 (로컬스토리지에서 가져오기)
+  useEffect(() => {
+    const autoLogin = localStorage.getItem("autoLogin");
+    if (autoLogin === "true") {
+      setIsCheck(true);
+    }
+  }, []);
 
   //자동 로그인 기능
   useEffect(() => {
     const autoLogin = async () => {
       const autoLogin = localStorage.getItem("autoLogin");
+      if (autoLogin !== "true") {
+        console.log("자동 로그인 비활성화됨");
+        return;
+      };
+
       let isAutoLoggedIn = await checkAutoLogin();
-      if (autoLogin !== "true") return;
 
       if (!isAutoLoggedIn) {
         // 액세스 토큰이 만료되었을 가능성이 있으므로 리프레시 토큰을 사용해 재발급 시도
