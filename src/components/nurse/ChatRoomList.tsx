@@ -123,18 +123,18 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
   return (
     <div className="flex flex-col h-full p-4 bg-primary-100 text-sm">
       {/* Title and Dropdown Button */}
-      <div className="relative flex items-center justify-between w-full py-2">
-        <h2 className="text-lg font-semibold flex items-center">
-          채팅 목록
+      <div className="relative flex items-end justify-between w-full py-2">
+        <h2 className="text-lg font-semibold">채팅 목록</h2>
+        <div className="flex items-center gap-1 text-[0.7rem] text-gray-500 self-end">
+          <span>{sortOrder === "latest" ? "최신 메시지 순" : "안 읽은 메시지 순"}</span>
           <button
-            ref={dropdownButtonRef} // Attach the ref to the dropdown button
+            ref={dropdownButtonRef}
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="ml-2 text-xs p-0 bg-transparent border-none cursor-pointer"
+            className="p-0 bg-transparent border-none cursor-pointer"
           >
             <FaChevronDown />
           </button>
-        </h2>
-
+        </div>
         {dropdownOpen && (
           <div
             ref={dropdownRef} 
