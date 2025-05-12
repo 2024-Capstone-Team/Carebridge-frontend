@@ -10,6 +10,8 @@ import { useUserContext } from "../../context/UserContext";
 
 const PatientChatPage: React.FC = () => {
 
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   {/* Set constants */}
 
   // const { userId } =  useUserContext();
@@ -79,7 +81,7 @@ const PatientChatPage: React.FC = () => {
   const checkIfChatroomExists = useCallback(async (patientId: number): Promise<boolean> => {
     try {
       // Fetch chatroom existence using patientId
-      const response = await fetch(`http://localhost:8080/api/patient/chatroom/${patientId}`);
+      const response = await fetch(`${API_BASE_URL}/api/patient/chatroom/${patientId}`);
   
       if (!response.ok) {
         throw new Error(`Failed to check if chatroom exists: ${response.status}`);
@@ -98,7 +100,7 @@ const PatientChatPage: React.FC = () => {
   const getPatientDetails = useCallback(async (patientId: number) => {
     try {
       // Fetch patient details using patientId
-      const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
+      const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
   
       if (!response.ok) {
         throw new Error(`Failed to fetch patient details: ${response.status}`);
@@ -115,7 +117,7 @@ const PatientChatPage: React.FC = () => {
   const createChatroom = useCallback(async (patientId: number, department: string): Promise<boolean> => {
     try {
       // Create a new chatroom by sending the patientId and department
-      const response = await fetch("http://localhost:8080/api/chat/room", {
+      const response = await fetch(`${API_BASE_URL}/api/chat/room`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ patientId, department })
@@ -150,8 +152,7 @@ const PatientChatPage: React.FC = () => {
   const fetchChatHistory = useCallback(async () => {
     try {
       setIsLoading(true);
-      // const response = await fetch(`/api/chat/message/user?patientId=${userId}`);
-      const response = await fetch(`/api/chat/message/user?patientId=${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/chat/message/user?patientId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch messages");
 
       const messages: ChatMessage[] = await response.json();
@@ -422,7 +423,7 @@ const PatientChatPage: React.FC = () => {
 
   const markMessageAsRead = useCallback(async (messageId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/chat/message/read?messageId=${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/chat/message/read?messageId=${messageId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
