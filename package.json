@@ -81,7 +81,13 @@
   "firebase": "^11.4.0",
   
     
+  "framer-motion": "^12.11.0",
+  
+    
   "fuse.js": "^7.0.0",
+  
+    
+  "lucide-react": "^0.510.0",
   
     
   "moment": "^2.30.1",
