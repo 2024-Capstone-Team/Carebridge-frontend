@@ -116,15 +116,13 @@ const PatientSettingPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white p-4">
       {/* 헤더 섹션 - 뒤로가기 버튼과 '설정' 타이틀 */}
-      <div className="relative flex items-center p-2 w-full mb-8">
+      <div className="flex p-2 border-b border-gray-200 sticky top-0 bg-white z-10">
         <Link to="/patient-main">
           <img src="/icons/back-icon.png" className="w-[28px]" alt="뒤로가기" />
         </Link>
-        <div className="flex-grow flex items-center justify-center">
-          <p className="font-bold text-black text-[18px]">
-            설정
-          </p>
-        </div>
+        <p className="text-[20px] font-bold mx-4">
+          설정
+        </p>
       </div>
 
       {/* 메인 컨테이너 - 환자 정보 카드 */}
