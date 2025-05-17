@@ -10,20 +10,20 @@ const ChoosePatientType: React.FC = () => {
   const [patientName, setPatientName]= useState("");
 
   useEffect(() => {
-    const fetchPatientName = async() => {
+    const fetchPatientName = async () => {
       const patient_id = localStorage.getItem("patientId");
       if (!patient_id) return;
-
+  
       try {
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/patient/user/${patient_id}`);
-        setPatientName(response.data.name)
+        setPatientName(response.data.name);
       } catch (error) {
         console.error("환자 이름 조회 실패: ", error);
       }
     };
-
+  
     fetchPatientName();
-  })
+  }, []);
 
   const goMainpage = (e: React.FormEvent, isPatient:boolean) => {
     e.preventDefault();
