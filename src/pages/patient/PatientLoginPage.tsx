@@ -207,7 +207,7 @@ const PatientLoginPage: React.FC = () => {
         }}
       >
         <img
-          src="/icons/icon-192x192.png"
+          src="/icons/icon-384x384.png"
           alt="앱 아이콘"
           className="w-[80%] h-auto object-cover"
           style={{ padding: 1 }}
