@@ -195,7 +195,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
                   {room.userName}
                 </span>
                 <span className={`text-xs text-gray-600 font-semibold ${!room.isRead ? 'font-bold' : ''}`}>
-                  {room.previewMessage}
+                  {room.previewMessage.length > 30 ? `${room.previewMessage.slice(0, 30)}...` : room.previewMessage}
                 </span>
               </div>
               <span
