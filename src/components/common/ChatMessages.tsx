@@ -111,12 +111,12 @@ const MessageBubble: React.FC<{
         } ${isSender ? senderTextColor : receiverTextColor} ${
           customStyles?.message || ""
         } whitespace-pre-line`}
-        style={{ fontSize: textSize }}
+        style={{ fontSize: textSize || "var(--font-body)" }}
       >
         {isChatGpt ? (
           <div className="flex flex-col">
             <div>{typeof message.messageContent === "string" ? message.messageContent.replace("[ChatGPT로 자동 생성된 답변 입니다.]", "").trim() : message.messageContent}</div>
-            <div className="text-[10px] text-right text-gray-700 italic mt-1">
+            <div className="text-right text-gray-700 italic mt-1" style={{ fontSize: "var(--font-caption)" }}>
               ChatGPT가 생성한 응답입니다
             </div>
           </div>
@@ -126,7 +126,7 @@ const MessageBubble: React.FC<{
           </>
         )}
       </div>
-      <div className="text-[10px] text-gray-400 mb-[2px]">
+      <div className="text-gray-400 mb-[2px]" style={{ fontSize: "var(--font-caption)" }}>
         {formatTimestamp(timestamp)}
       </div>
     </div>
@@ -240,7 +240,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                       {messageDate}
                     </div>
                   )}
-                  <div className="text-center text-gray-500 text-xs bg-gray-200 px-3 py-2 rounded-md mx-auto max-w-xs whitespace-pre-line">
+                  <div className="text-center text-gray-500 bg-gray-200 px-3 py-2 rounded-md mx-auto max-w-xs whitespace-pre-line" style={{ fontSize: "var(--font-caption)" }}>
                     🤖 {message.messageContent}
                   </div>
                 </React.Fragment>
