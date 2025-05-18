@@ -116,7 +116,7 @@ const MessageBubble: React.FC<{
         {isChatGpt ? (
           <div className="flex flex-col">
             <div>{typeof message.messageContent === "string" ? message.messageContent.replace("[ChatGPT로 자동 생성된 답변 입니다.]", "").trim() : message.messageContent}</div>
-            <div className="text-[10px] text-right text-gray-200 italic mt-1">
+            <div className="text-[10px] text-right text-gray-700 italic mt-1">
               ChatGPT가 생성한 응답입니다
             </div>
           </div>
@@ -134,7 +134,7 @@ const MessageBubble: React.FC<{
     {/* Receiver's message */}
     {!isSender && (
       <div className="flex flex-row items-end ml-3">
-        <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
+        <span className="text-xs text-gray-400">{isRead ? "읽음" : ""}</span>
       </div>
     )}
 
@@ -199,9 +199,14 @@ const ChatMessages: React.FC<ChatMessagesProps> =
         const el = scrollContainerRef.current;
         const isReallyAtBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 30 : true;
 
-        if (fromMe || isReallyAtBottom) {
-          if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        if (!hasMountedRef.current) {
+          if (el) {
+            el.scrollTop = el.scrollHeight;
+          }
+          hasMountedRef.current = true;
+        } else if (fromMe || isReallyAtBottom) {
+          if (el) {
+            el.scrollTop = el.scrollHeight;
           }
           setShowNewMessagePreview(false);
         } else {
