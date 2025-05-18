@@ -16,6 +16,24 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --font-title: 1.25rem; /* 20px */
+  --font-body: 0.875rem; /* 14px */
+  --font-caption: 0.75rem; /* 12px */
+}
+
+.font-title {
+  font-size: var(--font-title);
+  font-weight: 600;
+}
+
+.font-body {
+  font-size: var(--font-body);
+}
+
+.font-caption {
+  font-size: var(--font-caption);
+  color: #6B7280; /* Tailwind gray-500 */
 }
 
 a {
