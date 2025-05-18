@@ -383,8 +383,15 @@ const PatientChatPage: React.FC = () => {
         requests={favoriteRequests}
         sendFavoriteRequest={sendFavoriteRequest}
       />
-      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
-        <ChatMessages chatMessages={displayedMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage} textSize={textSize}/>
+      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col">
+        <ChatMessages 
+        chatMessages={displayedMessages} 
+        currentUserId={userId} 
+        onResend={handleResendMessage} 
+        onCancel={handleCancelMessage} 
+        textSize={textSize}
+        senderTextColor="text-white"
+        />
       </div>
 
       {/* Debug Line */}

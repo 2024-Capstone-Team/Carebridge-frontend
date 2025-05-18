@@ -1,6 +1,15 @@
-import React, { useEffect, useRef, memo } from "react";
+import React, { useEffect, useRef, memo, useState } from "react";
 import { ChatMessage } from "../../types";
 import { MdOutlineRefresh, MdClose} from "react-icons/md";  
+import { motion } from "framer-motion";
+
+// Helper to identify ChatGPT system messages
+const isChatGptMessage = (message: ChatMessage) =>
+  message.messageContent.startsWith("[ChatGPT로 자동 생성된");
+
+// Helper to identify "요청사항" system messages
+const isRequestGeneratedMessage = (message: ChatMessage) =>
+  message.messageContent.startsWith("[요청 사항 생성 완료]");
 
 // Helper function to format timestamp
 const formatTimestamp = (timestamp: string): string => {
@@ -46,6 +55,7 @@ const MessageBubble: React.FC<{
   receiverTextColor: string;
   customStyles: { [key: string]: string } | undefined;
   textSize?: string;
+  isChatGpt?: boolean;
 }> = ({
   message,
   isSender,
@@ -59,8 +69,9 @@ const MessageBubble: React.FC<{
   receiverTextColor,
   customStyles,
   textSize,
+  isChatGpt,
 }) => (
-  <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-4`}>
+  <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-4 transition-all duration-300 ease-in-out`}>
     {/* Sender's message */}
     {isSender && (
       <div className="flex flex-row items-end mr-3">
@@ -69,7 +80,7 @@ const MessageBubble: React.FC<{
             <span className="text-xs text-red-500 mr-2">전송 실패</span>
             
             {/* Resend & Cancel Buttons (Attached, Half-Rounded) */}
-            <div className="flex border border-gray-300 rounded-full overflow-hidden shadow-sm">
+            <div className="flex rounded-full overflow-hidden">
               {/* Resend Button (Left Side) */}
               <button className="p-1 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-l-full"
                 onClick={() => onResend(message)}>
@@ -86,30 +97,44 @@ const MessageBubble: React.FC<{
         ) : (
           <>
             <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
-            <span className="text-xs text-gray-500 ml-2">{formatTimestamp(timestamp)}</span>
           </>
         )}
       </div>
     )}
 
 
-    {/* Sender/Receiver message bubble */}
-    <div
-      className={`max-w-xs px-4 py-2 rounded-3xl ${
-        isSender ? senderBubbleColor : receiverBubbleColor
-      } ${isSender ? senderTextColor : receiverTextColor} ${
-        customStyles?.message || ""
-      } whitespace-pre-line`}
-      style={{ fontSize: textSize }} // Apply text size dynamically
-    >
-      {message.messageContent}
+    {/* Sender/Receiver message bubble and timestamp */}
+    <div className={`flex items-end gap-1 ${isSender ? "flex-row-reverse" : "flex-row"}`}>
+      <div
+        className={`max-w-xs px-4 py-2 rounded-3xl shadow-sm ${isSender ? "rounded-br-none" : "rounded-bl-none"} ${
+          isSender ? senderBubbleColor : receiverBubbleColor
+        } ${isSender ? senderTextColor : receiverTextColor} ${
+          customStyles?.message || ""
+        } whitespace-pre-line`}
+        style={{ fontSize: textSize }}
+      >
+        {isChatGpt ? (
+          <div className="flex flex-col">
+            <div>{typeof message.messageContent === "string" ? message.messageContent.replace("[ChatGPT로 자동 생성된 답변 입니다.]", "").trim() : message.messageContent}</div>
+            <div className="text-[10px] text-right text-gray-200 italic mt-1">
+              ChatGPT가 생성한 응답입니다
+            </div>
+          </div>
+        ) : (
+          <>
+            {message.messageContent}
+          </>
+        )}
+      </div>
+      <div className="text-[10px] text-gray-400 mb-[2px]">
+        {formatTimestamp(timestamp)}
+      </div>
     </div>
 
     {/* Receiver's message */}
     {!isSender && (
       <div className="flex flex-row items-end ml-3">
-        <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
-        <span className="text-xs text-gray-500 ml-2">{isRead ? "읽음" : ""}</span>
+        <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
       </div>
     )}
 
@@ -143,42 +168,90 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     textSize,
   }) => {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const hasMountedRef = useRef(false);
 
-    // Scroll to the bottom when the component first mounts
-    useEffect(() => {
-      // Instantly jump to bottom on first load (without animation)
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: "instant", block: "end" });
-      }
-    }, []); // Runs only on first mount
+    const [isAtBottom, setIsAtBottom] = useState(true);
+    const [showNewMessagePreview, setShowNewMessagePreview] = useState(false);
+    const [newMessagePreviewText, setNewMessagePreviewText] = useState("");
 
-    // Scroll to the latest message when chatMessages changes
-    useEffect(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    const handleScroll = () => {
+      const el = scrollContainerRef.current;
+      if (!el) return;
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 30;
+      setIsAtBottom(nearBottom);
+      if (nearBottom) {
+        setShowNewMessagePreview(false);
       }
+    };
+
+    // Scroll to the latest message after messages render, using a timeout to ensure DOM is ready
+    useEffect(() => {
+      const timeout = setTimeout(() => {
+        const lastMessage = chatMessages[chatMessages.length - 1];
+        if (!lastMessage) return;
+
+        const fromMe = lastMessage.senderId === currentUserId;
+        const contentPreview = typeof lastMessage.messageContent === "string"
+          ? lastMessage.messageContent.slice(0, 30) + (lastMessage.messageContent.length > 30 ? "..." : "")
+          : "";
+
+        const el = scrollContainerRef.current;
+        const isReallyAtBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 30 : true;
+
+        if (fromMe || isReallyAtBottom) {
+          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+          setShowNewMessagePreview(false);
+        } else {
+          setNewMessagePreviewText(contentPreview);
+          setShowNewMessagePreview(true);
+        }
+      }, 0);
+      return () => clearTimeout(timeout);
     }, [chatMessages]);
 
     let lastDate: string | null = null;
+    let previousSenderId: number | null = null;
 
     return (
-      <div className={`space-y-4 overflow-y-auto scrollbar-hide ${customStyles?.container || ""}`}>
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className={`relative flex flex-col px-3 pb-4 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide ${customStyles?.container || ""}`}
+      >
         {chatMessages.map((message, index) => {
-          const isSender = message.senderId === currentUserId;
-          const isRead = message.readStatus;
           const messageDate = formatDateHeader(message.timestamp);
           const showDateHeader = lastDate !== messageDate;
           lastDate = messageDate; // Update last seen date
-          return (
-            <React.Fragment key={index}>
-              {/* Date Separator */}
-              {showDateHeader && (
-                <div className="text-center text-xs text-gray-500 my-2">
-                  {messageDate}
+
+          if (isRequestGeneratedMessage(message)) {
+            return (
+              <React.Fragment key={index}>
+                {showDateHeader && (
+                  <div className="text-center text-xs text-gray-500 my-2">
+                    {messageDate}
+                  </div>
+                )}
+                <div className="text-center text-gray-500 text-xs bg-gray-200 px-3 py-2 rounded-md mx-auto max-w-xs whitespace-pre-line">
+                  🤖 {message.messageContent}
                 </div>
-              )}
+              </React.Fragment>
+            );
+          }
+
+          const isSender = message.senderId === currentUserId;
+          const isRead = message.readStatus;
+
+          const isChatGpt = isChatGptMessage(message);
+          // If ChatGPT, embed 안내 문구 inside message bubble
+          const messageElement = (
+            <motion.div
+              className={`${previousSenderId === message.senderId ? "mt-1" : "mt-4"}`}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <MessageBubble
-                key={index}
                 message={message}
                 isSender={isSender}
                 timestamp={message.timestamp}
@@ -186,16 +259,46 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                 onResend={onResend}
                 onCancel={onCancel}
                 senderBubbleColor={senderBubbleColor}
-                receiverBubbleColor={receiverBubbleColor}
+                receiverBubbleColor={isChatGpt ? "bg-slate-100" : receiverBubbleColor}
                 senderTextColor={senderTextColor}
-                receiverTextColor={receiverTextColor}
-                customStyles={customStyles}
+                receiverTextColor={
+                  isChatGpt ? "text-gray-700" : receiverTextColor
+                }
+                customStyles={{
+                  ...customStyles,
+                  message: `${customStyles?.message || ""} ${isChatGpt ? "" : ""}`,
+                }}
                 textSize={textSize}
+                isChatGpt={isChatGpt}
               />
-              </React.Fragment>
-            );
+            </motion.div>
+          );
+
+          previousSenderId = message.senderId;
+
+          return (
+            <React.Fragment key={index}>
+              {showDateHeader && (
+                <div className="text-center text-xs text-gray-500 my-2">
+                  {messageDate}
+                </div>
+              )}
+              {messageElement}
+            </React.Fragment>
+          );
         })}
         <div ref={messagesEndRef} />
+        {showNewMessagePreview && (
+          <div
+            className="fixed bottom-32 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-md cursor-pointer z-50 text-sm"
+            onClick={() => {
+              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+              setShowNewMessagePreview(false);
+            }}
+          >
+            ↓ {newMessagePreviewText}
+          </div>
+        )}
       </div>
     );
   };
