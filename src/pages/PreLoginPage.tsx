@@ -13,9 +13,10 @@ const PreLoginPage: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <img src={logo} alt="CareBridge 로고" className="w-20 h-20 mx-auto mb-4 rounded-full shadow-sm" />
-        <h1 className="text-3xl font-semibold text-gray-900 mb-3">Welcome to CareBridge</h1>
-        <p className="text-sm text-gray-600 mb-6">Please choose your role to sign in</p>
+        <img src={logo} alt="CareBridge 로고" className="w-28 h-28 mx-auto mb-4 rounded-full shadow-sm" />
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">CareBridge</h1>
+        <h2 className="text-xl font-medium text-gray-800 mb-4">간호간병통합병동 채팅 서비스</h2>
+        <p className="text-base text-gray-600 mb-6">로그인할 역할을 선택해 주세요</p>
         <div className="flex flex-col space-y-4">
           <Link to="/nurse-login">
             <button className="w-full py-3 px-4 bg-cyan-500 text-white font-medium rounded-md flex items-center justify-center gap-2 transition hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400">
