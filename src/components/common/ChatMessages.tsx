@@ -200,7 +200,9 @@ const ChatMessages: React.FC<ChatMessagesProps> =
         const isReallyAtBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 30 : true;
 
         if (fromMe || isReallyAtBottom) {
-          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+          }
           setShowNewMessagePreview(false);
         } else {
           setNewMessagePreviewText(contentPreview);
@@ -214,17 +216,69 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     let previousSenderId: number | null = null;
 
     return (
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className={`relative flex flex-col px-3 pb-4 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide ${customStyles?.container || ""}`}
-      >
-        {chatMessages.map((message, index) => {
-          const messageDate = formatDateHeader(message.timestamp);
-          const showDateHeader = lastDate !== messageDate;
-          lastDate = messageDate; // Update last seen date
+      <div className="relative h-full">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className={`flex flex-col px-3 pb-4 overflow-auto h-full scrollbar-hide overscroll-none ${customStyles?.container || ""}`}
+        >
+          {chatMessages.map((message, index) => {
+            const messageDate = formatDateHeader(message.timestamp);
+            const showDateHeader = lastDate !== messageDate;
+            lastDate = messageDate; // Update last seen date
 
-          if (isRequestGeneratedMessage(message)) {
+            if (isRequestGeneratedMessage(message)) {
+              return (
+                <React.Fragment key={index}>
+                  {showDateHeader && (
+                    <div className="text-center text-xs text-gray-500 my-2">
+                      {messageDate}
+                    </div>
+                  )}
+                  <div className="text-center text-gray-500 text-xs bg-gray-200 px-3 py-2 rounded-md mx-auto max-w-xs whitespace-pre-line">
+                    🤖 {message.messageContent}
+                  </div>
+                </React.Fragment>
+              );
+            }
+
+            const isSender = message.senderId === currentUserId;
+            const isRead = message.readStatus;
+
+            const isChatGpt = isChatGptMessage(message);
+            // If ChatGPT, embed 안내 문구 inside message bubble
+            const messageElement = (
+              <motion.div
+                className={`${previousSenderId === message.senderId ? "mt-1" : "mt-4"}`}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <MessageBubble
+                  message={message}
+                  isSender={isSender}
+                  timestamp={message.timestamp}
+                  isRead={isRead}
+                  onResend={onResend}
+                  onCancel={onCancel}
+                  senderBubbleColor={senderBubbleColor}
+                  receiverBubbleColor={isChatGpt ? "bg-slate-100" : receiverBubbleColor}
+                  senderTextColor={senderTextColor}
+                  receiverTextColor={
+                    isChatGpt ? "text-gray-700" : receiverTextColor
+                  }
+                  customStyles={{
+                    ...customStyles,
+                    message: `${customStyles?.message || ""} ${isChatGpt ? "" : ""}`,
+                  }}
+                  textSize={textSize}
+                  isChatGpt={isChatGpt}
+                />
+              </motion.div>
+            );
+
+            previousSenderId = message.senderId;
+
             return (
               <React.Fragment key={index}>
                 {showDateHeader && (
@@ -232,65 +286,15 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                     {messageDate}
                   </div>
                 )}
-                <div className="text-center text-gray-500 text-xs bg-gray-200 px-3 py-2 rounded-md mx-auto max-w-xs whitespace-pre-line">
-                  🤖 {message.messageContent}
-                </div>
+                {messageElement}
               </React.Fragment>
             );
-          }
-
-          const isSender = message.senderId === currentUserId;
-          const isRead = message.readStatus;
-
-          const isChatGpt = isChatGptMessage(message);
-          // If ChatGPT, embed 안내 문구 inside message bubble
-          const messageElement = (
-            <motion.div
-              className={`${previousSenderId === message.senderId ? "mt-1" : "mt-4"}`}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MessageBubble
-                message={message}
-                isSender={isSender}
-                timestamp={message.timestamp}
-                isRead={isRead}
-                onResend={onResend}
-                onCancel={onCancel}
-                senderBubbleColor={senderBubbleColor}
-                receiverBubbleColor={isChatGpt ? "bg-slate-100" : receiverBubbleColor}
-                senderTextColor={senderTextColor}
-                receiverTextColor={
-                  isChatGpt ? "text-gray-700" : receiverTextColor
-                }
-                customStyles={{
-                  ...customStyles,
-                  message: `${customStyles?.message || ""} ${isChatGpt ? "" : ""}`,
-                }}
-                textSize={textSize}
-                isChatGpt={isChatGpt}
-              />
-            </motion.div>
-          );
-
-          previousSenderId = message.senderId;
-
-          return (
-            <React.Fragment key={index}>
-              {showDateHeader && (
-                <div className="text-center text-xs text-gray-500 my-2">
-                  {messageDate}
-                </div>
-              )}
-              {messageElement}
-            </React.Fragment>
-          );
-        })}
-        <div ref={messagesEndRef} />
+          })}
+          <div ref={messagesEndRef} />
+        </div>
         {showNewMessagePreview && (
           <div
-            className="fixed bottom-32 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-md cursor-pointer z-50 text-sm"
+            className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-md cursor-pointer z-50 text-sm"
             onClick={() => {
               messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
               setShowNewMessagePreview(false);
