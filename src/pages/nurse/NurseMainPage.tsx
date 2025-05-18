@@ -155,10 +155,59 @@ const NurseMainPage: React.FC = () => {
     setSelectedPatient(null);
   };
 
+  // Check if chatroom exists
+  const checkIfChatroomExists = useCallback(async (patientId: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patient/chatroom/${patientId}`);
+      if (!response.ok) throw new Error(`Failed to check if chatroom exists: ${response.status}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error checking chatroom existence:", error);
+      return false;
+    }
+  }, []);
+
+  const getPatientDetailsForChat = useCallback(async (patientId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
+      if (!response.ok) throw new Error(`Failed to fetch patient details: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching patient details:", error);
+      return null;
+    }
+  }, []);
+
+  const createChatroom = useCallback(async (patientId: number, department: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat/room`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId, department })
+      });
+      if (!response.ok) throw new Error(`Failed to create chatroom: ${response.status}`);
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error("Error creating chatroom:", error);
+      return false;
+    }
+  }, []);
+
   // 채팅 버튼 클릭 시 해당 환자 정보 이동
-  const handleChatClick = (patientId: number) => {
+  const handleChatClick = async (patientId: number) => {
     setIsMacroMode(false);
     setIsQAMode(false);
+
+    // Ensure chatroom exists (logic from PatientChatPage)
+    const patient = await getPatientDetailsForChat(patientId);
+    if (patient) {
+      const exists = await checkIfChatroomExists(patientId);
+      if (!exists) {
+        await createChatroom(patientId, patient.department);
+      }
+    }
 
     console.log("채팅 버튼 클릭: 환자 ID", patientId);
     const patientDetail = patientDetails[patientId];
