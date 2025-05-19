@@ -123,18 +123,18 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
   return (
     <div className="flex flex-col h-full p-4 bg-primary-100 text-sm">
       {/* Title and Dropdown Button */}
-      <div className="relative flex items-center justify-between w-full py-2">
-        <h2 className="text-lg font-semibold flex items-center">
-          채팅 목록
+      <div className="relative flex items-end justify-between w-full py-2">
+        <h2 className="font-semibold" style={{ fontSize: "var(--font-title)" }}>채팅 목록</h2>
+        <div className="flex items-center gap-1 text-[0.7rem] text-gray-500 self-end">
+          <span>{sortOrder === "latest" ? "최신 메시지 순" : "안 읽은 메시지 순"}</span>
           <button
-            ref={dropdownButtonRef} // Attach the ref to the dropdown button
+            ref={dropdownButtonRef}
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="ml-2 text-xs p-0 bg-transparent border-none cursor-pointer"
+            className="p-0 bg-transparent border-none cursor-pointer"
           >
             <FaChevronDown />
           </button>
-        </h2>
-
+        </div>
         {dropdownOpen && (
           <div
             ref={dropdownRef} 
@@ -194,8 +194,8 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
                 >
                   {room.userName}
                 </span>
-                <span className={`text-xs text-gray-600 font-semibold ${!room.isRead ? 'font-bold' : ''}`}>
-                  {room.previewMessage}
+                <span className={`text-gray-600 font-semibold ${!room.isRead ? 'font-bold' : ''}`} style={{ fontSize: "var(--font-caption)" }}>
+                  {room.previewMessage.length > 30 ? `${room.previewMessage.slice(0, 30)}...` : room.previewMessage}
                 </span>
               </div>
               <span
@@ -203,7 +203,7 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
                   currentRoom === room.conversationId ? 'text-white' : 'text-gray-400'
                 }`}
               >
-                <span className="text-xs">{formatTime(room.lastMessageTime)}</span>
+                <span style={{ fontSize: "var(--font-caption)" }}>{formatTime(room.lastMessageTime)}</span>
               </span>
             </li>
             );

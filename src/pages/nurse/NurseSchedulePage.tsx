@@ -6,6 +6,7 @@ import ScheduleAdd from "../../components/nurse/NurseScheduleAdd";
 import logo from "../../assets/carebridge_logo.png";
 import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu } from "react-icons/fi";
 import { BsStopwatch } from "react-icons/bs";
+import { FaPlus } from "react-icons/fa";
 import axios from "axios";
 import { useUserContext } from "../../context/UserContext";
 import { formatBirthdate } from "../../utils/commonUtils";
@@ -198,9 +199,9 @@ const NurseSchedulePage: React.FC = () => {
           {/* 추가 버튼 영역 */}
           <div className="flex justify-end items-center pl-2 mb-1">
             <button
-              className="text-sm text-gray-600 bg-transparent hover:text-gray-400 focus:outline-none"
+              className="text-sm text-black mb-2 bg-transparent hover:text-gray-400 focus:outline-none"
               onClick={handleAddSchedule}>
-              추가
+              <FaPlus />
             </button>
           </div>
 
@@ -220,9 +221,13 @@ const NurseSchedulePage: React.FC = () => {
         <div className="flex flex-col flex-1 bg-white rounded-lg shadow-md mb-4 ml-2 mr-4 px-4 overflow-y-auto">
           {modeCalendar && <NurseCalendar onEdit={handleEditSchedule} />}
             {modeEdit && editingScheduleId && (
-              <ScheduleEditForm scheduleId={editingScheduleId} onCancel={handleCancel} />
+              <ScheduleEditForm scheduleId={Number(editingScheduleId)} onCancel={handleCancel} />
             )}
-            {modeAdd && <ScheduleAdd onCancel={handleCancel} />}
+            {modeAdd && <ScheduleAdd
+            patients={patients}
+            medicalStaffId={staffId}
+            onCancel={handleCancel}
+            />}
         </div>
       </div>
     </div>

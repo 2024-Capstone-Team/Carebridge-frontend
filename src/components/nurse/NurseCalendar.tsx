@@ -21,7 +21,7 @@
 
   const NurseCalendar: React.FC<{ onEdit: (scheduleId: string) => void }> = ({ onEdit }) => {
     const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-    
+
     const [events, setEvents] = useState<any[]>([]); // 캘린더 이벤트 상태
     const [selectedEvent, setSelectedEvent] = useState<any | null>(null); // 선택된 이벤트
     const [isPopupOpen, setIsPopupOpen] = useState(false); // 팝업 상태
@@ -164,6 +164,24 @@
     }
   };
   
+  const handleDelete = async () => {
+    if (!selectedEvent) return;
+
+    const confirmResult = window.confirm("정말 삭제하시겠습니까?");
+    if (!confirmResult) return;
+
+    try {
+      await axios.delete(`${API_BASE_URL}/api/schedule/${selectedEvent.id}`);
+      alert("스케줄이 삭제되었습니다.");
+      closePopup();
+      
+      // 삭제 후 일정 다시 불러오기
+      fetchSchedules();
+    } catch (error) {
+      console.error("스케줄 삭제 실패:", error);
+      alert("스케줄 삭제 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
       <div className="height h-full py-4 flex flex-col overflow-hidden">
@@ -278,7 +296,7 @@
               </p>
 
               <div className="flex justify-center mt-4">
-                <button className="bg-gray-300 border border-gray-400 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={() => alert("추후 구현")}>
+                <button className="bg-gray-300 border border-gray-400 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={handleDelete}>
                   삭제
                 </button>
                 <button className="border border-gray-300 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={handleEdit}>

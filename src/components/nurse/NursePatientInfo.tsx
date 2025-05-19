@@ -19,7 +19,7 @@ interface NursePatientInfoProps {
 
 const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [patients, setPatients] = useState<PatientInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
