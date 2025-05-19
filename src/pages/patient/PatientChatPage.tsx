@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback, useContext } from "react";
+import FavoriteRequestsContext from "../../context/FavoriteRequestsContext";
 import { ChatMessage } from "../../types";
 import useStompClient from "../../hooks/useStompClient";
 import InputSection from "../../components/patient/InputSection.tsx";
@@ -8,6 +9,8 @@ import FavoriteRequests from "../../components/patient/FavoriteRequests.tsx";
 import { useUserContext } from "../../context/UserContext";
 
 const PatientChatPage: React.FC = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   {/* Set constants */}
 
@@ -40,9 +43,9 @@ const PatientChatPage: React.FC = () => {
     }, [chatMessages, pendingMessages]);
 
   const [inputText, setInputText] = useState<string>("");
-  const [favoriteRequests, setFavoriteRequests] = useState<string[]>([
-    "환자복 교체", "물 주세요", "몸이 너무 아파요"
-  ]);  // placeholders
+  const context = useContext(FavoriteRequestsContext);
+  if (!context) throw new Error("PatientChatPage must be used within a FavoriteRequestsProvider");
+  const { favoriteRequests } = context;
   const [connected, setConnected] = useState<boolean>(false);
   const [isComposing, setIsComposing] = useState(false);
   
@@ -78,7 +81,7 @@ const PatientChatPage: React.FC = () => {
   const checkIfChatroomExists = useCallback(async (patientId: number): Promise<boolean> => {
     try {
       // Fetch chatroom existence using patientId
-      const response = await fetch(`http://localhost:8080/api/patient/chatroom/${patientId}`);
+      const response = await fetch(`${API_BASE_URL}/api/patient/chatroom/${patientId}`);
   
       if (!response.ok) {
         throw new Error(`Failed to check if chatroom exists: ${response.status}`);
@@ -97,7 +100,7 @@ const PatientChatPage: React.FC = () => {
   const getPatientDetails = useCallback(async (patientId: number) => {
     try {
       // Fetch patient details using patientId
-      const response = await fetch(`http://localhost:8080/api/patient/user/${patientId}`);
+      const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
   
       if (!response.ok) {
         throw new Error(`Failed to fetch patient details: ${response.status}`);
@@ -114,7 +117,7 @@ const PatientChatPage: React.FC = () => {
   const createChatroom = useCallback(async (patientId: number, department: string): Promise<boolean> => {
     try {
       // Create a new chatroom by sending the patientId and department
-      const response = await fetch("http://localhost:8080/api/chat/room", {
+      const response = await fetch(`${API_BASE_URL}/api/chat/room`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ patientId, department })
@@ -149,8 +152,7 @@ const PatientChatPage: React.FC = () => {
   const fetchChatHistory = useCallback(async () => {
     try {
       setIsLoading(true);
-      // const response = await fetch(`/api/chat/message/user?patientId=${userId}`);
-      const response = await fetch(`/api/chat/message/user?patientId=${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/chat/message/user?patientId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch messages");
 
       const messages: ChatMessage[] = await response.json();
@@ -170,117 +172,6 @@ const PatientChatPage: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setInputText(e.target.value);
   };
-
-  // const handleSendMessage = (): void => {
-  //   if (inputText.trim()) {
-  //     const now = new Date();
-  //     const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", ""); // Korean time
-  
-  //     const newMessageId = Math.floor(Math.random() * 1_000_000_000);
-  
-  //     // Message to store locally (as pending)
-  //     const newMessage: ChatMessage = {
-  //       messageId: newMessageId,
-  //       patientId: userId,
-  //       medicalStaffId: nurseId,
-  //       messageContent: inputText,
-  //       timestamp: currentTime,
-  //       readStatus: false,
-  //       chatRoomId: `${nurseId}_${userId}`,
-  //       senderId: userId,
-  //       isPatient: true,
-  //       isFailed: false,
-  //       isPending: true,
-  //     };
-  
-  //     // Add to pending messages (instead of chatMessages)
-  //     setPendingMessages((prev) => [...prev, newMessage]);
-  
-  //     // Message to send over server
-  //     const messageToSend = {
-  //       patientId: userId,
-  //       medicalStaffId: nurseId,
-  //       messageContent: inputText,
-  //       timestamp: currentTime,
-  //       readStatus: false,
-  //       chatRoomId: `${nurseId}_${userId}`,
-  //       senderId: userId,
-  //       isPatient: true,
-  //       hospitalId: hospitalId,
-  //     };
-  
-  //     // Send message
-  //     sendMessage("/pub/chat/message", messageToSend)
-  //       .then(() => {
-  //         // Move message to chatMessages and remove from pendingMessages
-  //         setChatMessages((prev) => [...prev, { ...newMessage, isPending: false }]);
-  //         setPendingMessages((prev) => prev.filter((msg) => msg.messageId !== newMessageId));
-  //       })
-  //       .catch(() => {
-  //         console.log("Message failed to send.");
-  
-  //         // Mark message as failed in pendingMessages
-  //         setPendingMessages((prev) =>
-  //           prev.map((msg) =>
-  //             msg.messageId === newMessageId ? { ...msg, isFailed: true, isPending: false } : msg
-  //           )
-  //         );
-  //       });
-  
-  //     setInputText("");
-  //   }
-  // };
-  
-
-  // const handleResendMessage = (failedMessage: ChatMessage) => {
-  //   console.log(`Resending message with ID: ${failedMessage.messageId}`);
-  
-  //   // Get current time
-  //   const now = new Date();
-  //   const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", ""); // Korean time
-  
-  //   // Message to send over server
-  //   const messageToSend = {
-  //     patientId: failedMessage.patientId,
-  //     medicalStaffId: failedMessage.medicalStaffId,
-  //     messageContent: failedMessage.messageContent,
-  //     timestamp: currentTime,
-  //     readStatus: false,
-  //     chatRoomId: `${nurseId}_${userId}`,
-  //     senderId: userId,
-  //     isPatient: true,
-  //   };
-  
-  //   // Send message and update state accordingly
-  //   sendMessage("/pub/chat/message", messageToSend)  
-  //     .then(() => {
-  //       // If successfully sent, update isFailed and timestamp, and move the message to correct position
-  //       setChatMessages((prev) => {
-  //         const updatedMessages = prev.map((msg) =>
-  //           msg.messageId === failedMessage.messageId
-  //             ? { ...msg, isFailed: false, timestamp: currentTime }
-  //             : msg
-  //         );
-  
-  //         // Separate successful and failed messages
-  //         const successfulMessages = updatedMessages.filter((msg) => !msg.isFailed);
-  //         const failedMessages = updatedMessages.filter((msg) => msg.isFailed);
-  
-  //         // Return new order: successful messages first, then failed ones
-  //         return [...successfulMessages, ...failedMessages];
-  //       });
-  //     })
-  //     .catch(() => {
-  //       // If failed again, update the timestamp but keep isFailed as true
-  //       setChatMessages((prev) =>
-  //         prev.map((msg) =>
-  //           msg.messageId === failedMessage.messageId
-  //             ? { ...msg, timestamp: currentTime }
-  //             : msg
-  //         )
-  //       );
-  //     });
-  // };
 
   const handleSendMessage = async (): Promise<void> => {
     if (inputText.trim()) {
@@ -421,7 +312,7 @@ const PatientChatPage: React.FC = () => {
 
   const markMessageAsRead = useCallback(async (messageId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/chat/message/read?messageId=${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/chat/message/read?messageId=${messageId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
@@ -466,12 +357,6 @@ const PatientChatPage: React.FC = () => {
     setConnected(isConnected);
   }, [isConnected]);
 
-  useEffect(() => {
-    const storedFavoriteRequests = localStorage.getItem("favoriteRequests");
-    if (storedFavoriteRequests) {
-      setFavoriteRequests(JSON.parse(storedFavoriteRequests));
-    }
-  }, []);
 
   useEffect(() => {
     const unreadMessages = chatMessages.filter(
@@ -498,8 +383,15 @@ const PatientChatPage: React.FC = () => {
         requests={favoriteRequests}
         sendFavoriteRequest={sendFavoriteRequest}
       />
-      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
-        <ChatMessages chatMessages={displayedMessages} currentUserId={userId} onResend={handleResendMessage} onCancel={handleCancelMessage} textSize={textSize}/>
+      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col">
+        <ChatMessages 
+        chatMessages={displayedMessages} 
+        currentUserId={userId} 
+        onResend={handleResendMessage} 
+        onCancel={handleCancelMessage} 
+        textSize={textSize}
+        senderTextColor="text-white"
+        />
       </div>
 
       {/* Debug Line */}

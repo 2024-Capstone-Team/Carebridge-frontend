@@ -19,7 +19,7 @@ interface NurseQuickAnswerListProps {
 
 const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [quickAnswers, setQuickAnswers] = useState<QuickAnswer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);

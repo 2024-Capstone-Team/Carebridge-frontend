@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef, createContext, useCallback} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
+import { SnackbarProvider, useSnackbar } from 'notistack';
 import NurseSchedule from "../../components/nurse/NurseSchedule";
 import NursePatientInfo from "../../components/nurse/NursePatientInfo";
 import Nurse_DetailedPatientInfo from '../../components/nurse/NurseDetailedPatientInfo';
@@ -25,9 +26,16 @@ function parsePatientId(conversationId: string) {
   return parseInt(parts[1], 10);
 }
 
-const NurseMainPage: React.FC = () => {
+function getKstIso(): string {
+  const now = new Date();
+  const tzOffsetMS = now.getTimezoneOffset() * 60 * 1000;
+  const localTime = new Date(now.getTime() - tzOffsetMS);
+  return localTime.toISOString().replace('Z', '+09:00');
+}
+
+const NurseMainPage: React.FC = () => {  
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [requestPopup, setRequestPopup] = useState<CallBellRequest | null>(null);  // 요청사항 팝업 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); // 메뉴 팝업 표시
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 }); // 메뉴바 위치 설정
@@ -40,6 +48,11 @@ const NurseMainPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [patientDetails, setPatientDetails] = useState<{ [key: number]: PatientDetail }>({});
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  const [pendingRequest, setPendingRequest] = useState<CallBellRequest | null>(null);
+  const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleTime, setScheduleTime] = useState<string>("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -78,7 +91,7 @@ const NurseMainPage: React.FC = () => {
   }, [hospitalId]);
 
 
-  // 메인화면 날짜, 시간 표시
+  // 메인화면 현재 시각 표시
   useEffect(() => {
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timerId);
@@ -95,18 +108,10 @@ const NurseMainPage: React.FC = () => {
   });
 
 
-  // 스케줄 페이지에서 매크로 설정 이동
+  // 스케줄 페이지에서 매크로/빠른 답변 설정 이동
   useEffect(() => {
-    if (location.state && location.state.macroMode) {
-      setIsMacroMode(true);
-    }
-  }, [location]);
-
-  // 스케줄 페이지에서 빠른 답변 설정 이동
-  useEffect(() => {
-    if (location.state && location.state.QAMode) {
-      setIsQAMode(true);
-    }
+    if (location.state?.macroMode) setIsMacroMode(true);
+    if (location.state?.QAMode) setIsQAMode(true);
   }, [location]);
 
 
@@ -150,10 +155,59 @@ const NurseMainPage: React.FC = () => {
     setSelectedPatient(null);
   };
 
+  // Check if chatroom exists
+  const checkIfChatroomExists = useCallback(async (patientId: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patient/chatroom/${patientId}`);
+      if (!response.ok) throw new Error(`Failed to check if chatroom exists: ${response.status}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error checking chatroom existence:", error);
+      return false;
+    }
+  }, []);
+
+  const getPatientDetailsForChat = useCallback(async (patientId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
+      if (!response.ok) throw new Error(`Failed to fetch patient details: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching patient details:", error);
+      return null;
+    }
+  }, []);
+
+  const createChatroom = useCallback(async (patientId: number, department: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat/room`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId, department })
+      });
+      if (!response.ok) throw new Error(`Failed to create chatroom: ${response.status}`);
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error("Error creating chatroom:", error);
+      return false;
+    }
+  }, []);
+
   // 채팅 버튼 클릭 시 해당 환자 정보 이동
-  const handleChatClick = (patientId: number) => {
+  const handleChatClick = async (patientId: number) => {
     setIsMacroMode(false);
     setIsQAMode(false);
+
+    // Ensure chatroom exists (logic from PatientChatPage)
+    const patient = await getPatientDetailsForChat(patientId);
+    if (patient) {
+      const exists = await checkIfChatroomExists(patientId);
+      if (!exists) {
+        await createChatroom(patientId, patient.department);
+      }
+    }
 
     console.log("채팅 버튼 클릭: 환자 ID", patientId);
     const patientDetail = patientDetails[patientId];
@@ -200,6 +254,38 @@ const NurseMainPage: React.FC = () => {
 
 
   {/* 콜벨서비스 코드 시작 */}
+  
+  // 콜벨 서비스 요청 조회
+  useEffect(() => {
+    axios.get<CallBellRequest[]>(`${API_BASE_URL}/api/call-bell/request/staff/${medicalStaffId}`)
+      .then((res) => setRequests(res.data))
+      .catch((err) => console.error("호출 요청 조회 실패:", err));
+  }, [API_BASE_URL, medicalStaffId]);
+
+  // 환자 정보 조회
+  useEffect(() => {
+    const ids = Array.from(new Set(requests.map((r) => r.patientId)));
+    ids.forEach((id) => {
+      if (!patientDetails[id]) {
+        axios.get<PatientDetail>(`${API_BASE_URL}/api/patient/user/${id}`)
+          .then((res) =>
+            setPatientDetails((prev) => ({
+              ...prev,
+              [id]: res.data,
+            }))
+          )
+          .catch((err) =>
+            console.error(`환자 상세 정보 조회 실패 (ID=${id}):`, err)
+          );
+      }
+    });
+  }, [API_BASE_URL, requests, patientDetails]);
+  
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatus(e.target.value);
+  };
+
+
   const convertStatus = (status: string): string => {
     if (status === "PENDING") return "대기 중";
     if (status === "COMPLETED") return "완료됨";
@@ -208,63 +294,158 @@ const NurseMainPage: React.FC = () => {
     return status;
   };
 
-  useEffect(() => {
-      const fetchRequests = async () => {
-        try {
-          const response = await fetch(`${API_BASE_URL}/api/call-bell/request/staff/${medicalStaffId}`);
-          if (!response.ok) {
-            console.error("호출 요청 API 에러", response.status);
-            return;
-          }
-          const data: CallBellRequest[] = await response.json();
-          setRequests(data);
-        } catch (error) {
-          console.error("호출 요청 데이터 가져오기 실패", error);
-        }
-      };
+  // 상태 우선순위
+  const statusPriority = ['대기 중', '진행 중', '예약됨', '완료됨'];
   
-      fetchRequests();
-    }, [medicalStaffId]);
+  const filteredRequests =
+    selectedStatus === "전체"
+    ? [...requests].sort((a, b) =>
+      statusPriority.indexOf(convertStatus(a.status)) - statusPriority.indexOf(convertStatus(b.status))
+    )
+  : requests.filter(req => convertStatus(req.status) === selectedStatus);
+
+
+  // 대기 중 버튼 클릭 시
+  const openPendingModal = (req: CallBellRequest) => {
+    setPendingRequest(req);
+    setIsPendingModalOpen(true);
+  };
+
+  const closeAllModals = () => {
+    setIsPendingModalOpen(false);
+    setIsScheduleModalOpen(false);
+    setPendingRequest(null);
+  };
+
+  // 팝업: 수락 클릭 시
+  const handleAccept = () => {
+    if (!pendingRequest) return;
+    const acceptTime = getKstIso();
+
+    axios
+      .patch(
+        `${API_BASE_URL}/api/call-bell/request/${pendingRequest.requestId}` +
+          `?acceptTime=${encodeURIComponent(acceptTime)}`
+        )
+        .then(() => 
+          axios.put(
+            `${API_BASE_URL}/api/call-bell/request/status/${pendingRequest.requestId}` +
+              `?status=IN_PROGRESS`
+            )
+          )
+          .then(() => {
+            setRequests((prev) =>
+              prev.map((r) =>
+                r.requestId === pendingRequest.requestId
+                  ? { ...r, status: 'IN_PROGRESS', acceptTime }
+                  : r
+                )
+              );
+              closeAllModals();
+            })
+            .catch((e) => {
+              console.error(e);
+              alert('수락 처리 실패');
+            });
+          };
+
+  // 팝업: 보류 클릭 시
+  const handleHold = () => {
+    setIsPendingModalOpen(false);
+    setScheduleTime("");
+    setIsScheduleModalOpen(true);
+  };
+
+  // 예약 시간 설정
+  const handleScheduleConfirm = () => {
+    if (!pendingRequest || !scheduleTime) return;
+    
+    const requestDate = new Date(pendingRequest.requestTime);
+    const [hour, minute] = scheduleTime.split(':').map(Number);
+    requestDate.setHours(hour, minute, 0, 0);
+
+    const tzOffsetMS = requestDate.getTimezoneOffset() * 60 * 1000;
+    const localSched = new Date(requestDate.getTime() - tzOffsetMS);
+    const acceptTime = localSched.toISOString().replace('Z', '+09:00');
+    
+    axios
+      .patch(
+        `${API_BASE_URL}/api/call-bell/request/${pendingRequest.requestId}` +
+          `?acceptTime=${encodeURIComponent(acceptTime)}`
+        )
+        .then(() =>
+          axios.put(
+            `${API_BASE_URL}/api/call-bell/request/status/${pendingRequest.requestId}` +
+              `?status=SCHEDULED`
+            )
+          )
+          .then(() => {
+            setRequests((prev) =>
+              prev.map((r) =>
+                r.requestId === pendingRequest.requestId
+                  ? { ...r, status: 'SCHEDULED', acceptTime }
+                  : r
+                )
+              );
+              closeAllModals();
+            })
+            .catch((e) => {
+              console.error(e);
+              alert('예약 처리 실패');
+            });
+          };
   
-    useEffect(() => {
-      const uniquePatientIds = Array.from(new Set(requests.map((req) => req.patientId)));
-  
-      uniquePatientIds.forEach((patientId) => {
-        
-        // 아직 환자의 상세 정보를 가져오지 않은 경우만 API 호출
-        if (!patientDetails[patientId]) {
-          fetchPatientDetail(patientId);
-        }
+
+  // 진행 중 -> 완료됨 처리
+  const handleMarkComplete = (requestId: number) => {
+    if (!window.confirm("요청을 완료하시겠습니까?")) return;
+
+     axios.put(`${API_BASE_URL}/api/call-bell/request/status/${requestId}?status=COMPLETED`)
+      .then(() => {
+        setRequests((prev) =>
+          prev.map((r) =>
+            r.requestId === requestId
+            ? { ...r, status: "COMPLETED" }
+            : r
+          )
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("상태 업데이트 실패");
       });
+    };
+  
+    // 예약됨 -> 완료됨
+    useEffect(() => {
+      const timer = setInterval(() => {
+        requests.forEach((req) => {
+          if (req.status === "SCHEDULED" && req.acceptTime) {
+            const acceptTs = new Date(req.acceptTime).getTime();
+            
+            // 30분 초과
+            if (Date.now() - acceptTs > 30 * 60 * 1000) {
+              axios.put(`${API_BASE_URL}/api/call-bell/request/status/${req.requestId}?status=COMPLETED`)
+                .then(() => {
+                  setRequests((prev) =>
+                    prev.map((r) =>
+                      r.requestId === req.requestId
+                        ? { ...r, status: "COMPLETED" }
+                        : r
+                    )
+                  );
+                })
+                .catch((e) =>
+                  console.error(
+                    `자동 완료 실패 (ID=${req.requestId}):`, e
+                  )
+                );
+            }
+          }
+        });
+      }, 60_000);
+      return () => clearInterval(timer);
     }, [requests]);
-  
-    const fetchPatientDetail = async (patientId: number) => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
-        if (!response.ok) {
-          console.error(`환자 상세 정보 API 에러 (ID: ${patientId})`, response.status);
-          return;
-        }
-        const data: PatientDetail = await response.json();
-        setPatientDetails((prev) => ({ ...prev, [patientId]: data }));
-      } catch (error) {
-        console.error(`환자 상세 정보 가져오기 실패 (ID: ${patientId})`, error);
-      }
-    };
-  
-    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setSelectedStatus(e.target.value);
-    };
-  
-    // 상태 우선순위
-    const statusPriority = ['대기 중', '진행 중', '예약됨', '완료됨'];
-  
-    const filteredRequests =
-      selectedStatus === "전체"
-      ? [...requests].sort((a, b) =>
-        statusPriority.indexOf(convertStatus(a.status)) - statusPriority.indexOf(convertStatus(b.status))
-      )
-    : requests.filter(req => convertStatus(req.status) === selectedStatus);
 
   {/* 콜벨서비스 코드 끝 */}
 
@@ -327,20 +508,26 @@ const NurseMainPage: React.FC = () => {
     const requestPatientIds = requests.map((req) => req.patientId);
 
     // 채팅방에서 conversationId를 이용해 patientId 뽑기
-    const chatPatientIds = rooms.map((room) => {
-      return parsePatientId(room.conversationId);
-    });
+    const chatPatientIds = rooms.map((room) => parsePatientId(room.conversationId));
 
     // 중복 제거
     const allPatientIds = Array.from(new Set([...requestPatientIds, ...chatPatientIds]));
 
-    // 아직 fetch하지 않은 환자만 fetch
     allPatientIds.forEach((id) => {
       if (id && !patientDetails[id]) {
-        fetchPatientDetail(id);
+        axios.get<PatientDetail>(`${API_BASE_URL}/api/patient/user/${id}`)
+        .then(res => {
+          setPatientDetails(prev => ({
+            ...prev,
+            [id]: res.data,
+          }));
+        })
+        .catch(err => {
+          console.error(`환자 상세정보 조회 실패 (ID=${id}):`, err);
+        });
       }
     });
-  }, [requests, rooms]); // requests, rooms가 바뀔 때마다 실행
+  }, [API_BASE_URL, requests, rooms, patientDetails]); // requests, rooms가 바뀔 때마다 실행
   
     
   // 웹소켓 연결 
@@ -599,18 +786,29 @@ const NurseMainPage: React.FC = () => {
 
         {/* 콜벨 서비스 영역 */}
         <div className="flex justify-end bg-[#98B3C8] w-full h-[40px] mt-4 pl-20 pr-3 rounded-tl-md rounded-tr-md">
-          <select value={selectedStatus} onChange={handleStatusChange} className="items-center w-[120px] border border-gray-400 m-1.5 rounded cursor-pointer">
-            <option value="전체">전체</option>
-            <option value="대기 중">대기 중</option>
-            <option value="진행 중">진행 중</option>
-            <option value="예약됨">예약됨</option>
-            <option value="완료됨">완료됨</option>
-          </select>
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="items-center w-[120px] border border-gray-400 m-1.5 rounded cursor-pointer"
+        >
+          <option value="전체">전체</option>
+          <option value="대기 중">대기 중</option>
+          <option value="진행 중">진행 중</option>
+          <option value="예약됨">예약됨</option>
+          <option value="완료됨">완료됨</option>
+        </select>
         </div>
 
+        {/* 콜벨 요청 리스트 */}
         <div className="flex-grow h-[670px] overflow-y-auto scrollbar-hide">
-          {filteredRequests.map(request => {
+          {filteredRequests.map((request) => {
+            const name = patientDetails[request.patientId]?.name ?? "알 수 없음";
+            const requestTime = formatTime(request.requestTime);
+            const acceptTime = request.acceptTime ? formatTime(request.acceptTime) : "대기 중";
             const displayStatus = convertStatus(request.status);
+            const isInProgress = request.status === "IN_PROGRESS";
+            const isPending = request.status === "PENDING";
+
             return (
               <div key={request.requestId} className="p-3 border border-gray-300">
                 <div className="flex justify-between">
@@ -618,10 +816,10 @@ const NurseMainPage: React.FC = () => {
                     {patientDetails[request.patientId] && (
                       <>
                         <div className="flex justify-between">
-                          <p className="font-bold text-[17px]">{patientDetails[request.patientId].name}</p>
+                          <p className="font-bold text-[17px]">{name}</p>
                           <div className="flex flex-col items-end text-[11px] text-gray-500 pl-20 ml-7 pb-1">
-                            <p>요청: {formatTime(request.requestTime)}</p>
-                            <p>예약: {request.acceptTime ? formatTime(request.acceptTime) : "대기 중"}</p>
+                            <p>요청: {requestTime}</p>
+                            <p>예약: {acceptTime}</p>
                           </div>
                         </div>
                         <p className="text-[13px] text-gray-500">
@@ -638,21 +836,32 @@ const NurseMainPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="mt-2 flex justify-end">
-                  <h2
-                    className={`px-3 py-1 text-sm font-semibold rounded mr-2 ${
-                      displayStatus === "대기 중"
-                        ? "bg-[#F8F8F8] border border-[#E3E3E3]"
-                        : displayStatus === "진행 중"
-                        ? "bg-[#417BB4] border border-[#306292] text-white"
+
+                  {/* 상태 버튼 */}
+                  <button
+                  onClick={() =>
+                    isPending
+                      ? openPendingModal(request)
+                      : isInProgress
+                      ? handleMarkComplete(request.requestId)
+                      : undefined
+                    }
+                    
+                    className={[
+                      "px-2 py-1 text-sm font-semibold rounded mr-2",
+                      isPending
+                        ? "bg-[#F8F8F8] border border-[#E3E3E3] cursor-pointer"
+                        : isInProgress
+                        ? "bg-[#417BB4] border border-[#306292] text-white cursor-pointer"
                         : displayStatus === "예약됨"
-                        ? "bg-[#C75151] border border-[#B14141] text-white"
-                        : displayStatus === "완료됨"
-                        ? "bg-[#E3E3E3] border border-[#CFC9C9]"
-                        : "bg-gray-300"
-                    }`}
+                        ? "bg-[#C75151] border border-[#B14141] text-white cursor-default"
+                        : "bg-[#E3E3E3] border border-[#CFC9C9] cursor-default",
+                    ].join(" ")}
                   >
-                    {displayStatus}
-                  </h2>
+                  {displayStatus}
+                </button>
+                  
+                  {/* 채팅 버튼 */}
                   <button 
                     className="px-4 py-1 bg-gray-400 text-sm font-semibold rounded"
                     onClick={() => handleChatClick(request.patientId)}
@@ -664,6 +873,90 @@ const NurseMainPage: React.FC = () => {
             );
           })}
         </div>
+
+        {/* 팝업: 대기 중 → 수락/보류 */}
+        {isPendingModalOpen && pendingRequest && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
+              <button
+                onClick={closeAllModals}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+              >
+                ✖
+              </button>
+              <div className="text-center">
+                <p className="text-[15px] text-gray-600 mb-1">
+                  {formatTime(pendingRequest.requestTime)}
+                </p>
+                <p className="text-[20px] font-bold text-black mb-1">
+                  {patientDetails[pendingRequest.patientId]?.name} 환자
+                </p>
+                <p className="text-[15px] text-gray-600 mb-4">{pendingRequest.requestContent}</p>
+                <p className="text-[15px] text-gray-600 mb-4">수락하시겠습니까?</p>
+              </div>
+              <div className="flex justify-between">
+                <button
+                  onClick={handleHold}
+                  className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  보류
+                </button>
+                <button
+                  onClick={() => {
+                    handleChatClick(pendingRequest.patientId);
+                    closeAllModals();
+                  }}
+                  className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  채팅
+                </button>
+                <button
+                  onClick={handleAccept}
+                  className="px-4 py-1 bg-[#417BB4] border border-[#306292] text-white rounded hover:bg-blue-600"
+                >
+                  수락
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* 팝업: 예약 시간 선택 */}
+      {isScheduleModalOpen && pendingRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
+            <button
+              onClick={closeAllModals}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+            >
+              ✖
+            </button>
+            <div className="text-center mb-4">
+              <p className="text-[20px] font-bold text-black mb-2">예약 시간 설정</p>
+              <input
+                type="time"
+                className="border p-1 w-full"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={closeAllModals}
+                className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {handleScheduleConfirm();}}
+                className="px-4 py-1 bg-[#C75151] border border-[#B14141] text-white rounded hover:bg-red-600"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
 
       {/* 매크로, 빠른 답변 화면 전환 */}

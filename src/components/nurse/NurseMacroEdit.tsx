@@ -16,7 +16,7 @@ interface NurseMacroEditProps {
 
 const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId, macro }) => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [macroName, setMacroName] = useState(macro.macroName);
   const [text, setText] = useState(macro.text);
   const [loading, setLoading] = useState(false);

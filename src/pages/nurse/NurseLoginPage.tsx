@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import logo from "../../assets/carebridge_logo.png";
 import { useUserContext } from "../../context/UserContext";
 
 const NurseLoginPage: React.FC = () => {
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-  
+
   const [id, setID] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -46,10 +47,10 @@ const NurseLoginPage: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div>
-        <img src='src/assets/carebridge_logo.png' className='mr-16 w-[400px]'/>
+        <img src={logo} alt="CareBridge 로고" className='mr-16 w-[400px]'/>
       </div>
       <div className="bg-white p-8 rounded-[20px] shadow-lg w-[400px] h-[600px]">
-        <div className='flex justify-center items-center'><img src='src/assets/carebridge_logo.png' className='w-[200px]'/> </div>
+        <div className='flex justify-center items-center'><img src={logo} alt="CareBridge 로고" className='w-[200px]'/> </div>
         
           <form className="space-y-4 justify-center items-center flex flex-col" onSubmit={handleLogin}>
           

@@ -43,6 +43,7 @@ import { UserProvider } from "./context/UserContext";
 import HospitalInfoPage from './pages/HospitalInfoPage';
 import NurseChatPage from "./components/nurse/NurseMessaging";
 import ScheduleTest from "./pages/patient/ScheduleTest";
+import { CustomRequestsProvider } from "./context/CustomRequestsContext";
 
 const App: React.FC = () => {
  
@@ -96,20 +97,30 @@ const App: React.FC = () => {
           <Route
             path="/patient-chat"
             element={
-              <FavoriteRequestsProvider>
-                <PatientChatPage />
-              </FavoriteRequestsProvider>
+              <CustomRequestsProvider>
+                <FavoriteRequestsProvider>
+                  <PatientChatPage />
+                </FavoriteRequestsProvider>
+              </CustomRequestsProvider>
             }
           />
           <Route
             path="/patient-chat-categories"
             element={
-              <FavoriteRequestsProvider>
-                <PatientChatCategories />
-              </FavoriteRequestsProvider>
+              <CustomRequestsProvider>
+                <FavoriteRequestsProvider>
+                  <PatientChatCategories />
+                </FavoriteRequestsProvider>
+              </CustomRequestsProvider>
             }
           />
-          <Route path="/custom-request" element={<CustomRequestPage />} />
+          <Route path="/custom-request" element={
+            <CustomRequestsProvider>
+                <FavoriteRequestsProvider>
+                  <CustomRequestPage />
+                </FavoriteRequestsProvider>
+              </CustomRequestsProvider>
+            } />
 
             {/* Test */}
             {/* <Route path='/test' element={<NurseChatPage />} /> */}
