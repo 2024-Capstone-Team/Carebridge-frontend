@@ -7,7 +7,7 @@ import ScheduleToday from "./ScheduleToday";
 
 // 환자 정보를 담는 인터페이스 정의
 interface PatientDto {
-  patientId: number;      // 환자 고유 ID
+  patientId: number;      // 환자 고유 IDn
   phoneNumber: string;    // 전화번호
   name: string;          // 환자 이름
   birthDate: string;     // 생년월일
