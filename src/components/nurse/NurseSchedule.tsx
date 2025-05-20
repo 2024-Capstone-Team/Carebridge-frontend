@@ -145,7 +145,7 @@ const NurseSchedule: React.FC = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="flex flex-col bg-[#DFE6EC] rounded-lg p-4 max-h-full cursor-pointer" onClick={() => navigateToSchedule()}>
+    <div className="flex flex-col bg-[#DFE6EC] rounded-lg max-h-full cursor-pointer" onClick={() => navigateToSchedule()}>
       
       <div className="flex items-center">
         <h2 className="text-lg font-semibold text-gray-800 mb-2">스케줄</h2>
@@ -153,12 +153,12 @@ const NurseSchedule: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <span className="text-[17px] text-black font-semibold">{formattedDate}</span>
-        <button className="bg-transparent px-4 py-2 hover:text-gray-400" onClick={handleScheduleAdd}>
+        <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleScheduleAdd}>
           <FaPlus />
         </button>
       </div>
 
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow mt-2 overflow-y-auto">
         <ul className="space-y-3">
           {scheduleData.length > 0 ? (
             scheduleData.map((schedule) => {

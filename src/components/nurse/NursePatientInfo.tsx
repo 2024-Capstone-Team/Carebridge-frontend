@@ -32,7 +32,7 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
   });
 
 
-  // API로부터 환자 데이터 가져오기
+  // 환자 데이터 API
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -66,7 +66,7 @@ const NursePatientInfo: React.FC<NursePatientInfoProps> = ({ onPatientClick }) =
 
 
   return (
-    <div className="bg-[#DFE6EC] p-3 rounded-lg ">
+    <div className="bg-[#DFE6EC] rounded-lg ">
       <h2 className="text-lg font-bold mb-4">환자 정보</h2>
 
       {/*검색 입력 창*/}

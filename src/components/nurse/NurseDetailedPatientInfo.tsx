@@ -149,7 +149,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
   const filteredPatients = searchQuery ? fuse.search(searchQuery).map(result => result.item) : [];
 
   return (
-    <div className="h-full bg-[#DFE6EC] p-3 rounded-lg">
+    <div className="h-full bg-[#DFE6EC] rounded-lg">
       <div className="flex relative mb-4">
         <FaChevronLeft className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute -translate-x-6 translate-y-1" onClick={onBack}/>
         <h2 className="text-lg font-bold">환자 정보</h2>

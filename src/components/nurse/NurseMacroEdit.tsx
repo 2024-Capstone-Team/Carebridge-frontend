@@ -104,13 +104,12 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
         >
           취소
         </button>
-        <button
-          onClick={handleUpdate}
-          className={"bg-[#6990B6] text-white text-lg rounded-md h-[40px] ${loading ? 'w-[100px]' : 'w-[65px]'}"}
-          disabled={loading}
-        >
-          {loading ? '저장 중...' : '저장'}
-        </button>
+        <button 
+            type="submit"
+            className="bg-[#6990B6] text-white text-lg rounded-md w-[65px] h-[40px]"
+          >
+            저장
+          </button>
       </div>
       
     </div>
