@@ -19,39 +19,44 @@ const PatientLoginPage: React.FC = () => {
   const [check, setIsCheck] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-    // 자동 로그인 체크 상태 초기화 (로컬스토리지에서 가져오기)
-    useEffect(() => {
-      const autoLogin = localStorage.getItem("autoLogin");
-      if (autoLogin === "true") {
-        setIsCheck(true);
-      }
-    }, []);
+  // 자동 로그인 체크 상태 초기화 (로컬스토리지에서 가져오기)
+  useEffect(() => {
+    const autoLogin = localStorage.getItem("autoLogin");
+    if (autoLogin === "true") {
+      setIsCheck(true);
+    } else {
+      setIsCheck(false);
+    }
+  }, []);
 
   //자동 로그인 기능
   useEffect(() => {
     const autoLogin = async () => {
-      const autoLogin = localStorage.getItem("autoLogin");
+      const flag = localStorage.getItem("autoLogin");
+      if (flag !== "true") {
+        console.log("자동 로그인 비활성화됨");
+        return;
+      } else {
+        console.log("자동 로그인 활성화됨");
+      }
+  
       let isAutoLoggedIn = await checkAutoLogin();
-      if (autoLogin !== "true") return;
-
+  
       if (!isAutoLoggedIn) {
-        // 액세스 토큰이 만료되었을 가능성이 있으므로 리프레시 토큰을 사용해 재발급 시도
         const isRefreshed = await refreshAccessToken();
         if (isRefreshed) {
           isAutoLoggedIn = await checkAutoLogin();
         }
       }
-
+  
       if (isAutoLoggedIn) {
-        alert("자동 로그인 성공. 확인 버튼을 누르면 메인 화면으로 이동합니다.");
-        const phone = localStorage.getItem("phoneNumber");
-        console.log("로그인 성공: ", phone);
+        alert("자동 로그인 성공. 메인 화면으로 이동합니다.");
         navigate("/patient-main");
       }
     };
-
+  
     autoLogin();
-  }, []);
+  }, [check]);
 
 
   //타이머 설정
@@ -207,7 +212,7 @@ const PatientLoginPage: React.FC = () => {
         }}
       >
         <img
-          src="/icons/icon-192x192.png"
+          src="/icons/icon-384x384.png"
           alt="앱 아이콘"
           className="w-[80%] h-auto object-cover"
           style={{ padding: 1 }}

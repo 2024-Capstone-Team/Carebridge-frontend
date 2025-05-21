@@ -102,15 +102,15 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
   };
 
   return (
-    <div className="w-full bg-white rounded-lg p-2">
-      <h2 className="text-xl font-semibold mb-2">스케줄 수정</h2>
+    <div className="h-full bg-white rounded-lg p-4 overflow-y-auto">
+      <h2 className="font-semibold mb-2" style={{fontSize: "var(--font-title)" }}>스케줄 수정</h2>
       <hr />
 
       <div className="flex my-5 items-center">
-        <label className="flex block font-semibold mr-3">환자 이름</label>
+        <label className="flex block text-[18px] font-semibold mr-3">환자 이름</label>
         <input
           type="text"
-          className="border items-center w-[300px] p-2"
+          className="border items-center w-[300px] p-2 rounded-lg"
           value={patientName}
           readOnly
         />
@@ -121,29 +121,29 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
       </div>
 
       <div className="flex mb-5 items-center">
-        <label className="block font-semibold mr-3">일정 내용</label>
+        <label className="block text-[18px] font-semibold mr-3">일정 내용</label>
         <input
           type="text"
-          className="border w-[300px] p-2"
+          className="border w-[300px] p-2 rounded-lg"
           value={details}
           onChange={(e) => setDetails(e.target.value)}
         />
       </div>
 
       <div className="flex mb-5 items-center">
-        <label className="block font-semibold mr-3">시작 일시</label>
+        <label className="text-[18px] block font-semibold mr-3">시작 일시</label>
         <input
           type="datetime-local"
-          className="border w-[300px] p-2"
+          className="border w-[300px] p-2 rounded-lg"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
         />
       </div>
 
       <div className="flex mb-5 items-center">
-        <label className="block font-semibold mr-4">카테고리</label>
+        <label className="text-[18px] block font-semibold mr-4">카테고리</label>
         <select
-          className="border items-center w-[300px] p-2"
+          className="border items-center w-[300px] p-2 rounded-lg"
           value={category}
           onChange={(e) => setCategory(e.target.value as any)}
         >
@@ -154,8 +154,20 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
       </div>
 
       <div className="flex justify-center space-x-3 pt-5">
-        <button onClick={onCancel} className="bg-white border border-gray-300 shadow-lg text-lg rounded-md px-2 mx-1 w-[65px] h-[40px] hover:bg-gray-200">취소</button>
-        <button onClick={handleSave} className="bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 h-[40px] w-[65px]">저장</button>
+         <button 
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
+          >
+            취소
+          </button>
+          <button 
+            type="submit"
+            onClick={handleSave}
+            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
+          >
+            저장
+          </button>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import ChatMessages from "../common/ChatMessages";
 import InputSection from "../../components/patient/InputSection";
 import { ChatMessage, Macro, QuickAnswer } from "../../types";
 import useStompClient from "../../hooks/useStompClient";
-import IconButton from "../patient/IconButton";
+import { FaChevronLeft } from "react-icons/fa";
 
 const useUserContext = () => ({
   nurseId: 1, // for testing
@@ -401,13 +401,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-6 text-black z-10 relative">
-        <IconButton
-          onClick={onBackClick}
-          className="absolute left-4 flex items-center justify-center w-10 h-10"
-          iconSrc={"/icons/back-icon.png"}
-          altText={"Back"}
+        <FaChevronLeft 
+          className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute left-4 top-6" 
+          onClick={onBackClick} 
         />
-        <h2 className="text-lg font-bold text-center flex-1">{patient}</h2>
+        <h2 className="text-center flex-1 font-bold" style={{ fontSize: "var(--font-title)" }}>{patient}</h2>
       </header>
 
       {/* Debug */}
@@ -436,7 +434,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
           <div
             key={macro.macroId}
             onClick={() => handleMacroClick(macro.macroName)}
-            className={"flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-primary text-white"}
+            className={"flex items-center justify-center px-3 py-1 rounded-full cursor-pointer bg-primary text-white"}
+            style={{ fontSize: "var(--font-body)" }}
           >
             {macro.macroName}
           </div>
@@ -445,7 +444,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
           <div
             key={qa.id}
             onClick={() => handleQuickAnswerClick(qa)}
-            className="flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-secondary text-white"
+            className="flex items-center justify-center px-3 py-1 rounded-full cursor-pointer bg-secondary text-white"
+            style={{ fontSize: "var(--font-body)" }}
           >
             {qa.title}
           </div>
@@ -469,7 +469,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
           <div
             key={index}
             onClick={action.onClick}
-            className="flex items-center justify-center px-3 py-1 text-sm rounded-full cursor-pointer bg-primary text-white"
+            className="flex items-center justify-center px-3 py-1 rounded-full cursor-pointer bg-primary text-white"
+            style={{ fontSize: "var(--font-body)" }}
           >
             {action.label}
           </div>

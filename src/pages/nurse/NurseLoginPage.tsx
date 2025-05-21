@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import logo from "../../assets/carebridge_logo.png"
-import stock from "../../assets/hospital stock.jpg"
+import stock from "../../assets/hospital room.jpg"
 import { useUserContext } from "../../context/UserContext"
 import { motion } from "framer-motion"
 
@@ -62,11 +62,11 @@ const NurseLoginPage: React.FC = () => {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <div className="relative h-[500px] w-full overflow-hidden rounded-2xl">
-          <img src={stock || "/placeholder.svg"} alt="병원 이미지" className="h-full w-full object-cover" />
+          <img src={stock} alt="병원 이미지" className="h-full w-full opacity-70" />
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-blue-600/20" />
           <div className="absolute bottom-8 left-8 max-w-md text-white">
             <h2 className="mb-2 text-2xl font-bold">CareBridge</h2>
-            <p className="text-sm opacity-90">
+            <p style={{ fontSize: "var(--font-body)" }}>
               환자 케어의 새로운 기준을 제시합니다. <br></br>간호사 포털에 로그인하여 환자 관리를 시작하세요.
             </p>
           </div>
@@ -92,7 +92,7 @@ const NurseLoginPage: React.FC = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <img src={logo || "/placeholder.svg"} alt="CareBridge 로고" className="w-[150px]" />
+            <img src={logo} alt="CareBridge 로고" className="w-[150px]" />
           </motion.div>
 
           <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">간호사 로그인</h2>
@@ -105,7 +105,7 @@ const NurseLoginPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <div className="space-y-2">
-              <label htmlFor="id" className="text-sm font-medium text-gray-700">
+              <label htmlFor="id" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                 병원 ID
               </label>
               <div className="relative">
@@ -114,14 +114,14 @@ const NurseLoginPage: React.FC = () => {
                   placeholder="병원 ID를 입력하세요"
                   value={id}
                   onChange={(e) => setID(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <label htmlFor="password" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                   비밀번호
                 </label>
                 <button
@@ -139,7 +139,7 @@ const NurseLoginPage: React.FC = () => {
                   placeholder="비밀번호를 입력하세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
                 <button
                   type="button"

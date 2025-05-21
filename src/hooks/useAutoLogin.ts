@@ -19,7 +19,7 @@ export const checkAutoLogin = async (): Promise<boolean> => {
     );
 
     if (response.status === 200) {
-      console.log("자동 로그인 성공");
+      console.log("access token 확인됨");
       return true;
     }
   } catch (error: any) {

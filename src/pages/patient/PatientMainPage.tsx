@@ -34,8 +34,17 @@ const PatientMainPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("accessToken");
     try {
-      await axios.post(`${API_BASE_URL}/api/users/logout?phoneNumber=${phoneNumber}`);
+      await axios.post(`${API_BASE_URL}/api/users/logout?phoneNumber=${phoneNumber}`); // 일반 로그아웃
+      await axios.post(`${API_BASE_URL}/api/notification/logout`,                      // FCM 토큰 삭제
+        {
+          "token": token,
+          "userId": userId
+        }
+      );
+      await axios.get(`${API_BASE_URL}/api/users/social-login/kakao/logout`);         // 소셜 계정 로그아웃
         setPatientId(null);
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");

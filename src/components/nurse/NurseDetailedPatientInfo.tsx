@@ -149,15 +149,15 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
   const filteredPatients = searchQuery ? fuse.search(searchQuery).map(result => result.item) : [];
 
   return (
-    <div className="h-full bg-[#DFE6EC] rounded-lg">
+    <div className="bg-[#DFE6EC] rounded-lg flex flex-col h-full">
       <div className="flex relative mb-4">
-        <FaChevronLeft className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute -translate-x-6 translate-y-1" onClick={onBack}/>
-        <h2 className="text-lg font-bold">환자 정보</h2>
+        <FaChevronLeft className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute -translate-x-5 translate-y-1.5" onClick={onBack}/>
+        <h2 className="font-bold" style={{ fontSize: "var(--font-title)" }}>환자 정보</h2>
       </div>
 
       {/* 검색 결과 목록 */}
       {searchQuery ? (
-        <div className="space-y-4 h-[350px] overflow-y-auto scrollbar-hide">
+        <div className="overflow-y-auto flex-1 scrollbar-hide">
           {filteredPatients.length > 0 ? (
             <ul className="space-y-4 w-full cursor-pointer">
               {filteredPatients.map((p) => (
@@ -169,8 +169,8 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                     navigate(`/nurse/patient/${p.patientId}`);
                   }}
                 >
-                  <div className="text-base font-semibold">{p.name}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-[15px] font-semibold">{p.name}</div>
+                  <div className="text-gray-600" style={{ fontSize: "var(--font-caption)" }}>
                     <span>
                       {formatDate(p.birthDate)} {p.gender === "Male" ? "남" : "여"}
                     </span>
@@ -190,7 +190,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
           ) : (
             <div className="overflow-y-auto h-[350px] scrollbar-hide">
               <div className="mb-1">
-                <h2 className="text-lg font-semibold">{patient.name}</h2>
+                <h2 className="font-semibold" style={{ fontSize: "var(--font-title)" }}>{patient.name}</h2>
                 <div className="flex justify-between text-gray-500 my-1">
                   <p>생년월일</p>
                   <p>{formatDate(patient.birthDate)}</p>
@@ -215,9 +215,9 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                   <p>전화번호</p>
                   <p>{patient.phoneNumber || "정보 없음"}</p>
                 </div>
-                <div className="flex justify-end mt-1">
+                <div className="flex justify-end mt-2">
                   <button 
-                    className="bg-gray-300 border-gray-400 rounded-md border text-center px-2 w-[50px] hover:bg-gray-400"
+                    className="px-3 py-2 bg-gray-400 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:bg-gray-500"
                     onClick={() => onChatClick(patient.patientId)}
                   >
                     채팅
@@ -226,11 +226,11 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
               </div>
 
               {/* 요청 기록 영역 */}
-              <h3 className="text-[15px] font-semibold mt-2 mb-1">요청 기록</h3>
+              <h3 className="text-[16px] font-semibold mt-2 mb-1">요청 기록</h3>
               {patientRequests.length === 0 ? (
-                <p className="text-gray-500">요청 기록이 없습니다.</p>
+                <p className="text-gray-500" style={{ fontSize: "var(--font-body)" }}>요청 기록이 없습니다.</p>
               ) : (
-                <ul className="text-[15px] text-gray-500">
+                <ul className="text-gray-500" style={{ fontSize: "var(--font-body)" }}>
                   {patientRequests.map((req, index) => {
                     const formattedDate = formatDate(req.requestTime);
                     const showDate =
@@ -239,9 +239,9 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                     return (
                       <li key={req.requestId} className="mb-5">
                         {showDate && <p className="mb-2">{formattedDate}</p>}
-                        <p className="text-[13px]">요청 시간: {formatTime(req.requestTime)}</p>
-                        <p className="text-[13px]">완료 시간: {req.acceptTime ? formatTime(req.acceptTime) : "대기 중"}</p>
-                        <p className="text-[13px]">{req.requestContent}</p>
+                        <p style={{ fontSize: "var(--font-body)" }}>요청 시간: {formatTime(req.requestTime)}</p>
+                        <p style={{ fontSize: "var(--font-body)" }}>완료 시간: {req.acceptTime ? formatTime(req.acceptTime) : "대기 중"}</p>
+                        <p style={{ fontSize: "var(--font-body)" }}>{req.requestContent}</p>
                       </li>
                     );
                   })}

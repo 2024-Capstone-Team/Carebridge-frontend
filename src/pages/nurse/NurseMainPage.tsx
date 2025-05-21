@@ -150,10 +150,59 @@ const NurseMainPage: React.FC = () => {
     setSelectedPatient(null)
   }
 
+  // Check if chatroom exists
+  const checkIfChatroomExists = useCallback(async (patientId: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patient/chatroom/${patientId}`)
+      if (!response.ok) throw new Error(`Failed to check if chatroom exists: ${response.status}`)
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error("Error checking chatroom existence:", error)
+      return false
+    }
+  }, [])
+
+  const getPatientDetailsForChat = useCallback(async (patientId: number) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`)
+      if (!response.ok) throw new Error(`Failed to fetch patient details: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error("Error fetching patient details:", error)
+      return null
+    }
+  }, [])
+
+  const createChatroom = useCallback(async (patientId: number, department: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat/room`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId, department }),
+      })
+      if (!response.ok) throw new Error(`Failed to create chatroom: ${response.status}`)
+      const data = await response.json()
+      return data.success
+    } catch (error) {
+      console.error("Error creating chatroom:", error)
+      return false
+    }
+  }, [])
+
   // 채팅 버튼 클릭 시 해당 환자 정보 이동
-  const handleChatClick = (patientId: number) => {
+  const handleChatClick = async (patientId: number) => {
     setIsMacroMode(false)
     setIsQAMode(false)
+
+    // Ensure chatroom exists (logic from PatientChatPage)
+    const patient = await getPatientDetailsForChat(patientId)
+    if (patient) {
+      const exists = await checkIfChatroomExists(patientId)
+      if (!exists) {
+        await createChatroom(patientId, patient.department)
+      }
+    }
 
     console.log("채팅 버튼 클릭: 환자 ID", patientId)
     const patientDetail = patientDetails[patientId]
@@ -360,15 +409,14 @@ const NurseMainPage: React.FC = () => {
       })
     }, 60_000)
     return () => clearInterval(timer)
-  }, [requests]);
-  
-  <div className="mt-4 rounded-lg overflow-hidden shadow-sm">
+  }, [requests])
+  ;<div className="mt-4 rounded-lg overflow-hidden shadow-sm">
     <div className="flex justify-between items-center bg-white w-full h-[45px] px-3 rounded-t-lg border-b border-gray-200">
       <h3 className="text-[#417BB4] font-semibold text-sm">콜벨 서비스</h3>
       <select
         value={selectedStatus}
         onChange={(e) => setSelectedStatus(e.target.value)}
-        className="text-xs bg-white border border-gray-200 rounded-md py-1 px-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#98B3C8]"
+        className="text-xs bg-white border border-gray-200 rounded-md py-1 px-2 cursor-pointer focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
       >
         <option value="전체">전체</option>
         <option value="대기 중">대기 중</option>
@@ -431,28 +479,28 @@ const NurseMainPage: React.FC = () => {
                           : undefined
                     }
                     className={`
-                    px-3 py-1 text-xs font-medium rounded-md whitespace-nowrap
-                    ${
-                      isPending
-                        ? "bg-[#F8F8F8] border border-[#E3E3E3]"
+                      px-3 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-all duration-200
+                      ${
+                        isPending
+                        ? "bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
                         : isInProgress
-                          ? "bg-[#417BB4] border border-[#306292] text-white"
-                          : isScheduled
-                            ? "bg-[#C75151] border border-[#B14141] text-white"
-                            : "bg-[#E3E3E3] border border-[#CFC9C9]"
-                    }
-                    ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
-                  `}
-                  >
-                    {displayStatus}
-                  </button>
-
-                  <button
-                    className="px-3 py-1 bg-gray-400 text-white text-xs font-medium rounded-md"
-                    onClick={() => handleChatClick(request.patientId)}
-                  >
-                    채팅
-                  </button>
+                        ? "bg-[#417BB4] border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                        : isScheduled
+                          ? "bg-[#C75151] border border-[#B14141] text-white hover:bg-[#a83e3e]"
+                          : "bg-[#E3E3E3] border border-[#CFC9C9]"
+                        }
+                        ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
+                        `}
+                        >
+                        {displayStatus}
+                        </button>
+                          
+                        <button
+                        className="px-3 py-1 bg-gray-400 text-white text-xs font-medium rounded-md transition-all duration-200 hover:bg-gray-500"
+                        onClick={() => handleChatClick(request.patientId)}
+                      >
+                        채팅
+                      </button>
                 </div>
               </div>
             </div>
@@ -686,6 +734,7 @@ const NurseMainPage: React.FC = () => {
       {requestPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-1/3 relative">
+           
             {/* 닫기 버튼 */}
             <button
               onClick={() => setRequestPopup(null)}
@@ -727,38 +776,42 @@ const NurseMainPage: React.FC = () => {
               className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
               style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
             >
-              <p className="text-black text-[15px] font-semibold pt-2 px-2">
+              <p className="text-black font-semibold pt-2 px-2" style={{ fontSize: "var(--font-body)" }}>
                 {hospitalName ? hospitalName : "Loading..."}
               </p>
-              <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">
+              <p className="text-gray-500 pt-1 pb-2 px-2" style={{ fontSize: "var(--font-caption)" }}>
                 {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
               </p>
               <hr className="bg-gray-600" />
 
               <ul className="py-2">
                 <li
-                  className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  className="px-2 pt-2 pb-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
                   onClick={() => handleMenuMoveClick("/nurse-main")}
                 >
                   <FiHome className="w-4 h-4 mr-2" />
                   메인 화면
                 </li>
                 <li
-                  className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
                   onClick={() => handleMenuMoveClick("/nurse-schedule")}
                 >
                   <FiCalendar className="w-4 h-4 mr-2" />
                   스케줄러
                 </li>
                 <li
-                  className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
                   onClick={handleMacroClick}
                 >
                   <FiCpu className="w-4 h-4 mr-2" />
                   매크로 설정
                 </li>
                 <li
-                  className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  className="px-2 pt-1 pb-2 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
                   onClick={handleQAClick}
                 >
                   <BsStopwatch className="w-4 h-4 mr-2" />
@@ -767,13 +820,15 @@ const NurseMainPage: React.FC = () => {
                 <hr className="bg-gray-600" />
 
                 <li
-                  className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  className="px-2 pt-2 pb-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  style={{ fontSize: "var(--font-caption)" }}
                   onClick={() => handleMenuMoveClick("/nurse-reset-password")}
                 >
                   비밀번호 재설정
                 </li>
                 <li
-                  className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  className="px-2 py-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  style={{ fontSize: "var(--font-caption)" }}
                   onClick={() => handleMenuMoveClick("/nurse-login")}
                 >
                   로그아웃
@@ -788,25 +843,26 @@ const NurseMainPage: React.FC = () => {
         </div>
 
         {/* 날짜 표시 영역 */}
-        <div className="flex text-center text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
+        <div className="flex text-center text-[16px] text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
           <p className="text-black font-semibold mr-2">{formattedDate}</p>
-          <p className="text-gray-600 font-[12px]">{formattedTime}</p>
+          <p className="text-gray-600">{formattedTime}</p>
         </div>
 
         {/* 병원 정보 표시 영역 */}
-        <p className="text-black font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
-        <p className="text-gray-600 text-[12px]">
+        <p className="text-black text-[16px] font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
+        <p className="text-gray-600 " style={{ fontSize: "var(--font-caption)" }}>
           {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
         </p>
 
         {/* 콜벨 서비스 영역 */}
         <div className="mt-4 rounded-lg overflow-hidden shadow-sm">
-          <div className="flex justify-between items-center bg-white w-full h-[45px] px-3 rounded-t-lg border-b border-gray-200">
-            <h3 className="text-black font-semibold text-sm">요청 사항 목록</h3>
+          <div className="flex justify-between items-center bg-white w-full h-[50px] px-4 py-3 rounded-t-lg border-b border-gray-200">
+            <h2 className="text-black text-18px font-semibold">요청 사항 목록</h2>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="text-xs bg-white border border-gray-200 rounded-md py-1 px-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#98B3C8]"
+              className="\bg-white border border-gray-200 rounded-md py-1 px-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#98B3C8]"
+              style={{ fontSize: "var(--font-caption)" }}
             >
               <option value="전체">전체</option>
               <option value="대기 중">대기 중</option>
@@ -817,9 +873,9 @@ const NurseMainPage: React.FC = () => {
           </div>
 
           {/* 콜벨 요청 리스트 */}
-          <div className="flex-col max-h-[calc(100vh-280px)] overflow-y-auto scrollbar-hide bg-white">
+          <div className="flex-col px-2 py-2 max-h-[calc(100vh-280px)] overflow-y-auto scrollbar-hide bg-white">
             {filteredRequests.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 text-sm">요청 사항이 없습니다</div>
+              <div className="p-4 text-center text-gray-500" style={{ fontSize: "var(--font-body)" }}>요청 사항이 없습니다</div>
             ) : (
               filteredRequests.map((request) => {
                 const name = patientDetails[request.patientId]?.name ?? "알 수 없음"
@@ -835,15 +891,15 @@ const NurseMainPage: React.FC = () => {
                     <div className="p-3">
                       <div className="flex justify-between items-start w-full mb-1">
                         <div className="flex items-center">
-                          <span className="font-bold text-[15px] mr-2">{name}</span>
+                          <span className="font-bold mr-2" style={{ fontSize: "var(--font-body)" }}>{name}</span>
                           {patientDetails[request.patientId] && (
-                            <span className="text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                            <span className="text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full" style={{ fontSize: "var(--font-caption)" }}>
                               {formatGender(patientDetails[request.patientId].gender)}{" "}
                               {calculateAge(patientDetails[request.patientId].birthDate)}세
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-col items-end text-[10px] text-gray-500">
+                        <div className="flex flex-col items-end text-[11px] text-gray-500">
                           <div className="flex items-center">
                             <span className="mr-1">요청:</span>
                             <span className="font-medium">{requestTime}</span>
@@ -857,7 +913,7 @@ const NurseMainPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <p className="text-[12px] text-gray-700 mb-2 line-clamp-2">{request.requestContent}</p>
+                      <p className="text-gray-700 mb-2 line-clamp-2" style={{ fontSize: "var(--font-caption)" }}>{request.requestContent}</p>
 
                       <div className="flex justify-end items-center gap-2">
                         <button
@@ -869,24 +925,24 @@ const NurseMainPage: React.FC = () => {
                                 : undefined
                           }
                           className={`
-                    px-3 py-1 text-xs font-medium rounded-md whitespace-nowrap
-                    ${
-                      isPending
-                        ? "bg-[#F8F8F8] border border-[#E3E3E3]"
-                        : isInProgress
-                          ? "bg-[#417BB4] border border-[#306292] text-white"
-                          : isScheduled
-                            ? "bg-[#C75151] border border-[#B14141] text-white"
-                            : "bg-[#E3E3E3] border border-[#CFC9C9]"
-                    }
-                    ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
-                  `}
+                            px-2 py-2 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200
+                            ${
+                              isPending
+                                ? "bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
+                                : isInProgress
+                                  ? "bg-[#417BB4] border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                                  : isScheduled
+                                    ? "bg-[#C75151] border border-[#B14141] text-white hover:bg-[#a83e3e]"
+                                    : "bg-[#E3E3E3] border border-[#CFC9C9]"
+                            }
+                            ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
+                          `}
                         >
                           {displayStatus}
                         </button>
 
                         <button
-                          className="px-3 py-1 bg-gray-400 text-white text-xs font-medium rounded-md"
+                          className="px-3 py-2 bg-gray-400 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:bg-gray-500"
                           onClick={() => handleChatClick(request.patientId)}
                         >
                           채팅
@@ -908,15 +964,17 @@ const NurseMainPage: React.FC = () => {
                 ✖
               </button>
               <div className="text-center">
-                <p className="text-[15px] text-gray-600 mb-1">{formatTime(pendingRequest.requestTime)}</p>
-                <p className="text-[20px] font-bold text-black mb-1">
+                <p className="text-gray-600 mb-1" style={{ fontSize: "var(--font-body)" }}>{formatTime(pendingRequest.requestTime)}</p>
+                <p className="font-bold text-black mb-1" style={{ fontSize: "var(--font-title)" }}>
                   {patientDetails[pendingRequest.patientId]?.name} 환자
                 </p>
-                <p className="text-[15px] text-gray-600 mb-4">{pendingRequest.requestContent}</p>
-                <p className="text-[15px] text-gray-600 mb-4">수락하시겠습니까?</p>
+                <p className="text-gray-600 mb-4" style={{ fontSize: "var(--font-body)" }}>{pendingRequest.requestContent}</p>
+                <p className="text-gray-600 mb-4" style={{ fontSize: "var(--font-body)" }}>수락하시겠습니까?</p>
               </div>
               <div className="flex justify-between">
-                <button onClick={handleHold} className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                <button onClick={handleHold} className="px-3 py-2font-medium rounded-lg whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200" 
+                style={{ fontSize: "var(--font-body)" }}
+                >
                   보류
                 </button>
                 <button
@@ -924,13 +982,15 @@ const NurseMainPage: React.FC = () => {
                     handleChatClick(pendingRequest.patientId)
                     closeAllModals()
                   }}
-                  className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  className="px-3 py-2 bg-gray-400 text-white font-medium rounded-lg transition-all duration-200 hover:bg-gray-500"
+                  style={{ fontSize: "var(--font-body)" }}
                 >
                   채팅
                 </button>
                 <button
                   onClick={handleAccept}
-                  className="px-4 py-1 bg-[#417BB4] border border-[#306292] text-white rounded hover:bg-blue-600"
+                  className="px-3 py-2 font-medium rounded-lg whitespace-nowrap transition-all duration-200 bg-[#417BB4] border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                  style={{ fontSize: "var(--font-body)" }}
                 >
                   수락
                 </button>
@@ -947,7 +1007,7 @@ const NurseMainPage: React.FC = () => {
                 ✖
               </button>
               <div className="text-center mb-4">
-                <p className="text-[20px] font-bold text-black mb-2">예약 시간 설정</p>
+                <p className="font-bold text-black mb-2" style={{ fontSize: "var(--font-title)" }}>예약 시간 설정</p>
                 <input
                   type="time"
                   className="border p-1 w-full"
@@ -1003,7 +1063,7 @@ const NurseMainPage: React.FC = () => {
 
           {/* 환자 정보 및 스케줄러 영역 */}
           <div className="w-1/5 flex flex-col space-y-5 h-full">
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 mb-1">
+            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
               {selectedPatient !== null ? (
                 <Nurse_DetailedPatientInfo
                   patientId={selectedPatient}
@@ -1014,7 +1074,7 @@ const NurseMainPage: React.FC = () => {
                 <NursePatientInfo onPatientClick={handlePatientClick} />
               )}
             </div>
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 h-[55%] flex-col overflow-auto">
+            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 overflow-y-auto">
               <NurseSchedule />
             </div>
           </div>

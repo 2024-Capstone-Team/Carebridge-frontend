@@ -38,29 +38,10 @@ const NurseFindPasswordPage: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* 사진 영역 */}
-      <motion.div
-        className="hidden w-[550px] max-w-2xl p-6 md:block"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <div className="relative h-[500px] w-full overflow-hidden rounded-2xl">
-          <img src={stock || "/placeholder.svg"} alt="병원 이미지" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-blue-600/20" />
-          <div className="absolute bottom-8 left-8 max-w-md text-white">
-            <h2 className="mb-2 text-2xl font-bold">CareBridge</h2>
-            <p className="text-sm opacity-90">
-              환자 케어의 새로운 기준을 제시합니다. <br></br>비밀번호를 잊으셨나요? 병원 ID를 입력하여 찾으실 수
-              있습니다.
-            </p>
-          </div>
-        </div>
-      </motion.div>
 
       {/* 비밀번호 찾기 영역 */}
       <motion.div
-        className="w-full max-w-md p-6"
+        className="w-[600px] p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -77,12 +58,7 @@ const NurseFindPasswordPage: React.FC = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <img
-              src={logo || "/placeholder.svg"}
-              alt="CareBridge 로고"
-              className="w-[150px] cursor-pointer"
-              onClick={handleBackToLogin}
-            />
+            <img src={logo} alt="CareBridge 로고" className="w-[150px] cursor-pointer" onClick={handleBackToLogin}/>
           </motion.div>
 
           <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">비밀번호 찾기</h2>
@@ -95,7 +71,7 @@ const NurseFindPasswordPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <div className="space-y-2">
-              <label htmlFor="id" className="text-sm font-medium text-gray-700">
+              <label htmlFor="id" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                 병원 ID
               </label>
               <div className="relative">
@@ -107,7 +83,7 @@ const NurseFindPasswordPage: React.FC = () => {
                     setID(e.target.value)
                     setPassword("")
                   }}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
                 />
               </div>
             </div>
@@ -127,7 +103,7 @@ const NurseFindPasswordPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <p className="font-medium text-blue-800">
+                <p className="text-black" style={{ fontSize: "var(--font-body)" }}>
                   찾은 비밀번호: <span className="font-bold">{password}</span>
                 </p>
               </motion.div>
@@ -137,7 +113,7 @@ const NurseFindPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleBackToLogin}
-                className="mt-4 text-sm text-gray-600 hover:text-gray-900"
+                className="mt-4 pb-4 text-sm text-gray-600 hover:text-gray-900"
               >
                 로그인 하기
               </button>

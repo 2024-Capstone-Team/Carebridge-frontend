@@ -209,90 +209,92 @@ const NurseSchedulePage: React.FC = () => {
               <div
                 className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
                 style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
-              >
-                <p className="text-black text-[15px] font-semibold pt-2 px-2">
+                >
+                <p className="text-black font-semibold pt-2 px-2" style={{ fontSize: "var(--font-body)" }}>
                   {hospitalName ? hospitalName : "Loading..."}
                 </p>
-                <p className="text-gray-500 text-[13px] pt-1 pb-2 px-2">
+                <p className="text-gray-500 pt-1 pb-2 px-2" style={{ fontSize: "var(--font-caption)" }}>
                   {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
                 </p>
                 <hr className="bg-gray-600" />
-
+                
                 <ul className="py-2">
                   <li
-                    className="px-2 pt-2 pb-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    className="px-2 pt-2 pb-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    style={{ fontSize: "var(--font-caption)" }}
                     onClick={() => handleMenuMoveClick("/nurse-main")}
-                  >
-                    <FiHome className="w-4 h-4 mr-2" />
-                    메인 화면
+                    >
+                      <FiHome className="w-4 h-4 mr-2" />
+                      메인 화면
                   </li>
                   <li
-                    className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    style={{ fontSize: "var(--font-caption)" }}
                     onClick={() => handleMenuMoveClick("/nurse-schedule")}
-                  >
-                    <FiCalendar className="w-4 h-4 mr-2" />
-                    스케줄러
+                    >
+                      <FiCalendar className="w-4 h-4 mr-2" />
+                      스케줄러
                   </li>
                   <li
-                    className="px-2 py-1 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    style={{ fontSize: "var(--font-caption)" }}
                     onClick={handleMacroClick}
-                  >
-                    <FiCpu className="w-4 h-4 mr-2" />
-                    매크로 설정
+                    >
+                      <FiCpu className="w-4 h-4 mr-2" />
+                      매크로 설정
                   </li>
                   <li
-                    className="px-2 pt-1 pb-2 text-[13px] font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    className="px-2 pt-1 pb-2 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                    style={{ fontSize: "var(--font-caption)" }}
                     onClick={handleQAClick}
-                  >
-                    <BsStopwatch className="w-4 h-4 mr-2" />
-                    빠른 답변 설정
+                    >
+                      <BsStopwatch className="w-4 h-4 mr-2" />
+                      빠른 답변 설정
                   </li>
                   <hr className="bg-gray-600" />
-
+            
                   <li
-                    className="px-2 pt-2 pb-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                    className="px-2 pt-2 pb-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                    style={{ fontSize: "var(--font-caption)" }}
                     onClick={() => handleMenuMoveClick("/nurse-reset-password")}
-                  >
-                    비밀번호 재설정
+                    >
+                      비밀번호 재설정
                   </li>
                   <li
-                    className="px-2 py-1 text-[13px] text-gray-500 hover:bg-gray-100 cursor-pointer"
+                    className="px-2 py-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                    style={{ fontSize: "var(--font-caption)" }}
                     onClick={() => handleMenuMoveClick("/nurse-login")}
-                  >
-                    로그아웃
+                    >
+                      로그아웃
                   </li>
                 </ul>
               </div>
             )}
-
+            
             <div className="flex w-full">
               <img src={logo} alt="CareBridge 로고" className="w-[120px] cursor-pointer" onClick={handleLogoClick}/>
             </div>
           </div>
 
           {/* 날짜 표시 영역 */}
-          <div className="flex text-center text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
-            <p className="text-black font-semibold mr-2">{formattedDate}</p>
-            <p className="text-gray-600 font-[12px]">{formattedTime}</p>
-          </div>
+        <div className="flex text-center text-[16px] text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
+          <p className="text-black font-semibold mr-2">{formattedDate}</p>
+          <p className="text-gray-600">{formattedTime}</p>
+        </div>
 
-          {/* 병원 정보 표시 영역 */}
-          <p className="text-black font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
-          <p className="text-gray-600 text-[12px] mb-4">
-            {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
-          </p>
+        {/* 병원 정보 표시 영역 */}
+        <p className="text-black text-[16px] font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
+        <p className="text-gray-600 " style={{ fontSize: "var(--font-caption)" }}>
+          {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
+        </p>
 
           {/* 환자 목록 영역 */}
-          <div className="bg-white rounded-lg shadow-sm flex-grow mt-2 flex flex-col overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm flex-grow mt-4 flex flex-col overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-gray-800 font-semibold text-lg">환자 목록</h2>
-              <button
-                className="bg-gray-100 text-gray-600 rounded-full p-1.5 hover:bg-gray-200 transition-colors"
-                onClick={handleAddSchedule}
-                aria-label="환자 추가"
-              >
-                <FaPlus size={14} />
-              </button>
+              <h2 className="text-gray-800 text-18px font-semibold">환자 목록</h2>
+                <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleAddSchedule}>
+                  <FaPlus />
+                </button>
             </div>
 
             <div className="flex-grow overflow-y-auto px-2">
@@ -324,7 +326,7 @@ const NurseSchedulePage: React.FC = () => {
                         onClick={() => handlePatientClick(patient.patientId)}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-gray-800">{patient.name}</span>
+                          <span className="font-semibold stext-gray-800" style={{ fontSize: "var(--font-body)" }}>{patient.name}</span>
                           <span className="text-xs text-gray-500">{formatBirthdate(patient.birthDate)}</span>
                         </div>
                       </li>
@@ -338,7 +340,7 @@ const NurseSchedulePage: React.FC = () => {
       </div>
 
       {/* 캘린더 영역 */}
-      <div className="flex-1 bg-white rounded-lg shadow-md h-full overflow-hidden">
+      <div className="flex-1 bg-[#DFE6EC] rounded-lg shadow-md h-full overflow-hidden">
         <div className="h-full p-4 overflow-y-auto">
           {modeCalendar && <NurseCalendar onEdit={handleEditSchedule} />}
           {modeEdit && editingScheduleId && (

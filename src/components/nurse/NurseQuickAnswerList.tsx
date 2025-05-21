@@ -4,6 +4,7 @@ import star from "../../assets/star.png";
 import ystar from "../../assets/yellow star.png";
 import NurseQuickAnswerAdd from './NurseQuickAnswerAdd';
 import NurseQuickAnswerEdit from './NurseQuickAnswerEdit';
+import { FaPlus } from 'react-icons/fa';
 
 interface QuickAnswer {
   id: number;
@@ -108,12 +109,12 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
         <>
 
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold mb-4">빠른 답변 설정</h2>
+            <h2 className="font-semibold mb-4" style={{ fontSize: "var(--font-title)" }}>빠른 답변 설정</h2>
             <button 
               onClick={() => setIsAdding(true)}
               className="text-[15px] text-gray-600 bg-transparent hover:text-gray-400 focus:outline-none"
             >
-              추가
+              <FaPlus />
             </button>
           </div>
           <hr className="mb-4 border border-gray-300" />
@@ -123,10 +124,10 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
           ) : (
             <div className="space-y-3 overflow-y-auto max-h-[770px]">
               {quickAnswers.map((qa) => (
-                <div key={qa.id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
+                <div key={qa.id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center h-[100px]">
                   <div className="pr-2 whitespace-pre-wrap break-words">
-                    <h3 className="text-[17px] font-semibold">{qa.title}</h3>
-                    <p className="text-[14px] text-gray-500">{qa.information}</p>
+                    <h3 className="text-[18px] font-semibold turncate">{qa.title}</h3>
+                    <p className="text-gray-500 line-clamp-2" style={{ fontSize: "var(--font-body)" }}>{qa.information}</p>
                   </div>
                   
                   <div className="flex space-x-2">
@@ -139,13 +140,13 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
 
                     <button 
                       onClick={() => handleEdit(qa)}
-                      className="bg-gray-200 text-gray-700 text-[17px] h-[40px] w-[70px] rounded-md hover:bg-gray-300"
+                      className="px-3 py-1 text-md font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#CFC9C9]"
                     >
                       수정
                     </button>
                     <button 
                       onClick={() => handleDelete(qa.title)}
-                      className="bg-[#6990B6] text-white text-[17px] h-[40px] w-[70px] rounded-md hover:bg-[#5a7a99]"
+                      className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
                     >
                       삭제
                     </button>

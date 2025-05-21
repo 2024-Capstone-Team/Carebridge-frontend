@@ -51,12 +51,12 @@ const NurseResetPasswordPage: React.FC = () => {
           <img src={logo} alt="CareBridge 로고" className="w-[170px] cursor-pointer" onClick={() => navigate("/nurse-main")}/>
         </div>
 
-        <h2 className="mb-8 mt-6 text-center text-[27px] font-bold">비밀번호 재설정</h2>
+        <h2 className="mb-8 mt-6 text-center text-2xl font-bold">비밀번호 재설정</h2>
 
         <div className="px-12 pb-8">
           <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-2">
-              <label htmlFor="id" className="text-sm font-medium">
+              <label htmlFor="id" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                 병원 ID
               </label>
               <input
@@ -64,12 +64,12 @@ const NurseResetPasswordPage: React.FC = () => {
                 placeholder="병원 ID를 입력하세요"
                 value={id}
                 onChange={(e) => setID(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="oldPassword" className="text-sm font-medium">
+              <label htmlFor="oldPassword" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                 현재 비밀번호
               </label>
               <input
@@ -78,12 +78,12 @@ const NurseResetPasswordPage: React.FC = () => {
                 placeholder="현재 비밀번호를 입력하세요"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="newPassword" className="text-sm font-medium">
+              <label htmlFor="newPassword" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                 새 비밀번호
               </label>
               <input
@@ -92,12 +92,12 @@ const NurseResetPasswordPage: React.FC = () => {
                 placeholder="새 비밀번호를 입력하세요"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">
+              <label htmlFor="confirmPassword" className="text-gray-700" style={{ fontSize: "var(--font-body)" }}>
                 비밀번호 확인
               </label>
               <input
@@ -106,7 +106,7 @@ const NurseResetPasswordPage: React.FC = () => {
                 placeholder="새 비밀번호를 다시 입력하세요"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
             </div>
 
