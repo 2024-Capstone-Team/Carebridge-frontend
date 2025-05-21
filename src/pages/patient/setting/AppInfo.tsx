@@ -19,11 +19,7 @@ const Header: React.FC = () => (
       to="/patient-setting" 
       className="absolute left-2 top-1/2 transform -translate-y-1/2"
     >
-      <img 
-        src={ASSETS.BACK_ICON} 
-        alt="뒤로가기" 
-        className="w-[28px]" 
-      />
+    <img src="/icons/back-icon.png" className="w-[28px]" alt="뒤로가기" />
     </Link>
     <div className="flex-grow flex items-center justify-center">
       <p className="text-lg font-semibold text-gray-900">앱 정보</p>

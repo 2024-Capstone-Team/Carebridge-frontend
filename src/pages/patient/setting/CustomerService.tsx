@@ -9,7 +9,7 @@ const CustomerService: React.FC = () => {
             {/* 상단 헤더 */}
             <div className="relative flex items-center p-2 w-full">
                 <Link to="/patient-setting" className="absolute left-2 top-1/2 transform -translate-y-1/2">
-                    <img src="/src/assets/back.png" alt="뒤로가기" className="w-[28px]" />
+                    <img src="/icons/back-icon.png" className="w-[28px]" alt="뒤로가기" />
                 </Link>
                 <div className="flex-grow flex items-center justify-center">
                     <h1 className="text-lg font-semibold text-black">고객센터</h1>

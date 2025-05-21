@@ -4,6 +4,7 @@ import axios from "axios";
 import * as Separator from "@radix-ui/react-separator";
 import { useUserContext } from "../../context/UserContext";
 import ScheduleToday from "./ScheduleToday";
+import { MedicalStaff } from "../../types";
 
 // 환자 정보를 담는 인터페이스 정의
 interface PatientDto {
@@ -29,10 +30,13 @@ const PatientMainPage: React.FC = () => {
   const navigate = useNavigate();
   const [patientDto, setPatientDto] = useState<PatientDto | null>(null);
   const { setPatientId, isPatient } = useUserContext();
+  const [hospitalName, setHospitalName] = useState(""); // 불러올 병원 이름
+  const [medicalStaffList, setMedicalStaffList] = useState<MedicalStaff[]>([]); // 분과 이름
+  
+
 
   const phoneNumber = localStorage.getItem("phoneNumber");
   const patientId = localStorage.getItem("patientId");
-
 
   // 날짜 포맷을 변환하는 유틸리티 함수 (YYYY-MM-DD 형식으로 변환)
   const formatDate = (date: string): string => date.split("T")[0];
@@ -104,6 +108,40 @@ const PatientMainPage: React.FC = () => {
     fetchPatientInfo();
   }, [patientId]);
 
+  
+  useEffect(() => {
+    if (patientDto?.hospitalId) {
+      getHospitalName(patientDto.hospitalId);
+      console.log("hospital id: ")
+    }
+  }, [patientDto]);
+
+
+    // 병원 이름 가져오기
+  const getHospitalName = async (hospitalId: number) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/hospital/name/${hospitalId}`);
+      setHospitalName(response.data);
+    } catch (error) {
+      console.error('Error fetching hospital name:', error);
+    }
+  };
+
+  // 분과 API
+  useEffect(() => {
+    const fetchMedicalStaff = async () => {
+      try {
+        const response = await axios.get<MedicalStaff[]>(`${API_BASE_URL}/api/medical-staff/${patientDto?.hospitalId}`);
+        setMedicalStaffList(response.data);
+        console.log("medicalstafflist: ", response);
+      } catch (error){
+        console.error("의료진 분과 데이터를 가져오는 중 오류 발생:", error);
+      }
+    };
+    fetchMedicalStaff();
+  }, [patientDto?.hospitalId]);
+
+
   // 로딩 상태 또는 환자 이름을 표시
   if (!patientDto) {
     return <div>Loading...</div>;  // 데이터가 없을 때 로딩 화면 표시
@@ -133,10 +171,10 @@ const PatientMainPage: React.FC = () => {
           </div>
           <Separator.Root className="bg-white h-px w-full" decorative />
           <p className="text-black text-[13px] m-2">
-            입원 병원: {patientDto.hospitalLocation}
+            입원 병원: {patientDto.hospitalLocation} {hospitalName ? `${hospitalName}` : ''}
           </p>
           <p className="text-black text-[13px] m-2">
-            담당의사: 
+            진료과: {medicalStaffList.length > 0 ? medicalStaffList[0].department : ""}
           </p>
           {/* 다음 일정 안내 컨테이너 */}
           <div className="flex item-center justify-center m-2">
@@ -150,13 +188,9 @@ const PatientMainPage: React.FC = () => {
 
 
             </div>
-
             {/* 오늘의 일정 바로가기 */}
           </div>
         </div>
-
-
-
       </div>
       {/* 서비스 컨테이너 */}
       <div className="absolute -bottom-2 w-11/12 max-w-md h-[500px] bg-white shadow-lg border
