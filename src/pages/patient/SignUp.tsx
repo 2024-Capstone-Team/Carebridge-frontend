@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BackButton from "../../components/common/BackButton";
+import Backbutton from "../../components/common/BackButton";
 import axios from "axios";
 import Timer from "../../components/common/Timer";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 const SignUp: React.FC = () => {
 
@@ -101,19 +103,18 @@ const SignUp: React.FC = () => {
     };
 
 
-  return (
-    
+return (
     <main className="centered-container">
       <div
         className="bg-white rounded-lg shadow-lg
-        p-3 w-[90%]
+        w-[90%] 
         flex-col flex items-center text-center"
         style={{
           minHeight: "90vh",
         }}
       >
         <div className="relative w-full">
-          <BackButton className="absolute top-0 left-0 m-4" />
+          <Backbutton className="absolute top-0 left-0 m-4" />
         </div>
 
         <div className="flex flex-col items-center">
@@ -123,202 +124,173 @@ const SignUp: React.FC = () => {
             className="w-[233px] h-[133px] mt-10"
           />
         </div>
-        <div>
-          <div className="font-bold text-centered">회원가입</div>
-        </div>
+        <h2 className="font-bold text-centered text-[20px]">
+          회원가입
+        </h2>
         <div
-          className="mt-[60px] flex flex-col w-[95%]"
+          className="mt-[50px] flex flex-col w-[95%]"
         >
-          
+        </div>
+
+        <div className="flex flex-col items-center space-y-3 w-full">
           {/* 이름 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[95%] h-[40px]
-            border border-black border-solid whitespace-nowrap"
-          >
-            <label
-              htmlFor="patient-name"
-              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
-            >
+          <div className="flex items-center rounded-lg border border-gray-300 w-[80%] h-[35px]">
+            <label htmlFor="name" className="w-1/4 pl-3 font-bold text-sm">
               이름
             </label>
             <input
-              className="ml-2 w-[65%] h-[25px] text-[13px]"
+              id="name"
               placeholder="이름을 입력해주세요."
               value={name}
               onChange={(e) => setName(e.target.value)}
-            ></input>
-          
+              className="border-0 text-sm"
+            />
           </div>
 
           {/* 이메일 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[95%] h-[40px]
-            border border-black border-solid"
-          >
-            <label
-              htmlFor="email"
-              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
-            >
+          <div className="flex items-center rounded-lg border border-gray-300 w-[80%] h-[35px]">
+            <label htmlFor="email" className="w-1/4 pl-3 font-bold text-sm">
               이메일
             </label>
             <input
-              className="ml-2 w-[65%] h-[25px] text-[13px]"
+              id="email"
               placeholder="이메일을 입력해주세요."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            ></input>
+              className="border-0 text-sm"
+            />
           </div>
 
           {/* 생일 */}
-          <div
-            className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[95%] h-[40px]
-            border border-black border-solid"
-          >
-            <label
-              htmlFor="birth-date"
-              className="pl-[10px] font-bold text-[15px] w-[25%] text-left"
-            >
+          <div className="flex items-center rounded-lg border border-gray-300 w-[80%] h-[35px]">
+            <label htmlFor="birth" className="w-1/4 pl-3 font-bold text-sm">
               생일
             </label>
             <input
-              className="ml-2 w-[65%] h-[25px] text-[13px]"
+              id="birth"
               placeholder="8자리로 입력해주세요."
               value={birth}
               onChange={(e) => setBirth(e.target.value)}
-            ></input>
+              className="border-0 text-sm"
+            />
           </div>
 
           {/* 성별 */}
-          <div className="flex items-center w-[95%]">
-            <div
-              className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[20%] h-[40px]
-            "
-            >
-              <label
-                htmlFor="gender"
-                className="pl-[10px] font-bold text-[15px] text-left whitespace-nowrap"
-              >
-                성별
+          <div className="flex items-center w-[80%] h-[35px] rounded-lg border border-gray-300 px-3">
+            <label className="w-1/4 font-bold text-sm">성별</label>
+            <div className="flex space-x-6">
+              <label className="flex items-center space-x-2 text-sm">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="female"
+                  checked={selectedGender === "female"}
+                  onChange={() => handleGenderSelect("female")}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 rounded-full"
+                />
+                <span>여성</span>
+              </label>
+              <label className="flex items-center space-x-2 text-sm">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="male"
+                  checked={selectedGender === "male"}
+                  onChange={() => handleGenderSelect("male")}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 rounded-full"
+                />
+                <span>남성</span>
               </label>
             </div>
-
-            {/* 여성 */}
-            <button
-              onClick={() => handleGenderSelect("female")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-3 text-[13px]
-              ${
-                selectedGender === "female"
-                  ? "bg-primary text-black"
-                  : "bg-primary-100 text-black"
-              }`}
-
-            >
-              여성
-            </button>
-
-            {/* 남성 */}
-            <button
-              onClick={() => handleGenderSelect("male")}
-              className={`w-[110px] h-[40px] font-bold rounded-[10px] border ml-2 text-[13px]
-              ${
-                selectedGender === "male"
-                  ? "bg-primary text-black"
-                  : "bg-primary-100 text-black"
-              }`}
-            >
-              남성
-            </button>
           </div>
+
 
           {/* 전화번호 */}
-          <div className="flex items-center">
-            <div
-              className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[68%] h-[40px]
-            border border-black border-solid"
-            >
-              <label
-                htmlFor="phone-num"
-                className="pl-[10px] font-bold text-[15px] w-[40%] text-left whitespace-nowrap"
-              >
-                전화번호
-              </label>
-              <input
-                type="tel"
-                id="phone-number"
-                value={phone}
-                onChange={(e) => setPhoneNum(e.target.value)}
-                className="w-[65%] h-[25px] text-[13px]"
-              />
-            </div>
-            <button className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]" onClick={getAuthorizeNum}>
-              전송
+          <div className="flex flex-col items-center space-y-2 w-[80%]">
+          <div className="flex items-center rounded-lg border border-gray-300 w-full h-[35px]">
+            <label htmlFor="name" className="w-1/4 pl-3 font-bold text-sm">
+              전화번호
+            </label>
+            <input
+              id="phonenum"
+              value={phone}
+              onChange={(e) => setPhoneNum(e.target.value)}
+              className="border-0 text-sm"
+            />
+          </div>
+            <button className="whitespace-nowrap text-white text-[13px] h-10 w-full font-bold rounded-[10px] bg-primary" onClick={getAuthorizeNum}>
+              인증 번호 전송
             </button>
           </div>
 
-          {/* 인증번호 */}
-          <div className="flex items-center">
-            <div
-              className="
-            flex items-center m-1
-            gap-3 rounded-[10px] w-[68%] h-[40px]
-            border border-black border-solid"
-            >
-              <label
-                htmlFor="auth-num"
-                className="pl-[10px] font-bold text-[15px] w-[40%] text-left whitespace-nowrap"
+          {/* 인증번호*/}
+          <AnimatePresence>
+            {showTimer && (
+              <motion.div
+                key="auth-section"
+                className="flex flex-col items-center space-y-2 w-[80%]"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
               >
-                인증번호
-              </label>
-              <input
-                type="text"
-                id="auth-code"
-                value={authCode}
-                onChange={(e) => setAuthCode(e.target.value)}
-                className="w-[65%] h-[25px] text-[13px]"
-              />
-              {isVerified && ( // 상태가 true일 때만 이미지 표시
-                <img src="/src/assets/verified-icon.png" className="h-[20px] pr-1" alt="Verified" />
-              )}
-              
-            </div>
-            <button
-              className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]"
-              onClick={verifyOtp}
-            >
-              인증하기
-            </button>
-          </div>          
-        </div>
-        {showTimer && <Timer remainingTime={remainingTime} setRemainingTime={setRemainingTime} showtimer={showTimer} />}
-        <div>
-        <button
-          onClick={() => {
-            if (!isVerified) {
-              alert("휴대폰 인증을 완료해주세요!");
-              return;
-            }
-            handleShowSignUpCheck();
-          }}
-          type="submit"
-          className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px]"
-        >
-          회원가입
-        </button>
+                <div className="flex items-center rounded-lg border border-gray-300 w-full h-[35px]">
+                  <label htmlFor="authCode" className="w-1/4 pl-3 font-bold text-sm">
+                    인증번호
+                  </label>
+                  <div className="flex-1 relative flex items-center pr-2">
+                    <input
+                      id="authCode"
+                      type="text"
+                      value={authCode}
+                      onChange={(e) => setAuthCode(e.target.value)}
+                      className="border-0 text-sm w-full"
+                    />
+                    {isVerified && (
+                      <img src="/src/assets/verified-icon.png" className="h-[20px] ml-2" alt="Verified" />
+                    )}
+                  </div>
+                </div>
 
+                <button
+                  className="whitespace-nowrap text-white text-[13px] h-10 w-full font-bold rounded-[10px] bg-primary"
+                  onClick={verifyOtp}
+                >
+                  인증하기
+                </button>
+
+                <div className="text-center text-sm text-red-500">
+                  <Timer
+                    remainingTime={remainingTime}
+                    setRemainingTime={setRemainingTime}
+                    showtimer={showTimer}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+
+        </div>
+
+        <div className="flex justify-center pt-6">
+          <button
+            onClick={() => {
+              if (!isVerified) {
+                alert("휴대폰 인증을 완료해주세요!")
+                return
+              }
+              handleShowSignUpCheck()
+            }}
+            type="submit"
+            className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px] text-white"
+          >
+            회원가입
+          </button>
         </div>
       </div>
     </main>
-  );
-};
+  )
+}
 
 export default SignUp;

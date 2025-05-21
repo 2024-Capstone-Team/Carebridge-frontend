@@ -49,7 +49,7 @@ const Header: React.FC = () => {
         onClick={() => navigate(-1)}
         className="absolute left-2 top-1/2 transform -translate-y-1/2"
       >
-        <img src={ROUTES.BACK_ICON} alt="뒤로가기" className="w-[30px] h-auto" />
+        <img src="/icons/back-icon.png" className="w-[28px]" alt="뒤로가기" />
       </button>
       <div className="flex-grow flex items-center justify-center">
         <p className="font-bold text-black">전화번호 수정</p>
