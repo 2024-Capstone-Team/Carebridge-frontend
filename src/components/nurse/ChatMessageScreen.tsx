@@ -424,7 +424,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         onCancel={handleCancelMessage}
         senderBubbleColor="bg-primary-300"
         receiverBubbleColor="bg-white"
-        senderTextColor="text-white"
+        senderTextColor="text-white"  
         />
       </div>
 

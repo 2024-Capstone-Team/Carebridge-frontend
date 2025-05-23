@@ -57,14 +57,14 @@ const NurseSchedule: React.FC = () => {
     setTooltipPosition({ x: rect.left, y: rect.bottom });
     setTooltipContent(
       `<div>
-         <div class="font-semibold text-[15px] text-black">${schedule.category}</div>
-         <div class="text-[13px] text-gray-500">${schedule.name}</div>
-         <div class="text-[13px] text-gray-500">
+         <div class="font-semibold text-black" style={{ fontSize: "var(--font-body)" }}>${schedule.category}</div>
+         <div class="text-gray-500" style={{ fontSize: "var(--font-caption)" }}>${schedule.name}</div>
+         <div class="text-gray-500" style={{ fontSize: "var(--font-caption)" }}>
            <span>${schedule.birthDate}</span>
            <span>만 ${schedule.age}세</span>
            <span>${schedule.gender}</span>
          </div>
-         <div class="text-[13px] text-gray-500">
+         <div class="text-gray-500" style={{ fontSize: "var(--font-caption)" }}>
            <span>${new Date(schedule.scheduleDate).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}</span>
          </div>
        </div>`
@@ -145,20 +145,20 @@ const NurseSchedule: React.FC = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="flex flex-col bg-[#DFE6EC] rounded-lg p-4 max-h-full cursor-pointer" onClick={() => navigateToSchedule()}>
+    <div className="h-full flex flex-col cursor-pointer" onClick={() => navigateToSchedule()}>
       
       <div className="flex items-center">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">스케줄</h2>
+        <p className="font-semibold text-gray-800 mb-2" style={{ fontSize: "var(--font-title)" }}>스케줄</p>
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-[17px] text-black font-semibold">{formattedDate}</span>
-        <button className="bg-transparent px-4 py-2 hover:text-gray-400" onClick={handleScheduleAdd}>
+        <span className="text-[16px] text-black font-semibold">{formattedDate}</span>
+        <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleScheduleAdd}>
           <FaPlus />
         </button>
       </div>
 
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-1 mt-2 overflow-y-auto scrollbar-hide">
         <ul className="space-y-3">
           {scheduleData.length > 0 ? (
             scheduleData.map((schedule) => {
@@ -175,13 +175,13 @@ const NurseSchedule: React.FC = () => {
                 >
                   <div>
                     <div>
-                      <span className="font-semibold text-[15px] text-gray-800 mr-1">{schedule.category}</span>
-                      <span className="text-[12px] text-gray-800">{scheduleTime}</span>
+                      <span className="font-semibold text-gray-800 mr-1" style={{ fontSize: "var(--font-body)" }}>{schedule.category}</span>
+                      <span className="text-gray-800" style={{ fontSize: "var(--font-caption)" }}>{scheduleTime}</span>
                     </div>
 
                     <div>
-                      <span className="text-[14px] text-gray-500 mr-1">{schedule.name}</span>
-                      <span className="text-[12px] text-gray-500">환자</span>
+                      <span className="text-gray-500 mr-1" style={{ fontSize: "var(--font-body)" }}>{schedule.name}</span>
+                      <span className="text-gray-500" style={{ fontSize: "var(--font-caption)" }}>환자</span>
                     </div>
                   </div>
 

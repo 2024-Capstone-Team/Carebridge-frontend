@@ -54,26 +54,26 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
 
       // 빠른 답변 추가
       await axios.post(`${API_BASE_URL}/api/hospital-info`, newInfo);
-      alert('병원 정보가 성공적으로 추가되었습니다.');
+      alert('빠른 답변이 성공적으로 추가되었습니다.');
       onClose();
     } catch (err) {
       console.error(err);
-      setError('병원 정보 추가 중 오류가 발생했습니다.');
+      setError('빠른 답변변 추가 중 오류가 발생했습니다.');
     }
   };
 
 
   return (
     <div className="w-full h-full bg-[#DFE6EC]">
-      <h2 className="text-lg font-semibold mb-4">빠른 답변 추가</h2>
+      <h2 className="font-semibold mb-4" style={{fontSize: "var(--font-title)" }}>빠른 답변 추가</h2>
       <hr className="mb-4 border border-gray-300" />
 
       <form onSubmit={handleSave} className="space-y-4">
         <div>
-          <label className="text-black font-semibold block mb-2">제목</label>
+          <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
           <input 
             type="text"
-            className="w-full border p-2"
+            className="w-full border p-2 rounded-lg"
             placeholder="빠른 답변 제목을 입력해주세요."
             value={title}
             onChange={(e) => {
@@ -84,11 +84,11 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
         </div>
 
         <div>
-          <label className="block font-semibold text-black mb-2">카테고리</label>
+          <label className="block font-semibold text-[18px] text-black mb-2">카테고리</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full border p-2"
+            className="w-full border p-2 rounded-lg"
           >
             <option value="General">General</option>
             <option value="Facilities">Facilities</option>
@@ -97,11 +97,11 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
         </div>
 
         <div>
-          <label className="text-black font-semibold block mb-2">내용</label>
+          <label className="text-[18px] text-black font-semibold block mb-2">내용</label>
           <textarea
             value={information}
             onChange={(e) => setInformation(e.target.value)}
-            className="w-full border p-2 h-[400px] overflow-y-auto resize-none"
+            className="w-full border p-2 rounded-lg h-[400px] overflow-y-auto resize-none"
             placeholder="빠른 답변 내용을 입력해주세요."
             rows={4}
           ></textarea>
@@ -110,16 +110,16 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         <div className="flex justify-center space-x-4">
-          <button 
+           <button 
             type="button"
             onClick={onClose}
-            className="bg-white border border-gray-300 shadow-lg text-lg rounded-md px-2 mx-1 w-[65px] h-[40px] hover:bg-gray-200"
+            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
           >
             취소
           </button>
           <button 
             type="submit"
-            className="bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 w-[65px] h-[40px]"
+            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
           >
             저장
           </button>

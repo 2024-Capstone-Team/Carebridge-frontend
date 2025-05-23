@@ -184,7 +184,7 @@
   };
 
   return (
-      <div className="height h-full py-4 flex flex-col overflow-hidden">
+      <div className="bg-white height h-full py-4 flex flex-col rounded-lg overflow-hidden">
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <FullCalendar
             plugins={[timeGridPlugin]}
@@ -216,10 +216,10 @@
                 className={`flex flex-col items-center justify-center font-bold py-1 ${
                   isSunday ? "text-red-600" : isSaturday ? "text-blue-600" : "text-black"}`}
               >
-                <span className="text-[15px]">
+                <span style={{ fontSize: "var(--font-body)" }}>
                   {arg.date.toLocaleDateString("en-US", { weekday: "short" })}
                 </span>
-                <span className="text-[22px] font-bold">
+                <span className="font-bold" style={{ fontSize: "var(--font-title)" }}>
                   {arg.date.toLocaleDateString("en-US", { month: "numeric", day: "numeric",})}
                 </span>
               </div>
@@ -228,7 +228,8 @@
           events={events}
           eventClick={handleEventClick}
           slotLabelClassNames="text-gray-600 text-sm font-semibold leading-loose py-2" // 시간 영역
-          slotLaneClassNames="bg-gray-50 leading-loose py-2" // 내용 영역
+          slotLaneClassNames="bg-white leading-loose py-2" // 내용 영역
+          dayHeaderClassNames="bg-white text-black"
           eventContent={(eventInfo) => {
             const { event } = eventInfo;
             const { details, patientName } = event.extendedProps;
@@ -237,20 +238,20 @@
               <div className="p-1">
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center">
-                    <span className="text-black text-[13px]">
+                    <span className="text-black" style={{ fontSize: "var(--font-caption)" }}>
                       {new Date(event.start!).toLocaleTimeString("ko-KR", { 
                         hour: "2-digit", 
                         minute: "2-digit", 
                         hour12: false 
                         })}
                     </span>
-                    <span className="text-black text-[13px] font-semibold">
+                    <span className="text-black text-[15px] font-semibold">
                       {event.title}
                     </span>
                   </div>
                   <div className="flex justify-end items-center">
-                      <span className="text-black text-[15px] text-right font-semibold mr-1">{patientName}</span>
-                      <span className="text-black text-[11px]">환자</span>
+                      <span className="text-black text-right font-semibold mr-1" style={{ fontSize: "var(--font-body)" }}>{patientName}</span>
+                      <span className="text-black" style={{ fontSize: "var(--font-caption)" }}>환자</span>
                     </div>
                 </div>
               </div>
@@ -269,37 +270,41 @@
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
               <div className="flex justify-between">
                 <div className="flex items-center">
-                  <span className="text-[20px] font-bold mb-1 mr-2">{selectedEvent.patientName}</span>
-                  <span className="text-[15px]">환자</span>
+                  <span className="font-bold mb-1 mr-2" style={{ fontSize: "var(--font-title)" }}>{selectedEvent.patientName}</span>
+                  <span style={{ fontSize: "var(--font-body)" }}>환자</span>
                   </div>
-                <button onClick={closePopup} className="px-1 text-black hover:bg-gray-300">
+                <button onClick={closePopup} className="px-1 text-black hover:text-gray-400">
                   ✖
                 </button>
               </div>
               <hr className="border-gray-400 mb-4"></hr>
 
               <p>
-                <span className="text-[15px] text-gray-400 pr-3">인적사항</span> 
+                <span className="text-[15px] text-gray-500 pr-3">인적사항</span> 
                 <span className="text-[15px] pr-2">{selectedEvent.birthDate}</span>
                 <span className="text-[15px] pr-2">만 {selectedEvent.age}세</span>
                 <span className="text-[15px] pr-2">{selectedEvent.gender}</span>
               </p>
 
               <p>
-                <span className="text-[15px] text-gray-400 pr-9">일시 </span> 
+                <span className="text-[15px] text-gray-500 pr-9">일시 </span> 
                 <span className="text-[15px]">{selectedEvent.start}</span>
               </p>
 
               <p>
-                <span className="text-[15px] text-gray-400 pr-10">일정</span>
+                <span className="text-[15px] text-gray-500 pr-10">일정</span>
                 <span className="text-[15px]">{selectedEvent.title}</span>
               </p>
 
               <div className="flex justify-center mt-4">
-                <button className="bg-gray-300 border border-gray-400 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={handleDelete}>
+                <button 
+                  className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#F8F8F8] hover:bg-gray-200"  
+                  onClick={handleDelete}>
                   삭제
                 </button>
-                <button className="border border-gray-300 rounded-md shadow-md text-center mx-1 w-[60px] h-[35px]" onClick={handleEdit}>
+                <button 
+                  className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200" 
+                  onClick={handleEdit}>
                   수정
                 </button>
               </div>

@@ -54,13 +54,13 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
   };
 
   return (
-    <div className="w-full h-full bg-[#DFE6EC] rounded-lg p-4">
-      <h2 className="text-lg font-bold mb-4">빠른 답변 수정</h2>
+    <div className="w-full h-full bg-[#DFE6EC] rounded-lg">
+      <h2 className="font-bold mb-4" style={{fontSize: "var(--font-title)" }}>빠른 답변 수정</h2>
       <hr className="mb-4 border border-gray-300" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-black font-semibold block mb-2">제목</label>
+          <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
           <input 
             type="text"
             value={title}
@@ -68,16 +68,16 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
               setTitle(e.target.value);
               setError(null);
             }}
-            className="w-full border p-2"
+            className="w-full border p-2 rounded-lg"
           />
         </div>
 
         <div>
-          <label className="block font-semibold text-black mb-2">카테고리</label>
+          <label className="block font-semibold text-[18px] text-black mb-2">카테고리</label>
           <select
             value={quickAnswer.category}  
             disabled
-            className="w-full border p-2"
+            className="w-full border p-2 rounded-lg"
           >
             <option value="General">General</option>
             <option value="Facilities">Facilities</option>
@@ -86,11 +86,11 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
         </div>
         
         <div>
-          <label className="block font-semibold text-black mb-2">내용</label>
+          <label className="block font-semibold text-[18px] text-black mb-2">내용</label>
           <textarea
             value={information}
             onChange={(e) => setInformation(e.target.value)}
-            className="w-full border p-2 h-[400px] overflow-y-auto resize-none"
+            className="w-full border rounded-lg p-2 h-[400px] overflow-y-auto resize-none"
             rows={4}
           ></textarea>
         </div>
@@ -101,13 +101,13 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
           <button 
             type="button"
             onClick={onClose}
-            className="bg-white border shadow-lg text-lg rounded-md w-[65px] h-[40px]"
+            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
           >
             취소
           </button>
           <button 
             type="submit"
-            className="bg-[#6990B6] text-white text-lg rounded-md w-[65px] h-[40px]"
+            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
           >
             저장
           </button>

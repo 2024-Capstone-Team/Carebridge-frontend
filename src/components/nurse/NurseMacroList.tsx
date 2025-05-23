@@ -4,6 +4,7 @@ import ystar from "../../assets/yellow star.png";
 import axios from 'axios';
 import NurseMacro from './NurseMacroAdd';
 import NurseMacroEdit from './NurseMacroEdit';
+import { FaPlus } from 'react-icons/fa';
 
 interface Macro {
   macroId: number;
@@ -106,11 +107,11 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
         <>
 
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold mb-4">스크립트 매크로 설정</h2>
+            <h2 className="font-semibold mb-4" style={{ fontSize: "var(--font-title)" }}>스크립트 매크로 설정</h2>
             <button 
               className="text-[15px] text-gray-600 bg-transparent hover:text-gray-400 focus:outline-none"
               onClick={() => setIsAdding(true)}>
-              추가
+              <FaPlus />
             </button>
           </div>
           <hr className="mb-4 border border-gray-300" />
@@ -120,10 +121,10 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
           ) : (
             <div className="space-y-3 overflow-y-auto max-h-[770px]">
               {macros.map((macro) => (
-                <div key={macro.macroId} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
+                <div key={macro.macroId} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center h-[100px]">
                   <div className="pr-2 whitespace-pre-wrap break-words">
-                    <h3 className="text-[17px] font-semibold">{macro.macroName}</h3>
-                    <p className="text-[14px] text-gray-500 turncate">{macro.text}</p>
+                    <h3 className="text-[18px] font-semibold turncate">{macro.macroName}</h3>
+                    <p className="text-gray-500 line-clamp-2" style={{ fontSize: "var(--font-body)" }}>{macro.text}</p>
                   </div>
 
                   <div className="flex space-x-2">
@@ -135,13 +136,15 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                     />
                     
                     <button 
-                      className="bg-gray-200 text-gray-700 text-[17px] h-[40px] w-[70px] rounded-md hover:bg-gray-300"
-                      onClick={() => handleEdit(macro)}>
+                      onClick={() => handleEdit(macro)}
+                      className="px-3 py-1 text-md font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#CFC9C9]"
+                    >
                       수정
                     </button>
                     <button 
-                      className="bg-[#6990B6] text-white text-[17px] h-[40px] w-[70px] rounded-md hover:bg-[#5a7a99]"
-                      onClick={() => handleDelete(macro.macroName)}>
+                      onClick={() => handleDelete(macro.macroName)}
+                      className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                    >
                       삭제
                     </button>
                   </div>
