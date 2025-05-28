@@ -62,14 +62,14 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
 
   return (
     <div className="w-full h-full bg-[#DFE6EC] rounded-lg">
-      <h2 className="text-lg font-bold mb-4">스크립트 매크로 추가</h2>
+      <h2 className="font-bold mb-4" style={{fontSize: "var(--font-title)" }}>스크립트 매크로 추가</h2>
       <hr className="mb-4 border border-gray-300" />
 
       <div className="mb-4">
-        <label className="text-black font-semibold block mb-2">제목</label>
+        <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
         <input
           type="text"
-          className="w-full border p-2"
+          className="w-full border p-2 rounded-lg"
           placeholder="매크로 제목을 입력해주세요."
           value={macroName}
           onChange={(e) => setMacroName(e.target.value)}
@@ -77,9 +77,9 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       </div>
 
       <div className="mb-4">
-        <label className="text-black font-semibold block mb-2">내용</label> 
+        <label className="text-[18px] text-black font-semibold block mb-2">내용</label> 
         <textarea
-          className="w-full border p-2 h-[500px] overflow-y-auto resize-none"
+          className="w-full border p-2 rounded-lg h-[500px] overflow-y-auto resize-none"
           placeholder="스크립트 매크로 내용을 입력해주세요."
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -89,20 +89,19 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="flex justify-center space-x-4">
-        <button
-          onClick={onClose}
-          className={"bg-white border border-gray-300 shadow-lg text-lg rounded-md px-2 mx-1 w-[65px] h-[40px] hover:bg-gray-200"}
-          disabled={loading}
-        >
-          취소
-        </button>
-        <button
-          onClick={handleSave}
-          className={"bg-[#6990B6] border shadow-lg text-white text-lg rounded-md px-2 mx-1 h-[40px] ${loading ? 'w-[100px]' : 'w-[65px]'}"}
-          disabled={loading}
-        >
-          {loading ? '저장 중...' : '저장'}
-        </button>
+        <button 
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
+          >
+            취소
+          </button>
+          <button 
+            type="submit"
+            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
+          >
+            저장
+          </button>
       </div>
       
     </div>
