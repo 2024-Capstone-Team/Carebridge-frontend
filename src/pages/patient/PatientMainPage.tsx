@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as Separator from "@radix-ui/react-separator";
 import { useUserContext } from "../../context/UserContext";
-import ScheduleToday from "./ScheduleToday";
 import { MedicalStaff } from "../../types";
 
 // 환자 정보를 담는 인터페이스 정의
@@ -33,9 +32,6 @@ const PatientMainPage: React.FC = () => {
   const [hospitalName, setHospitalName] = useState(""); // 불러올 병원 이름
   const [medicalStaffList, setMedicalStaffList] = useState<MedicalStaff[]>([]); // 분과 이름
   const [nextSchedule, setNextSchedule] = useState<any | null>(null); // 가장 빠른 일정
-
-  
-
 
   const phoneNumber = localStorage.getItem("phoneNumber");
   const patientId = localStorage.getItem("patientId");
@@ -201,15 +197,14 @@ const PatientMainPage: React.FC = () => {
           {/* 다음 일정 안내 컨테이너 */}
           <div className="flex item-center justify-center m-2">
             <div className="w-full max-w-md h-[80px] bg-white shadow-md rounded-lg py-2 mb-2 px-2">
-              <p className="text-[15px] font-bold text-primary-300">예정된 다음 일정</p>
+              <p className="text-[15px] font-bold text-primary-300">오늘의 일정</p>
               {nextSchedule ? (
                 <div>
-                  <p className="text-[13px] text-black">일정: {nextSchedule.details}</p>
-                  <p className="text-[13px] text-black">날짜: {formatDate(nextSchedule.scheduleDate)}</p>
-                  <p className="text-[13px] text-black">카테고리: {nextSchedule.category}</p>
+                  <p className="text-[13px] text-black">{nextSchedule.details}</p>
+                  <p className="text-[13px] text-black">시간: {nextSchedule.scheduleDate}</p>
                 </div>
               ) : (
-                <p className="text-[13px] m-3 text-black">다음 일정이 없습니다.</p>
+                <p className="text-[13px] m-3 text-black">오늘 일정이 없습니다.</p>
               )}
             </div>
           </div>
