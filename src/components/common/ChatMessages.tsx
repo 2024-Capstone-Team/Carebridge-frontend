@@ -209,9 +209,17 @@ const ChatMessages: React.FC<ChatMessagesProps> =
             el.scrollTop = el.scrollHeight;
           }
           setShowNewMessagePreview(false);
-        } else {
-          setNewMessagePreviewText(contentPreview);
-          setShowNewMessagePreview(true);
+        } else if (el) {
+          const lastMessageEl = el.lastElementChild;
+          if (lastMessageEl) {
+            const lastMessageRect = lastMessageEl.getBoundingClientRect();
+            const containerRect = el.getBoundingClientRect();
+            const isVisible = lastMessageRect.top >= containerRect.top && lastMessageRect.bottom <= containerRect.bottom;
+            if (!isVisible) {
+              setNewMessagePreviewText(contentPreview);
+              setShowNewMessagePreview(true);
+            }
+          }
         }
       }, 0);
       return () => clearTimeout(timeout);
