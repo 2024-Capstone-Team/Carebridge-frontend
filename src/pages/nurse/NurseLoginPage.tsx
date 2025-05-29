@@ -88,11 +88,9 @@ const NurseLoginPage: React.FC = () => {
               로그인
               </button>
             </div>
-
         </form>
       </div>
     </div>
   );
 };
-
 export default NurseLoginPage;
