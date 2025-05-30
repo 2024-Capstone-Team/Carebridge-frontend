@@ -31,6 +31,7 @@ import ChangePhoneNum from "./pages/patient/setting/ChangePhoneNum";
 import ManageGuardian from "./pages/patient/setting/ManageGuardian";
 import AppInfo from "./pages/patient/setting/AppInfo";
 import CustomerService from "./pages/patient/setting/CustomerService";
+import PushNotificationSwitch from "./pages/patient/setting/PushNotificationSwitch";
 
 /* hooks */
 // import useAutoLogin from "./hooks/useAutoLogin";
@@ -44,6 +45,7 @@ import HospitalInfoPage from './pages/HospitalInfoPage';
 import NurseChatPage from "./components/nurse/NurseMessaging";
 import ScheduleTest from "./pages/patient/ScheduleTest";
 import { CustomRequestsProvider } from "./context/CustomRequestsContext";
+
 
 const App: React.FC = () => {
  
@@ -66,6 +68,7 @@ const App: React.FC = () => {
           <Route path="/nurse-reset-password" element={<NurseResetPasswordPage />} />
 
           {/* Patient Pages */}
+          <Route path="/push-notifications" element={<PushNotificationSwitch/>}/>
           <Route path="/redirection" element={<Redirection />} />
           <Route path="/patient-login" element={<PatientLoginPage />} />
           <Route path="/patient-main" element={<PatientMainPage />} />

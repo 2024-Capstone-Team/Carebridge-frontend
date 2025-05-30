@@ -7,6 +7,9 @@ export default {
         message: '1rem', // For messages
         time: '0.875rem', // For message timestamps
       },
+      fontFamily: {
+        title: ['Happiness-Sans-Title', 'sans-serif'],
+      },
       colors: {
         primary: {
           DEFAULT: '#6990B6',  

@@ -3,8 +3,52 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* 제목 서체 */
+@font-face {
+    font-family: 'KBO-Dia-Gothic_bold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/KBO-Dia-Gothic_bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Happiness-Sans-Title';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2205@1.0/Happiness-Sans-Title.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+/* 본문 서체 */
+
+/* 슈트 */
+@font-face {
+  font-family: 'SUITE-Regular'; 
+  src: url('/src/fonts/SUITE-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* 프리텐다드체 */
+@font-face {
+    font-family: 'Pretendard-Regular';
+    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'ONE-Mobile-Regular';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/ONE-Mobile-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'ONE-Mobile-Regular', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -36,6 +80,10 @@
   color: #6B7280; /* Tailwind gray-500 */
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Happiness-Sans-Title', sans-serif;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -59,35 +107,6 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
-
-/*button {
-  position: center;
-  width: 110;
-  height: 40;
-  border-radius: 20px;
-  border: 1px solid #688fb6;
-
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'TAEBAEKfont';
-  background-color: #98B3C8 !important;
-  cursor: pointer;
-  transition: border-color 0.25s;
-
-}
-
-button:hover {
-  border-color: #5b84ad;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}*/
-
-
-
-
 
 @media (prefers-color-scheme: light) {
   :root {
