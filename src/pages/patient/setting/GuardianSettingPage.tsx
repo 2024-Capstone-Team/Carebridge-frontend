@@ -241,8 +241,7 @@ const PatientSettingPage: React.FC = () => {
                 >
                   전화번호 수정 <span>&gt;</span>
                 </Link>
-                <PushNotificationSwitch />
-                
+                <PushNotificationSwitch />                
               </div>
             </div>
           </div>
@@ -266,7 +265,6 @@ const PatientSettingPage: React.FC = () => {
                 <Link
                   to="/app-info"
                   className="text-black flex justify-between items-center"
-                 
                 >
                   앱 정보 <span>&gt;</span>
                 </Link>
