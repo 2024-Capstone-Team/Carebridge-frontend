@@ -32,7 +32,7 @@ function SignUpCheck() {
     const day = birth.substring(6, 8);
 
     // JSON 날짜 포맷: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
-    return `${year}-${month}-${day}T00:00:00.000`;
+    return `${year}-${month}-${day}T00:00:00.000+9:00`;
   };
   
   const signUp = async (e: React.FormEvent) => {
@@ -71,7 +71,7 @@ function SignUpCheck() {
       userId: 0,
       name,
       phoneNumber,
-      birthDate: birthDateISO+"9:00",
+      birthDate: birthDateISO,
       gender,
       email,
     };
