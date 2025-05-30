@@ -307,7 +307,6 @@ return (
                 return
               }
               handleShowSignUpCheck();
-              handleSignUp();
             }}
             type="submit"
             className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px] text-white"
