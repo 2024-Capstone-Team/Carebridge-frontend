@@ -193,10 +193,10 @@ const NurseSchedulePage: React.FC = () => {
     <div className="flex h-screen bg-gray-100 p-6">
 
       {/* 왼쪽 사이드바 영역 */}
-      <div className="h-full w-1/5 mr-4 overflow-hidden flex flex-col">
+      <div className="h-full w-1/5 mr-4 flex flex-col">
 
         {/* 메뉴바 + 로고 영역 */}
-        <div className="bg-[#F0F4FA] rounded-lg p-6 mb-4 h-full flex flex-col">
+        <div className="bg-[#F0F4FA] rounded-lg p-6 flex flex-col h-full">
           <div className="flex items-center mb-4" style={{ marginTop: "-60px" }}>
             {isDropdownVisible ? (
               <FiChevronsDown className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer" onClick={handleMenuClick} />
@@ -277,27 +277,29 @@ const NurseSchedulePage: React.FC = () => {
           </div>
 
           {/* 날짜 표시 영역 */}
-        <div className="flex text-center text-[16px] text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
-          <p className="text-black font-semibold mr-2">{formattedDate}</p>
-          <p className="text-gray-600">{formattedTime}</p>
-        </div>
+          <div className="flex text-center text-[16px] text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
+            <p className="text-black font-semibold mr-2">{formattedDate}</p>
+            <p className="text-gray-600">{formattedTime}</p>
+          </div>
 
-        {/* 병원 정보 표시 영역 */}
-        <p className="text-black text-[16px] font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
-        <p className="text-gray-600 " style={{ fontSize: "var(--font-caption)" }}>
-          {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
-        </p>
+          {/* 병원 정보 표시 영역 */}
+          <div className="mb-4">
+            <p className="text-black text-[16px] font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
+            <p className="text-gray-600" style={{ fontSize: "var(--font-caption)" }}>
+              {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
+            </p>
+          </div>
 
           {/* 환자 목록 영역 */}
-          <div className="bg-white rounded-lg shadow-sm flex-grow mt-4 flex flex-col overflow-hidden scrollbar-hide">
-            <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+          <div className="bg-white rounded-lg shadow-sm flex flex-col min-h-0 flex-1">
+            <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
               <h2 className="text-gray-800 text-18px font-semibold">환자 목록</h2>
-                <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleAddSchedule}>
-                  <FaPlus />
-                </button>
+              <button className="bg-transparent px-1 hover:text-gray-400" onClick={handleAddSchedule}>
+                <FaPlus />
+              </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto px-2">
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-2">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-full p-6">
                   <div className="w-10 h-10 border-4 border-gray-300 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -313,7 +315,7 @@ const NurseSchedulePage: React.FC = () => {
               ) : (
                 <ul className="py-3 space-y-2.5">
                   {filteredPatients.map((patient) => {
-                    const isSelected = patient.patientId === selectedPatient
+                    const isSelected = patient.patientId === selectedPatient;
 
                     return (
                       <li
@@ -326,11 +328,11 @@ const NurseSchedulePage: React.FC = () => {
                         onClick={() => handlePatientClick(patient.patientId)}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold stext-gray-800" style={{ fontSize: "var(--font-body)" }}>{patient.name}</span>
+                          <span className="font-semibold text-gray-800" style={{ fontSize: "var(--font-body)" }}>{patient.name}</span>
                           <span className="text-xs text-gray-500">{formatBirthdate(patient.birthDate)}</span>
                         </div>
                       </li>
-                    )
+                    );
                   })}
                 </ul>
               )}
@@ -340,8 +342,8 @@ const NurseSchedulePage: React.FC = () => {
       </div>
 
       {/* 캘린더 영역 */}
-      <div className="flex-1 bg-[#DFE6EC] rounded-lg shadow-md h-full overflow-hidden">
-        <div className="h-full p-4 overflow-y-auto">
+      <div className="flex-1 bg-[#DFE6EC] rounded-lg shadow-md h-full">
+        <div className="h-full p-4">
           {modeCalendar && <NurseCalendar onEdit={handleEditSchedule} />}
           {modeEdit && editingScheduleId && (
             <ScheduleEditForm scheduleId={Number(editingScheduleId)} onCancel={handleCancel} />

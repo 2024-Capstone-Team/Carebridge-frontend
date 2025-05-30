@@ -148,7 +148,7 @@ const NurseSchedule: React.FC = () => {
     <div className="h-full flex flex-col cursor-pointer" onClick={() => navigateToSchedule()}>
       
       <div className="flex items-center">
-        <p className="font-semibold text-gray-800 mb-2" style={{ fontSize: "var(--font-title)" }}>스케줄</p>
+        <h2 className="font-semibold text-gray-800 mb-2" style={{ fontSize: "var(--font-title)" }}>스케줄</h2>
       </div>
 
       <div className="flex items-center justify-between">

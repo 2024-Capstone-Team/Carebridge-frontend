@@ -137,13 +137,13 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                     
                     <button 
                       onClick={() => handleEdit(macro)}
-                      className="px-3 py-1 text-md font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#CFC9C9]"
+                      className="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 hover:text-gray-800 hover:bg-gray-100 transition-colors duration-200"
                     >
                       수정
                     </button>
                     <button 
                       onClick={() => handleDelete(macro.macroName)}
-                      className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                      className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-400 hover:bg-red-300 transition-colors duration-200"
                     >
                       삭제
                     </button>

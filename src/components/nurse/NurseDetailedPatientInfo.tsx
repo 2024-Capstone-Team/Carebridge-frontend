@@ -159,7 +159,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
       {searchQuery ? (
         <div className="overflow-y-auto flex-1 scrollbar-hide">
           {filteredPatients.length > 0 ? (
-            <ul className="space-y-4 w-full cursor-pointer">
+            <ul className="space-y-4 w-full cursor-pointer">  
               {filteredPatients.map((p) => (
                 <li
                   key={p.patientId}

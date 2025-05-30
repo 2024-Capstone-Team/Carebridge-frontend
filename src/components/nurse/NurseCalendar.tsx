@@ -2,6 +2,7 @@
   import { useNavigate } from "react-router-dom";
   import FullCalendar from "@fullcalendar/react";
   import timeGridPlugin from "@fullcalendar/timegrid";
+  import { FiX } from "react-icons/fi";
   import axios from "axios";
   import { useUserContext } from "../../context/UserContext";
   import { formatBirthdate, formatGender, calculateAge } from "../../utils/commonUtils";
@@ -78,12 +79,13 @@
         function getDurationByCategory(category: string): number {
           switch (category) {
             case "SURGERY":
-              return 60;
+              return 90; // 수술 45분
             case "OUTPATIENT":
+              return 50; // 외래 1시간
             case "EXAMINATION":
-              return 30;
+              return 50; // 검사 30분
             default:
-              return 20; 
+              return 30;
           }
         }
         
@@ -184,135 +186,178 @@
   };
 
   return (
-      <div className="bg-white height h-full py-4 flex flex-col rounded-lg overflow-hidden">
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
-          <FullCalendar
-            plugins={[timeGridPlugin]}
-            initialView="timeGridWeek"
-            allDaySlot={false}
-            headerToolbar={false}
-            slotLabelFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false
-            }}
-            eventOverlap={false}
-            slotMinTime="00:00:00"
-            slotMaxTime="24:00:00"
-            slotLabelInterval="01:00:00"
-            slotDuration="00:20:00"
-            stickyHeaderDates={true}
-            height="100%"
-            contentHeight="auto"
-            dayHeaderFormat={{ weekday: "short", month: "numeric", day: "numeric" }} // 날짜 표시
-            firstDay={1}
-            dayHeaderContent={(arg) => {
-              const day = arg.date.getDay();
-              const isSunday = day === 0;
-              const isSaturday = day === 6;
-              
-              return (
+    <div className="bg-white height h-full py-6 px-4 flex flex-col rounded-xl overflow-hidden shadow-sm">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <FullCalendar
+          plugins={[timeGridPlugin]}
+          initialView="timeGridWeek"
+          allDaySlot={false}
+          headerToolbar={false}
+          slotLabelFormat={{
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          }}
+          eventOverlap={true}
+          slotEventOverlap={false}
+          slotMinTime="00:00:00"
+          slotMaxTime="24:00:00"
+          slotLabelInterval="01:00:00"
+          slotDuration="00:30:00"
+          stickyHeaderDates={true}
+          height="100%"
+          contentHeight="auto"
+          dayHeaderFormat={{ weekday: "short", month: "numeric", day: "numeric" }}
+          firstDay={1}
+          eventMinHeight={35}
+          dayMaxEvents={false}
+          expandRows={true}
+          dayHeaderContent={(arg) => {
+            const day = arg.date.getDay();
+            const isSunday = day === 0;
+            const isSaturday = day === 6;
+            
+            return (
               <div
-                className={`flex flex-col items-center justify-center font-bold py-1 ${
-                  isSunday ? "text-red-600" : isSaturday ? "text-blue-600" : "text-black"}`}
+                className={`flex flex-col items-center justify-center font-bold py-2 ${
+                  isSunday ? "text-red-500" : isSaturday ? "text-blue-500" : "text-gray-700"
+                }`}
               >
-                <span style={{ fontSize: "var(--font-body)" }}>
+                <span className="text-sm font-medium mb-1">
                   {arg.date.toLocaleDateString("en-US", { weekday: "short" })}
                 </span>
-                <span className="font-bold" style={{ fontSize: "var(--font-title)" }}>
-                  {arg.date.toLocaleDateString("en-US", { month: "numeric", day: "numeric",})}
+                <span className="text-lg font-bold">
+                  {arg.date.toLocaleDateString("en-US", { day: "numeric" })}
                 </span>
               </div>
             );
           }}
           events={events}
           eventClick={handleEventClick}
-          slotLabelClassNames="text-gray-600 text-sm font-semibold leading-loose py-2" // 시간 영역
-          slotLaneClassNames="bg-white leading-loose py-2" // 내용 영역
-          dayHeaderClassNames="bg-white text-black"
+          slotLabelClassNames="text-gray-500 text-sm font-medium px-2"
+          slotLaneClassNames="bg-white hover:bg-gray-50 transition-colors duration-150 h-[100px]"
+          dayHeaderClassNames="bg-white border-b border-gray-100 py-3"
+          eventClassNames="rounded-lg shadow-sm transition-transform duration-150 hover:transform hover:scale-[1.02]"
           eventContent={(eventInfo) => {
             const { event } = eventInfo;
             const { details, patientName } = event.extendedProps;
 
+            let categoryColor;
+            switch (event.title) {
+              case "SURGERY":
+                categoryColor = "bg-blue-100 border-l-4 border-blue-500";
+                break;
+              case "OUTPATIENT":
+                categoryColor = "bg-green-100 border-l-4 border-green-500";
+                break;
+              case "EXAMINATION":
+                categoryColor = "bg-purple-100 border-l-4 border-purple-500";
+                break;
+              default:
+                categoryColor = "bg-gray-100 border-l-4 border-gray-500";
+            }
+
             return (
-              <div className="p-1">
-                <div className="flex flex-col">
+              <div className={`p-1 h-full ${categoryColor} overflow-hidden`}>
+                <div className="flex flex-col h-full justify-between min-h-[32px] gap-0.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-black" style={{ fontSize: "var(--font-caption)" }}>
+                    <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
                       {new Date(event.start!).toLocaleTimeString("ko-KR", { 
                         hour: "2-digit", 
                         minute: "2-digit", 
                         hour12: false 
-                        })}
+                      })}
                     </span>
-                    <span className="text-black text-[15px] font-semibold">
-                      {event.title}
+                    <span className="text-xs font-semibold text-gray-800 truncate ml-1">
+                      {event.title === "SURGERY" ? "수술" :
+                       event.title === "OUTPATIENT" ? "외래" :
+                       event.title === "EXAMINATION" ? "검사" : event.title}
                     </span>
                   </div>
-                  <div className="flex justify-end items-center">
-                      <span className="text-black text-right font-semibold mr-1" style={{ fontSize: "var(--font-body)" }}>{patientName}</span>
-                      <span className="text-black" style={{ fontSize: "var(--font-caption)" }}>환자</span>
-                    </div>
+                  <div className="flex justify-end items-center overflow-hidden">
+                    <span className="text-xs font-medium text-gray-700 truncate">{patientName}</span>
+                    <span className="text-xs text-gray-500 ml-0.5 whitespace-nowrap">환자</span>
+                  </div>
                 </div>
               </div>
             );
           }}
         />
-        </div>
+      </div>
 
-        {/* 팝업 */}
-        {isPopupOpen && selectedEvent && popupPosition && (
-          <div className="fixed flex items-center justify-center bg-transparent z-50"
+      {/* 팝업 */}
+      {isPopupOpen && selectedEvent && popupPosition && (
+        <div className="fixed flex items-center justify-center bg-transparent z-50"
           style={{
             top: `${popupPosition.top}px`,
-            left: `${popupPosition.left}px`,}}
-            >
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <div className="flex justify-between">
-                <div className="flex items-center">
-                  <span className="font-bold mb-1 mr-2" style={{ fontSize: "var(--font-title)" }}>{selectedEvent.patientName}</span>
-                  <span style={{ fontSize: "var(--font-body)" }}>환자</span>
-                  </div>
-                <button onClick={closePopup} className="px-1 text-black hover:text-gray-400">
-                  ✖
-                </button>
+            left: `${popupPosition.left}px`,
+          }}>
+          <div className="bg-white p-5 rounded-xl shadow-xl w-80 border border-gray-100">
+            {/* 헤더 영역 */}
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">{selectedEvent.patientName}</h3>
+                <div className="flex items-center text-gray-500 text-xs">
+                  <span className="mr-1">{selectedEvent.birthDate}</span>
+                  <span>•</span>
+                  <span className="mr-1">만 {selectedEvent.age}세</span>
+                  <span>•</span>
+                  <span>{selectedEvent.gender}</span>
+                </div>
               </div>
-              <hr className="border-gray-400 mb-4"></hr>
+              <button 
+                onClick={closePopup} 
+                className="px-1 text-black hover:text-gray-500"
+              >
+                <FiX />
+              </button>
+            </div>
 
-              <p>
-                <span className="text-[15px] text-gray-500 pr-3">인적사항</span> 
-                <span className="text-[15px] pr-2">{selectedEvent.birthDate}</span>
-                <span className="text-[15px] pr-2">만 {selectedEvent.age}세</span>
-                <span className="text-[15px] pr-2">{selectedEvent.gender}</span>
-              </p>
-
-              <p>
-                <span className="text-[15px] text-gray-500 pr-9">일시 </span> 
-                <span className="text-[15px]">{selectedEvent.start}</span>
-              </p>
-
-              <p>
-                <span className="text-[15px] text-gray-500 pr-10">일정</span>
-                <span className="text-[15px]">{selectedEvent.title}</span>
-              </p>
-
-              <div className="flex justify-center mt-4">
-                <button 
-                  className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#F8F8F8] hover:bg-gray-200"  
-                  onClick={handleDelete}>
-                  삭제
-                </button>
-                <button 
-                  className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200" 
-                  onClick={handleEdit}>
-                  수정
-                </button>
+            {/* 일정 정보 */}
+            <div className="bg-gray-50 rounded-lg mb-2">
+              <div className="flex items-center mb-2">
+                <div className="w-16 text-gray-500 text-xs">일시</div>
+                <div className="flex-1 text-gray-900 text-sm font-medium">
+                  {selectedEvent.start}
+                </div>
+              </div>
+              <div className="flex items-center">
+                <div className="w-16 text-gray-500 text-xs">일정</div>
+                <div className="flex-1">
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium
+                    ${selectedEvent.title === "SURGERY" ? "bg-blue-100 text-blue-700" :
+                      selectedEvent.title === "OUTPATIENT" ? "bg-green-100 text-green-700" :
+                      selectedEvent.title === "EXAMINATION" ? "bg-purple-100 text-purple-700" :
+                      "bg-gray-100 text-gray-700"}`}
+                  >
+                    {selectedEvent.title === "SURGERY" ? "수술" :
+                     selectedEvent.title === "OUTPATIENT" ? "외래" :
+                     selectedEvent.title === "EXAMINATION" ? "검사" : selectedEvent.title}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    );
-  };
 
-  export default NurseCalendar;
+            {/* 버튼 영역 */}
+            <div className="flex justify-end space-x-2">
+              <button 
+                onClick={handleDelete}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200"
+              >
+                삭제
+              </button>
+              <button 
+                onClick={handleEdit}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+              >
+                수정
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default NurseCalendar;

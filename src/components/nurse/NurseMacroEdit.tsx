@@ -97,20 +97,20 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
 
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      <div className="flex justify-center space-x-4">
+      <div className="flex justify-center space-x-2">
         <button 
-            type="button"
-            onClick={onClose}
-            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
-          >
-            취소
-          </button>
-          <button 
-            type="submit"
-            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
-          >
-            저장
-          </button>
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 hover:text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+        >
+          취소
+        </button>
+        <button 
+          onClick={handleUpdate}
+          className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+        >
+          저장
+        </button>
       </div>
       
     </div>

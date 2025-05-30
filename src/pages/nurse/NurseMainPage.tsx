@@ -7,7 +7,7 @@ import NurseMacroList from "../../components/nurse/NurseMacroList"
 import NurseQuickAnswerList from "../../components/nurse/NurseQuickAnswerList"
 import NurseMessaging from "../../components/nurse/NurseMessaging"
 import logo from "../../assets/carebridge_logo.png"
-import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu } from "react-icons/fi"
+import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu, FiX } from "react-icons/fi"
 import { BsStopwatch } from "react-icons/bs"
 import useStompClient from "../../hooks/useStompClient"
 import type { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, MedicalStaff } from "../../types"
@@ -960,8 +960,8 @@ const NurseMainPage: React.FC = () => {
         {isPendingModalOpen && pendingRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
-              <button onClick={closeAllModals} className="absolute top-2 right-2 text-black hover:text-gray-800">
-                ✖
+              <button onClick={closeAllModals} className="absolute top-2 right-2 text-black hover:text-gray-400">
+                <FiX />
               </button>
               <div className="text-center">
                 <p className="text-gray-600 mb-1" style={{ fontSize: "var(--font-body)" }}>{formatTime(pendingRequest.requestTime)}</p>
