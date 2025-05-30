@@ -71,7 +71,7 @@ function SignUpCheck() {
       userId: 0,
       name,
       phoneNumber,
-      birthDate: birthDateISO,
+      birthDate: birthDateISO+"9:00",
       gender,
       email,
     };
