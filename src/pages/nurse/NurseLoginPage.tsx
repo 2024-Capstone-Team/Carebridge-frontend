@@ -81,7 +81,7 @@ const NurseLoginPage: React.FC = () => {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <motion.div
-          className="border-none bg-white/80 shadow-xl backdrop-blur-sm rounded-[20px] p-6 h-[500px] flex flex-col justify-center"
+          className="border-none bg-white shadow-xl backdrop-blur-sm rounded-[20px] p-6 h-[500px] flex flex-col justify-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -126,7 +126,7 @@ const NurseLoginPage: React.FC = () => {
                 </label>
                 <button
                   type="button"
-                  className="text-xs text-black hover:text-gray-400"
+                  className="text-xs text-black"
                   onClick={() => navigate("/nurse-find-password")}
                 >
                   비밀번호 찾기
@@ -135,16 +135,36 @@ const NurseLoginPage: React.FC = () => {
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  name="password" 
+                  type="password"
+                  autoComplete="current-password"
+                  required
                   placeholder="비밀번호를 입력하세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  style={{
+                    all: 'revert',
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    lineHeight: '1.5',
+                    color: '#000000 !important'
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
                 >
                   {showPassword ? (
                     <svg

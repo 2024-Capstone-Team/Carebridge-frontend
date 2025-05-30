@@ -289,7 +289,7 @@ const NurseSchedulePage: React.FC = () => {
         </p>
 
           {/* 환자 목록 영역 */}
-          <div className="bg-white rounded-lg shadow-sm flex-grow mt-4 flex flex-col overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm flex-grow mt-4 flex flex-col overflow-hidden scrollbar-hide">
             <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-gray-800 text-18px font-semibold">환자 목록</h2>
                 <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleAddSchedule}>

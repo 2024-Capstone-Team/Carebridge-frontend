@@ -960,7 +960,7 @@ const NurseMainPage: React.FC = () => {
         {isPendingModalOpen && pendingRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
-              <button onClick={closeAllModals} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
+              <button onClick={closeAllModals} className="absolute top-2 right-2 text-black hover:text-gray-800">
                 ✖
               </button>
               <div className="text-center">
@@ -1063,7 +1063,7 @@ const NurseMainPage: React.FC = () => {
 
           {/* 환자 정보 및 스케줄러 영역 */}
           <div className="w-1/5 flex flex-col space-y-5 h-full">
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
+            <div className="bg-[#DFE6EC] h-3/5 rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
               {selectedPatient !== null ? (
                 <Nurse_DetailedPatientInfo
                   patientId={selectedPatient}
@@ -1074,7 +1074,7 @@ const NurseMainPage: React.FC = () => {
                 <NursePatientInfo onPatientClick={handlePatientClick} />
               )}
             </div>
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 overflow-y-auto">
+            <div className="bg-[#DFE6EC] h-2/5 rounded-lg shadow-lg p-6 overflow-y-auto">
               <NurseSchedule />
             </div>
           </div>

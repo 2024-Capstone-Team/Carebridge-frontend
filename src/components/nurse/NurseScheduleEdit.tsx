@@ -77,11 +77,15 @@ const ScheduleEditForm: React.FC<ScheduleEditFormProps> = ({ scheduleId, onCance
   }
 
   const handleSave = async () => {
+    const selectedDate = new Date(startTime);
+    const offset = selectedDate.getTimezoneOffset() * 60000; // 분을 밀리초로 변환
+    const localISOTime = new Date(selectedDate.getTime() - offset).toISOString().slice(0, 19);
+
     const payload = {
       id: scheduleId, 
       patientId,
       medicalStaffId,
-      scheduleDate: new Date(startTime).toISOString().replace("Z", ""),
+      scheduleDate: localISOTime,
       details,
       category,
     };

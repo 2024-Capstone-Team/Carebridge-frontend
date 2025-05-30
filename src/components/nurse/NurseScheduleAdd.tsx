@@ -65,11 +65,15 @@ const ScheduleAdd: React.FC<ScheduleAddProps> = ({ patients, medicalStaffId, onC
     if (!patientId) return alert("환자를 선택해주세요.");
     if (!startTime) return alert("시작 일시를 입력해주세요.");
   
+    const selectedDate = new Date(startTime);
+    const offset = selectedDate.getTimezoneOffset() * 60000; // 분을 밀리초로 변환
+    const localISOTime = new Date(selectedDate.getTime() - offset).toISOString().slice(0, 19);
+
     const payload = {
       id: 0,
       patientId,
       medicalStaffId,
-      scheduleDate: new Date(startTime).toISOString().replace("Z", ""),
+      scheduleDate: localISOTime,
       details: description,
       category,
     };

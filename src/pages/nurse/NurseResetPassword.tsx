@@ -74,11 +74,23 @@ const NurseResetPasswordPage: React.FC = () => {
               </label>
               <input
                 id="oldPassword"
+                name="oldPassword"
                 type="password"
+                autoComplete="current-password"
+                required
                 placeholder="현재 비밀번호를 입력하세요"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                style={{
+                  all: 'revert',
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                  color: '#000000 !important'
+                }}
               />
             </div>
 
@@ -88,11 +100,23 @@ const NurseResetPasswordPage: React.FC = () => {
               </label>
               <input
                 id="newPassword"
+                name="newPassword"
                 type="password"
+                autoComplete="new-password"
+                required
                 placeholder="새 비밀번호를 입력하세요"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                style={{
+                  all: 'revert',
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                  color: '#000000 !important'
+                }}
               />
             </div>
 
@@ -102,11 +126,23 @@ const NurseResetPasswordPage: React.FC = () => {
               </label>
               <input
                 id="confirmPassword"
+                name="confirmPassword"
                 type="password"
+                autoComplete="new-password"
+                required
                 placeholder="새 비밀번호를 다시 입력하세요"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                style={{
+                  all: 'revert',
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                  color: '#000000 !important'
+                }}
               />
             </div>
 
