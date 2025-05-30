@@ -26,13 +26,13 @@ function SignUpCheck() {
       console.error("잘못된 생년월일 형식:", birth);
       return null;
     }
-    
+
     const year = birth.substring(0, 4);
     const month = birth.substring(4, 6);
     const day = birth.substring(6, 8);
-    
-    const formattedDate = `${year}-${month}-${day}T00:00:00.000Z`;
-    return formattedDate;
+
+    // JSON 날짜 포맷: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+    return `${year}-${month}-${day}T00:00:00.000`;
   };
   
   const signUp = async (e: React.FormEvent) => {
@@ -41,6 +41,29 @@ function SignUpCheck() {
     const birthDateISO = formatBirthToISO(birth);
     if (!birthDateISO) {
       alert("생년월일 형식이 잘못되었습니다.");
+      return;
+    }
+
+    // 먼저 환자 정보 등록 시도
+    try {
+      const today = new Date().toISOString().split(".")[0];
+      const patientData = {
+        name,
+        phoneNumber,
+        birthDate: birthDateISO,
+        gender,
+        email,
+        hospitalId: 1, // 임시 병원 ID
+        hospitalizationDate: today,
+        // guardianContact: "", // 보호자 전화번호는 선택사항
+      };
+      console.log("Sending patient data:", patientData);
+
+      const response = await axios.post(`${API_BASE_URL}/api/patient/user`, patientData);
+      console.log("환자 정보 등록 성공", response.data);
+    } catch (error: any) {
+      console.error("환자 정보 등록 실패:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "환자 정보 저장에 실패했습니다.");
       return;
     }
   
