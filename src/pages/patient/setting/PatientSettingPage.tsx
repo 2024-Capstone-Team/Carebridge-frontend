@@ -128,20 +128,20 @@ const PatientSettingPage: React.FC = () => {
 
       {/* 메인 컨테이너 - 보호자&환자 정보 카드 */}
       <div className="flex flex-col items-center p-0 w-full max-w-md h-auto bg-white border-2 border-[#e6e6e6] rounded-[30px] shadow-lg mx-auto opacity-100">
-        {/* 보호자 기본 정보 섹션 */}
+        {/* 환자자 기본 정보 섹션 */}
         <div className="flex flex-col w-full">
           <div className="flex-1 border-b border-gray-300 p-7 m-0 flex items-center">
             <div className="flex flex-col justify-center items-start space-y-0 w-full gap-2">
               <p className="text-black text-[15px]">
-                보호자
+                환자
               </p>
               <p className="text-black font-bold whitespace-nowrap text-[25px]">
-                {guardianDto?.name || ""} 님, 안녕하세요.
+                {patientDto?.name || ""} 님, 안녕하세요.
               </p>
               <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
                   className="text-primary-400 mt-[-4px] text-[13px]"                >
-                  환자: {patientDto?.name || "미등록"}
+                  보호자: {guardianDto?.name || "미등록"}
                 </p>
               </div>
               <div className="border border-[#226193] rounded-[60px] px-2 py-1">
