@@ -28,13 +28,14 @@ const PatientMainPage: React.FC = () => {
 
   const navigate = useNavigate();
   const [patientDto, setPatientDto] = useState<PatientDto | null>(null);
-  const { setPatientId, isPatient } = useUserContext();
+  // const { setPatientId, isPatient } = useUserContext();
   const [hospitalName, setHospitalName] = useState(""); // 불러올 병원 이름
   const [medicalStaffList, setMedicalStaffList] = useState<MedicalStaff[]>([]); // 분과 이름
   const [nextSchedule, setNextSchedule] = useState<any | null>(null); // 가장 빠른 일정
 
   const phoneNumber = localStorage.getItem("phoneNumber");
   const patientId = localStorage.getItem("patientId");
+  const isPatient = localStorage.getItem("isPatient");
 
   // 날짜 포맷을 변환하는 유틸리티 함수 (YYYY-MM-DD 형식으로 변환)
   const formatDate = (date: string): string => date.split("T")[0];
@@ -71,7 +72,7 @@ const PatientMainPage: React.FC = () => {
         }
       );
       await axios.get(`${API_BASE_URL}/api/users/social-login/kakao/logout`);         // 소셜 계정 로그아웃
-        setPatientId(null);
+        localStorage.removeItem("isPatient");
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");
         localStorage.removeItem("accessToken");
@@ -289,7 +290,7 @@ const PatientMainPage: React.FC = () => {
           </div>
         </div>
         {/* Logout Button */}
-        <div className="absolute -bottom-0 right-4 p-4">
+        <div className="relative -right-0">
           <button
             onClick={handleLogout}
             className="flex items-center text-black bg-white rounded-lg text-[13px]"

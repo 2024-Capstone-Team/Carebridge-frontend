@@ -172,7 +172,7 @@ return (
               placeholder="이름을 입력해주세요."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
 
@@ -186,7 +186,7 @@ return (
               placeholder="이메일을 입력해주세요."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
 
@@ -200,7 +200,7 @@ return (
               placeholder="8자리로 입력해주세요."
               value={birth}
               onChange={(e) => setBirth(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
 
@@ -237,14 +237,14 @@ return (
           {/* 전화번호 */}
           <div className="flex flex-col items-center space-y-2 w-[80%]">
           <div className="flex items-center rounded-lg border border-gray-300 w-full h-[35px]">
-            <label htmlFor="name" className="w-1/4 pl-3 font-bold text-sm">
+            <label htmlFor="name" className="w-1/4 pl-3 font-bold text-sm whitespace-nowrap">
               전화번호
             </label>
             <input
               id="phonenum"
               value={phone}
               onChange={(e) => setPhoneNum(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
             <button className="whitespace-nowrap text-white text-[13px] h-10 w-full font-bold rounded-[10px] bg-primary" onClick={getAuthorizeNum}>

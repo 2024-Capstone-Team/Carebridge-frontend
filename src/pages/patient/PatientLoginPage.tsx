@@ -228,7 +228,7 @@ const PatientLoginPage: React.FC = () => {
           {/* 전화번호 입력 */}
           <div className="flex flex-col items-center space-y-2 w-full">
             <div className="flex items-center rounded-lg border border-gray-500 w-full h-[35px]">
-              <label htmlFor="phone" className="w-full pl-3 font-bold text-sm">
+              <label htmlFor="phone" className="w-full pl-3 font-bold text-sm whitespace-nowrap">
                 전화번호
               </label>
               <input
@@ -236,7 +236,7 @@ const PatientLoginPage: React.FC = () => {
                 id="phone-number" 
                 value={phone}
                 onChange={(e) => setPhoneNum(e.target.value)}
-                className="border-0 text-sm whitespace-nowrap"
+                className="bg-white w-full border-0 text-sm whitespace-nowrap"
               />
             </div>
           </div>
