@@ -44,28 +44,6 @@ function SignUpCheck() {
       return;
     }
 
-    // 먼저 환자 정보 등록 시도
-    // try {
-    //   const today = new Date().toISOString().split(".")[0]+"9:00";
-    //   const patientData = {
-    //     name,
-    //     phoneNumber,
-    //     birthDate: birthDateISO,
-    //     gender,
-    //     email,
-    //     hospitalId: 1, // 임시 병원 ID
-    //     hospitalizationDate: today,
-    //     // guardianContact: "", // 보호자 전화번호는 선택사항
-    //   };
-    //   console.log("Sending patient data:", patientData);
-
-    //   const response = await axios.post(`${API_BASE_URL}/api/patient/user`, patientData);
-    //   console.log("환자 정보 등록 성공", response.data);
-    // } catch (error: any) {
-    //   console.error("환자 정보 등록 실패:", error.response?.data || error.message);
-    //   alert(error.response?.data?.message || "환자 정보 저장에 실패했습니다.");
-    //   return;
-    // }
   
     const userData = {
       userId: 0,
@@ -84,6 +62,29 @@ function SignUpCheck() {
       console.error("회원가입 실패:", error);
       alert(error.response?.data?.message || "회원가입에 실패했습니다.");
       
+    }
+
+    // 먼저 환자 정보 등록 시도
+    try {
+      const today = new Date().toISOString().split(".")[0]+"9:00";
+      const patientData = {
+        name,
+        phoneNumber,
+        birthDate: birthDateISO,
+        gender,
+        email,
+        hospitalId: 1, // 임시 병원 ID
+        hospitalizationDate: today,
+        // guardianContact: "", // 보호자 전화번호는 선택사항
+      };
+      console.log("Sending patient data:", patientData);
+
+      const response = await axios.post(`${API_BASE_URL}/api/patient/user`, patientData);
+      console.log("환자 정보 등록 성공", response.data);
+    } catch (error: any) {
+      console.error("환자 정보 등록 실패:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "환자 정보 저장에 실패했습니다.");
+      return;
     }
   };
   
