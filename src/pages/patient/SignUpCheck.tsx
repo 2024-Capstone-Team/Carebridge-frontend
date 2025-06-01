@@ -66,7 +66,7 @@ function SignUpCheck() {
 
     // 먼저 환자 정보 등록 시도
     try {
-      const today = new Date().toISOString().split(".")[0]+"9:00";
+      const today = new Date().toISOString().split(".")[0];
       const patientData = {
         name,
         phoneNumber,
