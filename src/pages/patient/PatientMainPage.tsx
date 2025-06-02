@@ -173,8 +173,18 @@ const PatientMainPage: React.FC = () => {
       <img
         src="icons/main-page-logo.png"
         alt="Main Logo"
-        className="w-[190px] pt-8"
+        className="w-[120px] pt-8"
       />
+              {/* Logout Button */}
+        <div className="absolute right-4 top-4">
+          <button
+            onClick={handleLogout}
+            className="flex items-center text-black bg-white rounded-lg text-[11px]"
+          >
+          <img src="/icons/logout-icon.png" className="w-[28px] h-[28px] mr-2" alt="로그아웃 아이콘" />
+          로그아웃
+          </button>
+        </div>
 
       {/* 환자 정보 컨테이너 */}
       <div className="w-4/5 max-w-md bg-primary-50 shadow-lg
@@ -288,16 +298,6 @@ const PatientMainPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-        {/* Logout Button */}
-        <div className="relative -right-0">
-          <button
-            onClick={handleLogout}
-            className="flex items-center text-black bg-white rounded-lg text-[13px]"
-          >
-          <img src="/icons/logout-icon.png" className="w-[28px] h-[28px] mr-2" alt="로그아웃 아이콘" />
-          로그아웃
-          </button>
         </div>
       </div>
     </div>
