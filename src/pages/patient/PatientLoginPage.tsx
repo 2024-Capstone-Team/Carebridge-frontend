@@ -263,7 +263,7 @@ const PatientLoginPage: React.FC = () => {
               id="auth-code"
               value={otp}
               onChange={(e) => setotp(e.target.value)}
-              className="border-0 text-sm whitespace-nowrap"
+              className="border-0 text-sm whitespace-nowrap w-full"
             />
           </motion.div>
           <motion.div>
