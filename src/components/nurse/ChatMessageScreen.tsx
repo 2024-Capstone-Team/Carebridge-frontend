@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import ChatMessages from "../common/ChatMessages";
 import InputSection from "../../components/patient/InputSection";
 import { ChatMessage, Macro, QuickAnswer } from "../../types";
@@ -398,12 +398,14 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
     <div className="flex flex-col h-full bg-primary-100 overflow-hidden">
 
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-6 text-black z-10 relative">
+      <header className="relative flex items-center justify-center pt-6 pb-2 text-black z-10">
         <FaChevronLeft 
-          className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute left-4 top-6" 
+          className="absolute left-4 w-[20px] h-[20px] cursor-pointer hover:text-gray-400" 
           onClick={onBackClick} 
         />
-        <h2 className="text-center flex-1 font-bold" style={{ fontSize: "var(--font-title)" }}>{patient}</h2>
+        <h2 className="font-bold text-center" style={{ fontSize: "var(--font-title)" }}>
+          {patient}
+        </h2>
       </header>
 
       {/* Debug */}
@@ -416,13 +418,13 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
         <ChatMessages 
-        chatMessages={displayedMessages} 
-        currentUserId={currentUserId} 
-        onResend={handleResendMessage}
-        onCancel={handleCancelMessage}
-        senderBubbleColor="bg-primary-300"
-        receiverBubbleColor="bg-white"
-        senderTextColor="text-white"  
+          chatMessages={displayedMessages} 
+          currentUserId={currentUserId} 
+          onResend={handleResendMessage}
+          onCancel={handleCancelMessage}
+          senderBubbleColor="bg-primary-300"
+          receiverBubbleColor="bg-white"
+          senderTextColor="text-white"  
         />
       </div>
 
