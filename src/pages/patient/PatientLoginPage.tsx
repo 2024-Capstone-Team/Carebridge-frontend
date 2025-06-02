@@ -102,6 +102,10 @@ const PatientLoginPage: React.FC = () => {
         setErrorMessage("인증번호가 올바르지 않거나 다른 문제가 발생했습니다.");
         return;
       }
+      if (remainingTime === 0) {
+        alert("인증시간이 만료되었습니다. 인증번호를 다시 요청해주세요.");
+        return;
+      }
 
       const { userId, patientId, phoneNumber, accessToken, refreshToken } = loginResponse.data;
 
