@@ -102,6 +102,35 @@ const SignUp: React.FC = () => {
       }
     };
 
+  // 회원가입 처리 API
+  const handleSignUp = async () => {
+    if (!isVerified) {
+      alert("휴대폰 인증을 완료해주세요!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/users/sign-up`, {
+        name,
+        email,
+        birth,
+        gender: selectedGender,
+        phone,
+        authCode,
+      });
+
+      if (response.data.success) {
+        alert("회원가입이 완료되었습니다.");
+        navigate("/login"); // 회원가입 후 로그인 페이지로 이동
+      } else {
+        alert("회원가입에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("회원가입 오류:", error);
+      alert("회원가입 중 오류가 발생했습니다.");
+    }
+  };
+
 
 return (
     <main className="centered-container">
@@ -143,7 +172,7 @@ return (
               placeholder="이름을 입력해주세요."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
 
@@ -157,7 +186,7 @@ return (
               placeholder="이메일을 입력해주세요."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
 
@@ -171,7 +200,7 @@ return (
               placeholder="8자리로 입력해주세요."
               value={birth}
               onChange={(e) => setBirth(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
 
@@ -208,14 +237,14 @@ return (
           {/* 전화번호 */}
           <div className="flex flex-col items-center space-y-2 w-[80%]">
           <div className="flex items-center rounded-lg border border-gray-300 w-full h-[35px]">
-            <label htmlFor="name" className="w-1/4 pl-3 font-bold text-sm">
+            <label htmlFor="name" className="w-1/4 pl-3 font-bold text-sm whitespace-nowrap">
               전화번호
             </label>
             <input
               id="phonenum"
               value={phone}
               onChange={(e) => setPhoneNum(e.target.value)}
-              className="border-0 text-sm"
+              className="border-0 w-full text-sm"
             />
           </div>
             <button className="whitespace-nowrap text-white text-[13px] h-10 w-full font-bold rounded-[10px] bg-primary" onClick={getAuthorizeNum}>
@@ -269,10 +298,7 @@ return (
               </motion.div>
             )}
           </AnimatePresence>
-
-
         </div>
-
         <div className="flex justify-center pt-6">
           <button
             onClick={() => {
@@ -280,7 +306,7 @@ return (
                 alert("휴대폰 인증을 완료해주세요!")
                 return
               }
-              handleShowSignUpCheck()
+              handleShowSignUpCheck();
             }}
             type="submit"
             className="w-[90px] h-[40px] font-bold mt-[50px] bg-primary rounded-[10px] text-[13px] text-white"

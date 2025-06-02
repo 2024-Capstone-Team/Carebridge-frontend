@@ -6,6 +6,7 @@
   import axios from "axios";
   import { useUserContext } from "../../context/UserContext";
   import { formatBirthdate, formatGender, calculateAge } from "../../utils/commonUtils";
+  import Button from "../common/Button";
 
   interface ExaminationSchedule {
     id: number;
@@ -79,11 +80,11 @@
         function getDurationByCategory(category: string): number {
           switch (category) {
             case "SURGERY":
-              return 90; // 수술 45분
+              return 90; // 수술 90분
             case "OUTPATIENT":
-              return 50; // 외래 1시간
+              return 50; // 외래 50분
             case "EXAMINATION":
-              return 50; // 검사 30분
+              return 60; // 검사 60분
             default:
               return 30;
           }
@@ -223,7 +224,7 @@
                   isSunday ? "text-red-500" : isSaturday ? "text-blue-500" : "text-gray-700"
                 }`}
               >
-                <span className="text-sm font-medium mb-1">
+                <span className="text-sm font-bold mb-1">
                   {arg.date.toLocaleDateString("en-US", { weekday: "short" })}
                 </span>
                 <span className="text-lg font-bold">
@@ -339,19 +340,20 @@
             </div>
 
             {/* 버튼 영역 */}
-            <div className="flex justify-end space-x-2">
-              <button 
-                onClick={handleDelete}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200"
-              >
-                삭제
-              </button>
-              <button 
+            <div className="flex justify-end space-x-3">
+              <Button 
                 onClick={handleEdit}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+                variant="edit"
               >
                 수정
-              </button>
+              </Button>
+              
+              <Button 
+                onClick={handleDelete}
+                variant="delete"
+              >
+                삭제
+              </Button>
             </div>
           </div>
         </div>

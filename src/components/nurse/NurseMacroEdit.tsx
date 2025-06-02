@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Button from '../common/Button';
 
 interface Macro {
   macroId: number;
@@ -80,7 +81,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
         <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
         <input
           type="text"
-          className="w-full border p-2 rounded-lg"
+          className="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
           value={macroName}
           onChange={(e) => setMacroName(e.target.value)}
         />
@@ -89,7 +90,7 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
       <div className="mb-4">
         <label className="text-[18px] text-black font-semibold block mb-2">내용</label>
         <textarea
-          className="w-full border p-2 h-[500px] overflow-y-auto resize-none rounded-lg"
+          className="w-full border-gray-300 bg-gray-50 p-2 h-[500px] overflow-y-auto resize-none rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
           value={text}
           onChange={(e) => setText(e.target.value)}
         ></textarea>
@@ -98,19 +99,21 @@ const NurseMacroEdit: React.FC<NurseMacroEditProps> = ({ onClose, medicalStaffId
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="flex justify-center space-x-2">
-        <button 
-          type="button"
+        <Button 
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 hover:text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+          variant="cancel"
+          size='large'
         >
           취소
-        </button>
-        <button 
+        </Button>
+              
+        <Button 
           onClick={handleUpdate}
-          className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+          variant="save"
+          size='large'
         >
           저장
-        </button>
+        </Button>
       </div>
       
     </div>

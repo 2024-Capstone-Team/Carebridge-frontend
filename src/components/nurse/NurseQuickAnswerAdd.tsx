@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Button from '../common/Button';
 
 interface NurseQuickAnswerAddProps {
   onClose: () => void;
@@ -15,10 +16,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSave = async () => {
     if (!title.trim()) {
       alert('제목을 입력해주세요.');
       return;
@@ -58,22 +56,23 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
       onClose();
     } catch (err) {
       console.error(err);
-      setError('빠른 답변변 추가 중 오류가 발생했습니다.');
+      setError('빠른 답변 추가 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <div className="w-full h-full bg-[#DFE6EC]">
       <h2 className="font-semibold mb-4" style={{fontSize: "var(--font-title)" }}>빠른 답변 추가</h2>
       <hr className="mb-4 border border-gray-300" />
 
-      <form onSubmit={handleSave} className="space-y-4">
+      <div className="space-y-4">
         <div>
           <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
           <input 
             type="text"
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
             placeholder="빠른 답변 제목을 입력해주세요."
             value={title}
             onChange={(e) => {
@@ -88,7 +87,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border-gray-300 bg-gray-50 p-2 rounded-lg rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="General">General</option>
             <option value="Facilities">Facilities</option>
@@ -101,7 +100,7 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
           <textarea
             value={information}
             onChange={(e) => setInformation(e.target.value)}
-            className="w-full border p-2 rounded-lg h-[400px] overflow-y-auto resize-none"
+            className="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg h-[500px] overflow-y-auto resize-none focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
             placeholder="빠른 답변 내용을 입력해주세요."
             rows={4}
           ></textarea>
@@ -110,21 +109,23 @@ const NurseQuickAnswerAdd: React.FC<NurseQuickAnswerAddProps> = ({ onClose, hosp
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         <div className="flex justify-center space-x-2">
-          <button 
-            type="button"
+          <Button 
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 hover:text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+            variant="cancel"
+            size='large'
           >
             취소
-          </button>
-          <button 
-            type="submit"
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+          </Button>
+              
+          <Button 
+            onClick={handleSave}
+            variant="save"
+            size='large'
           >
             저장
-          </button>
+          </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

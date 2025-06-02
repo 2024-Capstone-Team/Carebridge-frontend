@@ -6,6 +6,8 @@ import Timer from "../../components/common/Timer";
 import { requestForToken } from "../../firebase/firebase";
 import { checkAutoLogin } from "../../hooks/useAutoLogin";
 import { refreshAccessToken } from "../../hooks/refreshToken";
+import ClickButton from "../../components/common/ClickButton";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 const PatientLoginPage: React.FC = () => {
@@ -204,9 +206,9 @@ const PatientLoginPage: React.FC = () => {
 
   
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-3">
+    <div className="flex items-center justify-center w-full min-h-screen bg-gray-100 p-3">
       <div
-        className="bg-white p-3 rounded-lg shadow-lg w-80 flex-col flex items-center"
+        className="bg-white p-3 rounded-lg shadow-lg w-[90%] flex-col flex items-center"
         style={{
           minHeight: "90vh",
         }}
@@ -214,25 +216,19 @@ const PatientLoginPage: React.FC = () => {
         <img
           src="/icons/icon-384x384.png"
           alt="앱 아이콘"
-          className="w-[80%] h-auto object-cover"
-          style={{ padding: 1 }}
+          className="w-[250px] h-auto object-cover p-1"
         />
-        <h1 className="font-bold text-center mb-6 text-[13px] font-[TAEBAEKfont] mt-[-70px]">
+        <h1 className="font-bold text-center mb-6 text-[18px] mt-[-70px]">
           환자&보호자용 로그인
         </h1>
         <form
-          className="space-y-4 flex flex-col items-center m-[80px] w-[250px]"
+          className="space-y-4 flex flex-col items-center m-[60px] w-[250px]"
           onSubmit={handleLogin}
         >
           {/* 전화번호 입력 */}
-          <div className="flex items-center gap-[10px]">
-            <div
-              className="flex items-center m-1 gap-3 rounded-[10px] w-[70%] h-[40px] border border-black border-solid"
-            >
-              <label
-                htmlFor="phone-number"
-                className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap"
-              >
+          <div className="flex flex-col items-center space-y-2 w-full">
+            <div className="flex items-center rounded-lg border border-gray-500 w-full h-[35px]">
+              <label htmlFor="phone" className="w-full pl-3 font-bold text-sm whitespace-nowrap">
                 전화번호
               </label>
               <input
@@ -240,20 +236,22 @@ const PatientLoginPage: React.FC = () => {
                 id="phone-number" 
                 value={phone}
                 onChange={(e) => setPhoneNum(e.target.value)}
-                className="ml-[10px] mt-[-2px] text-[13px] rounded-[10px] h-[25px] w-[100px] px-2 py-1 "
+                className="bg-white w-full border-0 text-sm whitespace-nowrap"
               />
             </div>
-            <button
-              className="whitespace-nowrap text-[13px] h-10 w-20 font-bold rounded-[10px] bg-primary font-[SUITE-Regular]"
-              onClick={getAuthorizeNum}
-            >
-              인증받기
-            </button>
           </div>
+          <button className="whitespace-nowrap text-white text-[13px] h-10 w-full font-bold rounded-[10px] bg-primary" onClick={getAuthorizeNum}>
+            인증받기
+          </button>
 
           {/* 인증번호 입력 */}  
-          <div className="flex items-center m-1 gap-3 rounded-[10px] w-[110%] h-[40px] border border-black border-solid">
-            <label htmlFor="auth-code" className="pl-[10px] font-bold text-[13px] w-[25%] text-left font-[SUITE-Regular] whitespace-nowrap">
+          <motion.div
+            className="flex items-center rounded-lg border border-gray-500 w-full h-[35px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: showTimer ? 1 : 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <label htmlFor="otp" className="w-full pl-3 font-bold text-sm whitespace-nowrap">
               인증번호
             </label>
             <input
@@ -261,32 +259,29 @@ const PatientLoginPage: React.FC = () => {
               id="auth-code"
               value={otp}
               onChange={(e) => setotp(e.target.value)}
-              className="w-[65%] h-[25px] text-[13px]"
+              className="border-0 text-sm whitespace-nowrap"
             />
-            {showTimer && <Timer 
-              remainingTime={remainingTime} 
-              setRemainingTime={setRemainingTime} 
-              showtimer={showTimer} 
-            />
-            }
-          </div>
+          </motion.div>
+          <motion.div>
+              {showTimer && (
+              <Timer 
+                remainingTime={remainingTime} 
+                setRemainingTime={setRemainingTime} 
+                showtimer={showTimer} 
+              />
+            )}
+          </motion.div>
 
           {/* 자동 로그인 버튼 */}
           <div className="flex">
-            <label className="flex items-center text-[13px] space-x-2">
+            <label className="flex items-center text-[13px] space-x">
               <input type="checkbox" checked={check} onChange={handleCheckboxChange} />
               <span>자동 로그인</span>
             </label>
           </div>
 
           {/* 로그인버튼 */}
-          <button
-            onClick={handleLogin}
-            type="submit"
-            className="w-20 h-10 font-bold font-[TAEBAEKfont] text-[13px] bg-primary-200 rounded-[10px]"
-          >
-            LOG IN
-          </button>
+          <ClickButton text="LOGIN" width= "30%" onClick={handleLogin} />
         </form>
 
     
@@ -297,7 +292,7 @@ const PatientLoginPage: React.FC = () => {
           회원가입
         </div>
 
-        <hr className="border-gray-400 w-[90%] mt-[120px] mb-[30px]" />
+        <hr className="border-gray-400 w-[90%] mt-[50px] mb-[30px]" />
         <form className="flex justify-center items-center">
           <div className="text-[12px] mt-[8px] ">소셜 로그인</div>
           <button onClick={handleKakaoLogin} className="ml-[20px] rounded-[10px]">

@@ -209,9 +209,17 @@ const ChatMessages: React.FC<ChatMessagesProps> =
             el.scrollTop = el.scrollHeight;
           }
           setShowNewMessagePreview(false);
-        } else {
-          setNewMessagePreviewText(contentPreview);
-          setShowNewMessagePreview(true);
+        } else if (el) {
+          const lastMessageEl = el.lastElementChild;
+          if (lastMessageEl) {
+            const lastMessageRect = lastMessageEl.getBoundingClientRect();
+            const containerRect = el.getBoundingClientRect();
+            const isVisible = lastMessageRect.top >= containerRect.top && lastMessageRect.bottom <= containerRect.bottom;
+            if (!isVisible) {
+              setNewMessagePreviewText(contentPreview);
+              setShowNewMessagePreview(true);
+            }
+          }
         }
       }, 0);
       return () => clearTimeout(timeout);
@@ -240,7 +248,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                       {messageDate}
                     </div>
                   )}
-                  <div className="text-center text-gray-500 bg-gray-200 px-3 py-2 rounded-md mx-auto max-w-xs whitespace-pre-line" style={{ fontSize: "var(--font-caption)" }}>
+                  <div className="text-center text-gray-500 bg-gray-200 px-3 py-2 mt-4 mb-4 rounded-md mx-auto max-w-xs whitespace-pre-line" style={{ fontSize: "var(--font-caption)" }}>
                     🤖 {message.messageContent}
                   </div>
                 </React.Fragment>

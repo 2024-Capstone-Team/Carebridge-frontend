@@ -190,97 +190,94 @@ const NurseSchedulePage: React.FC = () => {
 
   return (
     /* 전체 창*/
-    <div className="flex h-screen bg-gray-100 p-6">
+    <div className="flex h-screen bg-gray-100 p-2">
 
       {/* 왼쪽 사이드바 영역 */}
-      <div className="h-full w-1/5 mr-4 flex flex-col">
+      <div className="h-full w-1/5 p-3 mr-2 rounded-lg overflow-hidden bg-[#F0F4FA] flex flex-col">
+        <div className="flex items-center mb-2" style={{ marginTop: "-40px" }}>
+          {isDropdownVisible ? (
+            <FiChevronsDown className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer" onClick={handleMenuClick} />
+          ) : (
+            <FiMenu className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer" onClick={handleMenuClick} />
+          )}
 
-        {/* 메뉴바 + 로고 영역 */}
-        <div className="bg-[#F0F4FA] rounded-lg p-6 flex flex-col h-full">
-          <div className="flex items-center mb-4" style={{ marginTop: "-60px" }}>
-            {isDropdownVisible ? (
-              <FiChevronsDown className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer" onClick={handleMenuClick} />
-            ) : (
-              <FiMenu className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer" onClick={handleMenuClick} />
-            )}
+          {/* 메뉴바 클릭 시 팝업 */}
+          {isDropdownVisible && (
+            <div
+              className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
+              style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+            >
+              <p className="text-black font-semibold pt-2 px-2" style={{ fontSize: "var(--font-body)" }}>
+                {hospitalName ? hospitalName : "Loading..."}
+              </p>
+              <p className="text-gray-500 pt-1 pb-2 px-2" style={{ fontSize: "var(--font-caption)" }}>
+                {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
+              </p>
+              <hr className="bg-gray-600" />
 
-            {/* 메뉴바 클릭 시 팝업 */}
-            {isDropdownVisible && (
-              <div
-                className="absolute top-[2.5em] left-[0px] mt-2 w-[200px] bg-white shadow-lg rounded-md border"
-                style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+              <ul className="py-2">
+                <li
+                  className="px-2 pt-2 pb-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
+                  onClick={() => handleMenuMoveClick("/nurse-main")}
                 >
-                <p className="text-black font-semibold pt-2 px-2" style={{ fontSize: "var(--font-body)" }}>
-                  {hospitalName ? hospitalName : "Loading..."}
-                </p>
-                <p className="text-gray-500 pt-1 pb-2 px-2" style={{ fontSize: "var(--font-caption)" }}>
-                  {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
-                </p>
+                  <FiHome className="w-4 h-4 mr-2" />
+                  메인 화면
+                </li>
+                <li
+                  className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
+                  onClick={() => handleMenuMoveClick("/nurse-schedule")}
+                >
+                  <FiCalendar className="w-4 h-4 mr-2" />
+                  스케줄러
+                </li>
+                <li
+                  className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
+                  onClick={handleMacroClick}
+                >
+                  <FiCpu className="w-4 h-4 mr-2" />
+                  매크로 설정
+                </li>
+                <li
+                  className="px-2 pt-1 pb-2 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
+                  style={{ fontSize: "var(--font-caption)" }}
+                  onClick={handleQAClick}
+                >
+                  <BsStopwatch className="w-4 h-4 mr-2" />
+                  빠른 답변 설정
+                </li>
                 <hr className="bg-gray-600" />
-                
-                <ul className="py-2">
-                  <li
-                    className="px-2 pt-2 pb-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                    style={{ fontSize: "var(--font-caption)" }}
-                    onClick={() => handleMenuMoveClick("/nurse-main")}
-                    >
-                      <FiHome className="w-4 h-4 mr-2" />
-                      메인 화면
-                  </li>
-                  <li
-                    className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                    style={{ fontSize: "var(--font-caption)" }}
-                    onClick={() => handleMenuMoveClick("/nurse-schedule")}
-                    >
-                      <FiCalendar className="w-4 h-4 mr-2" />
-                      스케줄러
-                  </li>
-                  <li
-                    className="px-2 py-1 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                    style={{ fontSize: "var(--font-caption)" }}
-                    onClick={handleMacroClick}
-                    >
-                      <FiCpu className="w-4 h-4 mr-2" />
-                      매크로 설정
-                  </li>
-                  <li
-                    className="px-2 pt-1 pb-2 font-semibold hover:bg-gray-100 cursor-pointer flex items-center"
-                    style={{ fontSize: "var(--font-caption)" }}
-                    onClick={handleQAClick}
-                    >
-                      <BsStopwatch className="w-4 h-4 mr-2" />
-                      빠른 답변 설정
-                  </li>
-                  <hr className="bg-gray-600" />
-            
-                  <li
-                    className="px-2 pt-2 pb-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
-                    style={{ fontSize: "var(--font-caption)" }}
-                    onClick={() => handleMenuMoveClick("/nurse-reset-password")}
-                    >
-                      비밀번호 재설정
-                  </li>
-                  <li
-                    className="px-2 py-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
-                    style={{ fontSize: "var(--font-caption)" }}
-                    onClick={() => handleMenuMoveClick("/nurse-login")}
-                    >
-                      로그아웃
-                  </li>
-                </ul>
-              </div>
-            )}
-            
-            <div className="flex w-full">
-              <img src={logo} alt="CareBridge 로고" className="w-[120px] cursor-pointer" onClick={handleLogoClick}/>
-            </div>
-          </div>
 
-          {/* 날짜 표시 영역 */}
-          <div className="flex text-center text-[16px] text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
-            <p className="text-black font-semibold mr-2">{formattedDate}</p>
-            <p className="text-gray-600">{formattedTime}</p>
+                <li
+                  className="px-2 pt-2 pb-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  style={{ fontSize: "var(--font-caption)" }}
+                  onClick={() => handleMenuMoveClick("/nurse-reset-password")}
+                >
+                  비밀번호 재설정
+                </li>
+                <li
+                  className="px-2 py-1 text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  style={{ fontSize: "var(--font-caption)" }}
+                  onClick={() => handleMenuMoveClick("/nurse-login")}
+                >
+                  로그아웃
+                </li>
+              </ul>
+            </div>
+          )}
+
+          <div className="flex w-full">
+            <img src={logo} alt="CareBridge 로고" className="w-[120px] cursor-pointer" onClick={handleLogoClick}/>
           </div>
+        </div>
+
+        {/* 날짜 표시 영역 */}
+        <div className="flex text-center text-[16px] text-gray-600 mb-2" style={{ marginTop: "-24px" }}>
+          <p className="text-black font-semibold mr-2">{formattedDate}</p>
+          <p className="text-gray-600">{formattedTime}</p>  
+        </div>
 
           {/* 병원 정보 표시 영역 */}
           <div className="mb-4">
@@ -290,32 +287,32 @@ const NurseSchedulePage: React.FC = () => {
             </p>
           </div>
 
-          {/* 환자 목록 영역 */}
-          <div className="bg-white rounded-lg shadow-sm flex flex-col min-h-0 flex-1">
-            <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-              <h2 className="text-gray-800 text-18px font-semibold">환자 목록</h2>
-              <button className="bg-transparent px-1 hover:text-gray-400" onClick={handleAddSchedule}>
-                <FaPlus />
-              </button>
-            </div>
+        {/* 환자 목록 영역 */}
+        <div className="mt-2 rounded-lg overflow-hidden shadow-md flex-1 flex flex-col">
+          <div className="px-4 py-3 bg-white border-b border-gray-100 flex justify-between items-center">
+            <h2 className="text-gray-800 text-18px font-semibold">환자 목록</h2>
+            <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleAddSchedule}>
+              <FaPlus />
+            </button>
+          </div>
 
-            <div className="flex-1 overflow-y-auto scrollbar-hide px-2">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center h-full p-6">
-                  <div className="w-10 h-10 border-4 border-gray-300 border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-gray-500">환자 정보를 불러오는 중...</p>
+          <div className="flex flex-col flex-1 px-2 py-2 overflow-y-auto scrollbar-hide bg-white">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center h-full p-6">
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-500">환자 정보를 불러오는 중...</p>
+              </div>
+            ) : filteredPatients.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-6">
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <FiUser className="h-7 w-7 text-gray-400" />
                 </div>
-              ) : filteredPatients.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full p-6">
-                  <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                    <FiUser className="h-7 w-7 text-gray-400" />
-                  </div>
-                  <p className="text-gray-500 font-medium">등록된 환자가 없습니다</p>
-                </div>
-              ) : (
-                <ul className="py-3 space-y-2.5">
-                  {filteredPatients.map((patient) => {
-                    const isSelected = patient.patientId === selectedPatient;
+                <p className="text-gray-500 font-medium">등록된 환자가 없습니다</p>
+              </div>
+            ) : (
+              <ul className="py-3 space-y-2.5">
+                {filteredPatients.map((patient) => {
+                  const isSelected = patient.patientId === selectedPatient
 
                     return (
                       <li
@@ -339,7 +336,6 @@ const NurseSchedulePage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* 캘린더 영역 */}
       <div className="flex-1 bg-[#DFE6EC] rounded-lg shadow-md h-full">

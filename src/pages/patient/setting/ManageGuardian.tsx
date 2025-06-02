@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useUserContext } from '../../../context/UserContext';
 
 // Guardian 인터페이스 정의
 interface Guardian {
@@ -21,11 +20,15 @@ const ManageGuardian: React.FC = () => {
     const [showAddGuardianModal, setShowAddGuardianModal] = useState(false);
     const [newGuardianName, setNewGuardianName] = useState('');
     const [newGuardianPhoneNumber, setNewGuardianPhoneNumber] = useState('');
-    const { userId } = useUserContext();
+
+    const patientId = localStorage.getItem("patientId");
 
     const fetchGuardians = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/guardian/list/${userId}`);
+            
+            // const patientId = 1;
+            const response = await axios.get(`${API_BASE_URL}/api/guardian/list/${patientId}`);
+            console.log(response.data);
             setGuardians(response.data);
         } catch (error) {
             console.error('보호자 목록 불러오기 실패:', error);
@@ -35,7 +38,7 @@ const ManageGuardian: React.FC = () => {
 
     useEffect(() => {
         fetchGuardians();
-    }, [userId]);
+    }, [patientId]);
 
     const handleDisconnect = (guardian: Guardian) => {
         setSelectedGuardian(guardian);
@@ -66,11 +69,8 @@ const ManageGuardian: React.FC = () => {
     const confirmAddGuardian = async () => {
         try {
             await axios.post(
-                `${API_BASE_URL}/api/guardian/${userId}`,
-                { name: newGuardianName, phoneNumber: newGuardianPhoneNumber},
-                { headers: { "Content-Type": "application/json" } }
+                `${API_BASE_URL}/api/guardian/${patientId}?name=${newGuardianName}&phoneNumber=${newGuardianPhoneNumber}`
             );
-
             setShowAddGuardianModal(false);
             setNewGuardianName('');
             setNewGuardianPhoneNumber('');
@@ -98,7 +98,7 @@ const ManageGuardian: React.FC = () => {
                     <p className="text-bold text-black">보호자 관리</p>
                 </div>
                 <button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#747474] text-white px-2 py-1 rounded-lg"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-300 text-white px-2 py-1 rounded-lg"
                     onClick={handleAddGuardian}
                 >
                     보호자 등록
@@ -116,19 +116,19 @@ const ManageGuardian: React.FC = () => {
             <div className="flex flex-col items-center p-0 w-full max-w-md bg-white border-2 border-[#e6e6e6] rounded-[30px] shadow-lg mx-auto mt-4">
                 {guardians.map((guardian, index) => (
                     <div key={guardian.guardianId} className="flex flex-col w-full border-b border-gray-300 p-7">
-                        <p className="text-[#747474] text-[20px]">보호자 {index + 1}</p>
+                        <p className="text-black text-[15px]">보호자 {index + 1}</p>
                         <div className="flex justify-between items-center my-3">
                             <div>
-                                <p className="text-black text-[20px]">이름</p>
-                                <p className="text-black text-[20px] mt-2">전화번호</p>
+                                <p className="text-black text-[15px]">이름</p>
+                                <p className="text-black text-[15px] mt-2">전화번호</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-black text-[20px]">{guardian.name}</p>
-                                <p className="text-black text-[20px] mt-2">{guardian.phoneNumber}</p>
+                                <p className="text-black text-[15px]">{guardian.name}</p>
+                                <p className="text-black text-[15px] mt-2">{guardian.phoneNumber}</p>
                             </div>
                         </div>
                         <div className="flex justify-end mt-1">
-                            <button className="text-[#747474] underline" onClick={() => handleDisconnect(guardian)}>
+                            <button className="text-primary-300 underline" onClick={() => handleDisconnect(guardian)}>
                                 연결 끊기
                             </button>
                         </div>
@@ -162,7 +162,7 @@ const ManageGuardian: React.FC = () => {
                         <input type="text" placeholder="이름" value={newGuardianName} onChange={(e) => setNewGuardianName(e.target.value)} className="w-full p-2 mt-2 border rounded bg-white" />
                         <input type="text" placeholder="전화번호" value={newGuardianPhoneNumber} onChange={(e) => setNewGuardianPhoneNumber(e.target.value)} className="w-full p-2 mt-2 border rounded bg-white" />
                         <div className="flex justify-end mt-4">
-                            <button className="bg-[#747474] text-white py-1.5 px-4 rounded-lg mr-3" onClick={confirmAddGuardian}>확인</button>
+                            <button className="bg-primary-400 text-white py-1.5 px-4 rounded-lg mr-3" onClick={confirmAddGuardian}>확인</button>
                             <button className="bg-white text-black py-1.5 px-4 rounded-lg border" onClick={cancelAddGuardian}>취소</button>
                         </div>
                     </div>

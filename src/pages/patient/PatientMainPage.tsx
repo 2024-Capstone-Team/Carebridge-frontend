@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as Separator from "@radix-ui/react-separator";
 import { useUserContext } from "../../context/UserContext";
-import ScheduleToday from "./ScheduleToday";
 import { MedicalStaff } from "../../types";
 
 // 환자 정보를 담는 인터페이스 정의
@@ -29,14 +28,14 @@ const PatientMainPage: React.FC = () => {
 
   const navigate = useNavigate();
   const [patientDto, setPatientDto] = useState<PatientDto | null>(null);
-  const { setPatientId, isPatient } = useUserContext();
+  // const { setPatientId, isPatient } = useUserContext();
   const [hospitalName, setHospitalName] = useState(""); // 불러올 병원 이름
   const [medicalStaffList, setMedicalStaffList] = useState<MedicalStaff[]>([]); // 분과 이름
-  
-
+  const [nextSchedule, setNextSchedule] = useState<any | null>(null); // 가장 빠른 일정
 
   const phoneNumber = localStorage.getItem("phoneNumber");
   const patientId = localStorage.getItem("patientId");
+  const isPatient = localStorage.getItem("isPatient");
 
   // 날짜 포맷을 변환하는 유틸리티 함수 (YYYY-MM-DD 형식으로 변환)
   const formatDate = (date: string): string => date.split("T")[0];
@@ -73,7 +72,7 @@ const PatientMainPage: React.FC = () => {
         }
       );
       await axios.get(`${API_BASE_URL}/api/users/social-login/kakao/logout`);         // 소셜 계정 로그아웃
-        setPatientId(null);
+        localStorage.removeItem("isPatient");
         localStorage.removeItem("patientId");
         localStorage.removeItem("autoLogin");
         localStorage.removeItem("accessToken");
@@ -86,7 +85,7 @@ const PatientMainPage: React.FC = () => {
     }
   };
 
-  // 환자 정보 호출 함수 + 오늘의 일정 호출
+  // 환자 정보 호출 함수
   const fetchPatientInfo = async () => {
     if (!patientId) return;
 
@@ -103,9 +102,29 @@ const PatientMainPage: React.FC = () => {
     }
   };
 
+  // 일정 정보 호출 함수
+  const fetchScheduleInfo = async () => {
+    if (!patientId) return;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/schedule/today/${patientId}`);
+      const schedules = response.data;
+
+      if (schedules && schedules.length > 0) {
+        // 일정들을 날짜 순으로 정렬 (가장 빠른 일정 찾기)
+        const sortedSchedules = schedules.sort((a: any, b: any) => new Date(a.scheduleDate).getTime() - new Date(b.scheduleDate).getTime());
+        setNextSchedule(sortedSchedules[0]); // 가장 빠른 일정
+      } else {
+        setNextSchedule(null); // 일정이 없으면 null
+      }
+    } catch (error) {
+      console.error("일정 정보 조회 중 오류 발생:", error);
+    }
+  };
+
   // 컴포넌트 마운트 시 데이터 로딩
   useEffect(() => {
     fetchPatientInfo();
+    fetchScheduleInfo();
   }, [patientId]);
 
   
@@ -154,7 +173,7 @@ const PatientMainPage: React.FC = () => {
       <img
         src="icons/main-page-logo.png"
         alt="Main Logo"
-        className="w-[50%] pt-8"
+        className="w-[190px] pt-8"
       />
 
       {/* 환자 정보 컨테이너 */}
@@ -179,21 +198,21 @@ const PatientMainPage: React.FC = () => {
           {/* 다음 일정 안내 컨테이너 */}
           <div className="flex item-center justify-center m-2">
             <div className="w-full max-w-md h-[80px] bg-white shadow-md rounded-lg py-2 mb-2 px-2">
-              <p className="text-[15px] font-bold text-primary-300">
-                예정된 다음 일정
-              </p>
-              <p className="text-[13px] text-black">
-                어쩌구저쩌구
-              </p>
-
-
+              <p className="text-[15px] font-bold text-primary-300">오늘의 일정</p>
+              {nextSchedule ? (
+                <div>
+                  <p className="text-[13px] text-black">{nextSchedule.details}</p>
+                  <p className="text-[13px] text-black">시간: {nextSchedule.scheduleDate}</p>
+                </div>
+              ) : (
+                <p className="text-[13px] m-3 text-black">오늘 일정이 없습니다.</p>
+              )}
             </div>
-            {/* 오늘의 일정 바로가기 */}
           </div>
         </div>
       </div>
       {/* 서비스 컨테이너 */}
-      <div className="absolute -bottom-2 w-11/12 max-w-md h-[500px] bg-white shadow-lg border
+      <div className="fixed top-[350px] w-11/12 max-w-[500px] h-[500px] bg-white shadow-lg border
       rounded-t-lg py-8 mb-4 z-0">
         {/* 제목 영역 */}
         <div className="mt-[60px] text-lg font-bold text-center font-title">
@@ -270,16 +289,16 @@ const PatientMainPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-      {/* Logout Button */}
-      <div className="absolute -bottom-0 right-4 p-4">
-        <button
-          onClick={handleLogout}
-          className="flex items-center text-black bg-white rounded-lg text-[13px]"
-        >
-        <img src="/icons/logout-icon.png" className="w-[28px] h-[28px] mr-2" alt="로그아웃 아이콘" />
-        로그아웃
-        </button>
+        {/* Logout Button */}
+        <div className="relative -right-0">
+          <button
+            onClick={handleLogout}
+            className="flex items-center text-black bg-white rounded-lg text-[13px]"
+          >
+          <img src="/icons/logout-icon.png" className="w-[28px] h-[28px] mr-2" alt="로그아웃 아이콘" />
+          로그아웃
+          </button>
+        </div>
       </div>
     </div>
   );

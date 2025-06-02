@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import type { FirebaseOptions } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, deleteToken, getToken, onMessage } from "firebase/messaging";
 
 
 // Firebase 프로젝트의 설정 정보
@@ -45,6 +45,14 @@ export const requestForToken = async () => {
   }
 };
 
+export const deleteFcmToken = async (token: string) => {
+  try {
+    await deleteToken(messaging);
+    console.log("FCM 토큰이 삭제되었습니다.");
+  } catch (error) {
+    console.error("FCM 토큰 삭제 중 오류 발생:", error);
+  }
+};
 
 export const onMessageListener = () =>
   new Promise((resolve) => {

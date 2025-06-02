@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useUserContext } from "../../../context/UserContext";
 import axios from "axios";
+import PushNotificationSwitch from "./PushNotificationSwitch";
 
 // 환자 정보를 담는 인터페이스 정의
 interface PatientDto {
@@ -125,9 +126,9 @@ const PatientSettingPage: React.FC = () => {
         </p>
       </div>
 
-      {/* 메인 컨테이너 - 환자 정보 카드 */}
+      {/* 메인 컨테이너 - 보호자&환자 정보 카드 */}
       <div className="flex flex-col items-center p-0 w-full max-w-md h-auto bg-white border-2 border-[#e6e6e6] rounded-[30px] shadow-lg mx-auto opacity-100">
-        {/* 환자 기본 정보 섹션 */}
+        {/* 환자자 기본 정보 섹션 */}
         <div className="flex flex-col w-full">
           <div className="flex-1 border-b border-gray-300 p-7 m-0 flex items-center">
             <div className="flex flex-col justify-center items-start space-y-0 w-full gap-2">
@@ -135,28 +136,24 @@ const PatientSettingPage: React.FC = () => {
                 환자
               </p>
               <p className="text-black font-bold whitespace-nowrap text-[25px]">
-                {patientDto.name} 님, 안녕하세요.
+                {patientDto?.name || ""} 님, 안녕하세요.
               </p>
               <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
-                  className="text-[#226193] font-normal mt-[-4px]"
-                  style={{ fontSize: "3.5vw" }}
-                >
+                  className="text-primary-400 mt-[-4px] text-[13px]"                >
                   보호자: {guardianDto?.name || "미등록"}
                 </p>
               </div>
               <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
-                  className="text-[#226193] font-normal mt-[-4px]"
-                  style={{ fontSize: "3.5vw" }}
+                  className="text-primary-400 mt-[-4px] text-[13px]"
                 >
                   입원일: {new Date(patientDto.hospitalizationDate).toLocaleDateString()}
                 </p>
               </div>
               <div className="border border-[#226193] rounded-[60px] px-2 py-1">
                 <p
-                  className="text-[#226193] font-normal mt-[-4px]"
-                  style={{ fontSize: "3.5vw" }}
+                  className="text-primary-400 mt-[-4px] text-[13px]"
                 >
                   재원 일수: {calculateDaysSinceHospitalization(patientDto.hospitalizationDate)}일째
                 </p>
@@ -168,31 +165,30 @@ const PatientSettingPage: React.FC = () => {
           <div className="flex-1 border-b border-gray-300 p-6 m-0 flex items-center">
             <div className="w-full">
               <p
-                className="text-[#747474] font-normal"
-                style={{ fontSize: "4.5vw" }}
+                className="text-gray-500 text-[18px]"
               >
                 환자 정보
               </p>
               <div className="grid grid-cols-4 gap-4 mt-2">
                 <div className="flex flex-col justify-center items-start space-y-2">
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     이름
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     성별
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     생년월일
                   </p>
                 </div>
                 <div className="flex flex-col justify-center items-end space-y-2 col-span-3 ml-auto">
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     {patientDto.name}
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     {patientDto.gender}
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     {patientDto.birthDate}
                   </p>
                 </div>
@@ -204,25 +200,24 @@ const PatientSettingPage: React.FC = () => {
           <div className="flex-1 border-b border-gray-300 p-6 m-0 flex items-center">
             <div className="w-full">
               <p
-                className="text-[#747474] font-normal"
-                style={{ fontSize: "4.5vw" }}
+                className="text-gray-500 text-[18px]"
               >
                 입원 정보
               </p>
               <div className="grid grid-cols-4 gap-4 mt-2">
                 <div className="flex flex-col justify-center items-start space-y-2">
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     병원
                   </p>
-                  <p className="text-black font-normal whitespace-nowrap" style={{ fontSize: "4vw" }}>
+                  <p className="text-black whitespace-nowrap">
                     병동/호실
                   </p>
                 </div>
                 <div className="flex flex-col justify-center items-end space-y-2 col-span-3 ml-auto">
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     {hospitalName}
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: "4vw" }}>
+                  <p className="text-black text-[15px]">
                     {patientDto.department} / {patientDto.hospitalLocation}
                   </p>
                 </div>
@@ -234,33 +229,26 @@ const PatientSettingPage: React.FC = () => {
           <div className="flex-1 border-b border-gray-300 p-6 m-0 flex items-center">
             <div className="w-full">
               <p
-                className="text-[#747474] font-normal"
-                style={{ fontSize: "4.5vw" }}
+                className="text-gray-500 text-[18px]"
               >
                 계정 설정
               </p>
               <div className="flex flex-col space-y-2 mt-2">
                 <Link
                   to="/change-phonenum"
-                  className="text-black font-normal flex justify-between items-center"
-                  style={{ fontSize: "4vw" }}
+                  className="text-black flex justify-between items-center"
+                 
                 >
                   전화번호 수정 <span>&gt;</span>
                 </Link>
                 <Link
                   to="/manage-guardian"
-                  className="text-black font-normal flex justify-between items-center"
-                  style={{ fontSize: "4vw" }}
+                  className="text-black font-normal flex justify-between items-center text-[16px]"
                 >
                   보호자 관리 <span>&gt;</span>
                 </Link>
-                <Link
-                  to="/push-notifications"
-                  className="text-black font-normal flex justify-between items-center"
-                  style={{ fontSize: "4vw" }}
-                >
-                  푸시알림 <span>&gt;</span>
-                </Link>
+                <PushNotificationSwitch />
+                
               </div>
             </div>
           </div>
@@ -269,23 +257,20 @@ const PatientSettingPage: React.FC = () => {
           <div className="flex-1 p-7 m-0 flex items-center">
             <div className="w-full">
               <p
-                className="text-[#747474] font-normal"
-                style={{ fontSize: "4.5vw" }}
+                className="text-gray-500 text-[18px]"
               >
                 기타
               </p>
               <div className="flex flex-col space-y-2 mt-2">
                 <Link
                   to="/customer-service"
-                  className="text-black font-normal flex justify-between items-center"
-                  style={{ fontSize: "4vw" }}
+                  className="text-black flex justify-between items-center"
                 >
                   고객센터 <span>&gt;</span>
                 </Link>
                 <Link
                   to="/app-info"
-                  className="text-black font-normal flex justify-between items-center"
-                  style={{ fontSize: "4vw" }}
+                  className="text-black flex justify-between items-center"
                 >
                   앱 정보 <span>&gt;</span>
                 </Link>

@@ -1,4 +1,5 @@
 export default {
+  darkMode: false,
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
@@ -26,6 +27,5 @@ export default {
   plugins: [
     require('tailwind-scrollbar-hide'),
     require('tailwind-scrollbar'),
-    require('@tailwindcss/line-clamp'), 
   ],
 };

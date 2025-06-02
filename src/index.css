@@ -108,35 +108,6 @@ h1 {
   line-height: 1.1;
 }
 
-/*button {
-  position: center;
-  width: 110;
-  height: 40;
-  border-radius: 20px;
-  border: 1px solid #688fb6;
-
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'TAEBAEKfont';
-  background-color: #98B3C8 !important;
-  cursor: pointer;
-  transition: border-color 0.25s;
-
-}
-
-button:hover {
-  border-color: #5b84ad;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}*/
-
-
-
-
-
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

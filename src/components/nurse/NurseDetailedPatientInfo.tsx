@@ -4,6 +4,7 @@ import { FaChevronLeft, FaSearch } from "react-icons/fa";
 import { formatTime } from "../../utils/commonUtils";
 import Fuse from "fuse.js";
 import axios from "axios";
+import Button from "../common/Button";
 
 interface PatientInfo {
   patientId: number;
@@ -216,12 +217,12 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
                   <p>{patient.phoneNumber || "정보 없음"}</p>
                 </div>
                 <div className="flex justify-end mt-2">
-                  <button 
-                    className="px-3 py-2 bg-gray-400 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:bg-gray-500"
+                  <Button
                     onClick={() => onChatClick(patient.patientId)}
+                    variant="chat"
                   >
                     채팅
-                  </button>
+                  </Button>
                 </div>
               </div>
 

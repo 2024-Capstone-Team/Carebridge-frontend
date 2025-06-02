@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Button from '../common/Button';
 
 interface NurseQuickAnswerEditProps {
   onClose: () => void;
@@ -18,15 +19,16 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
 
   const [title, setTitle] = useState(quickAnswer.title);
   const [information, setInformation] = useState(quickAnswer.information);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleUpdate = async () => {
     if (!title.trim() || !information.trim()) {
       alert('제목과 정보를 모두 입력해주세요.');
       return;
     }
+    setLoading(true);
+    setError(null);
 
     try {
       const response = await axios.get(`${API_BASE_URL}/api/hospital-info/list/${hospitalId}`);
@@ -36,6 +38,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
       );
       if (duplicate) {
         setError('동일한 제목의 빠른 답변이 존재합니다');
+        setLoading(false);
         return;
       }
 
@@ -45,11 +48,13 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
           information,
         },
       });
-      alert('병원 정보가 성공적으로 수정되었습니다.');
+      alert('빠른 답변이 성공적으로 수정되었습니다.');
       onClose();
     } catch (err) {
       console.error(err);
-      setError('병원 정보 수정 중 오류가 발생했습니다.');
+      setError('빠른 답변 수정 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,17 +63,17 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
       <h2 className="font-bold mb-4" style={{fontSize: "var(--font-title)" }}>빠른 답변 수정</h2>
       <hr className="mb-4 border border-gray-300" />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         <div>
           <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
           <input 
             type="text"
+            className="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
               setError(null);
             }}
-            className="w-full border p-2 rounded-lg"
           />
         </div>
 
@@ -77,7 +82,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
           <select
             value={quickAnswer.category}  
             disabled
-            className="w-full border p-2 rounded-lg"
+            className="w-full border-gray-300 bg-gray-50 p-2 rounded-lg rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="General">General</option>
             <option value="Facilities">Facilities</option>
@@ -90,7 +95,7 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
           <textarea
             value={information}
             onChange={(e) => setInformation(e.target.value)}
-            className="w-full border rounded-lg p-2 h-[400px] overflow-y-auto resize-none"
+            className="w-full border-gray-300 bg-gray-50 p-2 h-[500px] overflow-y-auto resize-none rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
             rows={4}
           ></textarea>
         </div>
@@ -98,21 +103,23 @@ const NurseQuickAnswerEdit: React.FC<NurseQuickAnswerEditProps> = ({ onClose, ho
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         <div className="flex justify-center space-x-2">
-          <button 
-            type="button"
+          <Button 
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-gray-700 hover:text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+            variant="cancel"
+            size='large'
           >
             취소
-          </button>
-          <button 
-            type="submit"
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+          </Button>
+              
+          <Button 
+            onClick={handleUpdate}
+            variant="save"
+            size='large'
           >
             저장
-          </button>
+          </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

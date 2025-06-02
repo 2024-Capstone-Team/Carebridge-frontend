@@ -19,25 +19,24 @@ const PatientChatCategories: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    const added = sessionStorage.getItem("customRequestAdded");
-  
-    if (added === "true") {
-      setShowToast(true);
-      setVisible(true);
-      sessionStorage.removeItem("customRequestAdded");
-  
-      const timeout = setTimeout(() => {
-        console.log("🕒 Hiding toast...");
-        setShowToast(false);
-        setTimeout(() => setVisible(false), 500); // allow fade-out to complete
-      }, 3000);
-  
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  }, []);
+useEffect(() => {
+  const added = sessionStorage.getItem("customRequestAdded");
+
+  if (added === "true") {
+    setShowToast(true);
+    setVisible(true);
+    sessionStorage.removeItem("customRequestAdded");
+  }
+
+  const timeout = setTimeout(() => {
+    setShowToast(false);
+    setTimeout(() => setVisible(false), 500); // allow fade-out to complete
+  }, 3000);
+
+  return () => {
+    clearTimeout(timeout);
+  };
+}, []);
   
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { formatBirthdate, formatGender } from "../../utils/commonUtils";
 import axios from "axios";
+import Button from "../common/Button";
 
 export interface Patient {
   patientId: number;
@@ -152,20 +153,21 @@ const ScheduleAdd: React.FC<ScheduleAddProps> = ({ patients, medicalStaffId, onC
       
 
       <div className="flex justify-center space-x-3 pt-5">
-        <button 
-            type="button"
-            onClick={onCancel}
-            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
-          >
-            취소
-          </button>
-          <button 
-            type="submit"
-            onClick={handleSave}
-            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
-          >
-            저장
-          </button>
+        <Button 
+          onClick={onCancel}
+          variant="cancel"
+          size='large'
+        >
+          취소
+        </Button>
+              
+        <Button 
+          onClick={handleSave}
+          variant="save"
+          size='large'
+        >
+          저장
+        </Button>
       </div>
     </div>
   );
