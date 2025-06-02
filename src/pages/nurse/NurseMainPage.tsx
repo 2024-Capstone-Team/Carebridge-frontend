@@ -72,8 +72,15 @@ const NurseMainPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const { hospitalId } = useUserContext()
-  const medicalStaffId = 1
+  const { hospitalId: hospitalIdStr, nurseId: nurseIdStr, userId: userIdStr } = useUserContext();
+
+  const hospitalId = hospitalIdStr ? Number(hospitalIdStr) : 1;
+  const nurseId = nurseIdStr ? String(nurseIdStr) : "1";
+  const medicalStaffId = userIdStr ? Number(userIdStr) : 1;
+
+  if (!hospitalIdStr || !nurseIdStr || !userIdStr) {
+    console.warn("Missing user context values. Falling back to: hospitalId=1, nurseId='1', userId=1");
+  }
 
   // 병원 이름 API 호출
   useEffect(() => {
@@ -527,13 +534,12 @@ const NurseMainPage: React.FC = () => {
     </div>
   </div>
 
-  const nurseId = "1" // 테스트용 간호사 ID
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(true) // Loading state for chat history
   const [rooms, setRooms] = useState<ChatRoom[]>([])
   const [currentRoom, setCurrentRoom] = useState<string>("")
   const [patientName, setPatientName] = useState<string>("Unknown")
-  const [patientId, setPatientId] = useState<number>(5)
+  const [patientId, setPatientId] = useState<number>(5) // fallback patientId
   const [isDataFetched, setIsDataFetched] = useState<boolean>(false)
   const currentRoomRef = useRef<string>("") // Stores latest room
 
