@@ -177,14 +177,6 @@ const PatientSchedular: React.FC = () => {
               </div>
             </div>
           ))}
-
-        {/* 오늘의 일정 */}
-        <div className="flex flex-col justify-center items-center text-center border rounded-t-lg shadow-md p-2 bg-white fixed bottom-0 left-0 w-full">
-          <div className="flex flex-col items-center">
-            <img src="/icons/up-arrows.png" className="w-[28px]" alt="뒤로가기" />
-            <div>오늘의 일정</div>
-          </div>
-        </div>
       </div>
     </div>
   );
