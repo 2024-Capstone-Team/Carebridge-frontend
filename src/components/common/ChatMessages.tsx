@@ -74,7 +74,7 @@ const MessageBubble: React.FC<{
   <div className={`flex ${isSender ? "justify-end" : "justify-start"} mb-4 transition-all duration-300 ease-in-out`}>
     {/* Sender's message */}
     {isSender && (
-      <div className="flex flex-row items-end mr-3">
+      <div className="flex flex-row items-end mr-3 ">
         {message.isFailed ? (
           <div className="flex items-center">
             <span className="text-xs text-red-500 mr-2">전송 실패</span>
@@ -96,7 +96,7 @@ const MessageBubble: React.FC<{
           </div>
         ) : (
           <>
-            <span className="text-xs text-gray-500">{isRead ? "읽음" : ""}</span>
+            <span className="text-xs text-gray-400 min-w-[30px]">{isRead ? "읽음" : ""}</span>
           </>
         )}
       </div>
@@ -104,14 +104,14 @@ const MessageBubble: React.FC<{
 
 
     {/* Sender/Receiver message bubble and timestamp */}
-    <div className={`flex items-end gap-1 ${isSender ? "flex-row-reverse" : "flex-row"}`}>
+    <div className={`flex gap-1 ${isSender ? "flex-row-reverse items-end" : "flex-row items-end"}`}>
       <div
         className={`max-w-xs px-4 py-2 rounded-3xl shadow-sm ${isSender ? "rounded-br-none" : "rounded-bl-none"} ${
           isSender ? senderBubbleColor : receiverBubbleColor
         } ${isSender ? senderTextColor : receiverTextColor} ${
           customStyles?.message || ""
         } whitespace-pre-line`}
-        style={{ fontSize: textSize || "var(--font-body)" }}
+        style={{ fontSize: textSize }}
       >
         {isChatGpt ? (
           <div className="flex flex-col">
@@ -126,14 +126,14 @@ const MessageBubble: React.FC<{
           </>
         )}
       </div>
-      <div className="text-gray-400 mb-[2px]" style={{ fontSize: "var(--font-caption)" }}>
+      <div className="text-gray-400 mb-[1px] relative top-[2px] min-w-[60px]" style={{ fontSize: "var(--font-caption)" }}>
         {formatTimestamp(timestamp)}
       </div>
     </div>
 
     {/* Receiver's message */}
     {!isSender && (
-      <div className="flex flex-row items-end ml-3">
+      <div className="flex flex-row items-end ml-3 min-w-[30px]">
         <span className="text-xs text-gray-400">{isRead ? "읽음" : ""}</span>
       </div>
     )}
@@ -152,9 +152,10 @@ interface ChatMessagesProps {
   onResend: (msg: ChatMessage) => void;
   onCancel: (msg: ChatMessage) => void;
   textSize?: string;
+  bottomRef: React.RefObject<HTMLDivElement>;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = 
+const ChatMessages: React.FC<ChatMessagesProps> =
   ({
     chatMessages,
     currentUserId,
@@ -166,6 +167,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     onResend,
     onCancel,
     textSize,
+    bottomRef,
   }) => {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -178,24 +180,24 @@ const ChatMessages: React.FC<ChatMessagesProps> =
     const handleScroll = () => {
       const el = scrollContainerRef.current;
       if (!el) return;
-      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 30;
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 60;
       setIsAtBottom(nearBottom);
       if (nearBottom) {
         setShowNewMessagePreview(false);
       }
     };
 
-    // Scroll to the latest message after messages render, using a timeout to ensure DOM is ready
+    // Updated scroll-to-bottom logic for chat messages (with system message delay)
     useEffect(() => {
-      const timeout = setTimeout(() => {
-        const lastMessage = chatMessages[chatMessages.length - 1];
-        if (!lastMessage) return;
+      if (!chatMessages.length) return;
 
-        const fromMe = lastMessage.senderId === currentUserId;
-        const contentPreview = typeof lastMessage.messageContent === "string"
-          ? lastMessage.messageContent.slice(0, 30) + (lastMessage.messageContent.length > 30 ? "..." : "")
-          : "";
+      const lastMessage = chatMessages[chatMessages.length - 1];
+      const isRequest = typeof lastMessage.messageContent === "string" &&
+        lastMessage.messageContent.startsWith("[요청 사항 생성 완료]");
 
+      const delay = isRequest ? 30 : 0; // Delay for system messages to fully render
+
+      setTimeout(() => {
         const el = scrollContainerRef.current;
         const isReallyAtBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 30 : true;
 
@@ -204,26 +206,66 @@ const ChatMessages: React.FC<ChatMessagesProps> =
             el.scrollTop = el.scrollHeight;
           }
           hasMountedRef.current = true;
-        } else if (fromMe || isReallyAtBottom) {
+        }
+
+        if (isReallyAtBottom) {
           if (el) {
             el.scrollTop = el.scrollHeight;
           }
           setShowNewMessagePreview(false);
-        } else if (el) {
-          const lastMessageEl = el.lastElementChild;
-          if (lastMessageEl) {
-            const lastMessageRect = lastMessageEl.getBoundingClientRect();
-            const containerRect = el.getBoundingClientRect();
-            const isVisible = lastMessageRect.top >= containerRect.top && lastMessageRect.bottom <= containerRect.bottom;
-            if (!isVisible) {
-              setNewMessagePreviewText(contentPreview);
-              setShowNewMessagePreview(true);
-            }
+        } else {
+          const contentPreview = typeof lastMessage.messageContent === "string"
+            ? lastMessage.messageContent.slice(0, 30) + (lastMessage.messageContent.length > 30 ? "..." : "")
+            : "";
+          setNewMessagePreviewText(contentPreview);
+
+          const isFromMe = lastMessage.senderId === currentUserId;
+          if (!isFromMe) {
+            setShowNewMessagePreview(true);
           }
         }
-      }, 0);
-      return () => clearTimeout(timeout);
-    }, [chatMessages]);
+      }, delay);
+    }, [chatMessages, currentUserId]);
+
+    // Scroll to bottom if last message is from current user OR if user is already at bottom
+    useEffect(() => {
+      if (!chatMessages.length) return;
+      const lastMessage = chatMessages[chatMessages.length - 1];
+      const isFromMe = lastMessage.senderId === currentUserId;
+
+      const el = scrollContainerRef.current;
+      const isReallyAtBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 30 : true;
+
+      if (isFromMe || isReallyAtBottom) {
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            const el = scrollContainerRef.current;
+            if (el) el.scrollTop = el.scrollHeight;
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          });
+        }, 0);
+        setShowNewMessagePreview(false);
+      }
+    }, [chatMessages, currentUserId]);
+
+    // Show "new message" button if a new message arrives and user is not at bottom
+    useEffect(() => {
+      if (!chatMessages.length) return;
+
+      const lastMessage = chatMessages[chatMessages.length - 1];
+      const isFromMe = lastMessage.senderId === currentUserId;
+
+      const el = scrollContainerRef.current;
+      const isNearBottom = el ? el.scrollHeight - el.scrollTop - el.clientHeight < 60 : true;
+
+      if (!isFromMe && !isNearBottom) {
+        const contentPreview = typeof lastMessage.messageContent === "string"
+          ? lastMessage.messageContent.slice(0, 30) + (lastMessage.messageContent.length > 30 ? "..." : "")
+          : "";
+        setNewMessagePreviewText(contentPreview);
+        setShowNewMessagePreview(true);
+      }
+    }, [chatMessages, currentUserId]);
 
     let lastDate: string | null = null;
     let previousSenderId: number | null = null;
@@ -234,6 +276,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
           ref={scrollContainerRef}
           onScroll={handleScroll}
           className={`flex flex-col px-3 pb-4 overflow-auto h-full scrollbar-hide overscroll-none ${customStyles?.container || ""}`}
+          style={{ fontSize: textSize }}
         >
           {chatMessages.map((message, index) => {
             const messageDate = formatDateHeader(message.timestamp);
@@ -248,7 +291,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                       {messageDate}
                     </div>
                   )}
-                  <div className="text-center text-gray-500 bg-gray-200 px-3 py-2 mt-4 mb-4 rounded-md mx-auto max-w-xs whitespace-pre-line" style={{ fontSize: "var(--font-caption)" }}>
+                  <div className="relative z-20 text-center text-gray-500 bg-gray-200/90 px-3 py-2 mt-4 mb-4 rounded-md mx-auto max-w-xs whitespace-pre-line" style={{ fontSize: "var(--font-caption)" }}>
                     🤖 {message.messageContent}
                   </div>
                 </React.Fragment>
@@ -282,7 +325,7 @@ const ChatMessages: React.FC<ChatMessagesProps> =
                   }
                   customStyles={{
                     ...customStyles,
-                    message: `${customStyles?.message || ""} ${isChatGpt ? "" : ""}`,
+                    message: `${isChatGpt ? "" : ""}`,
                   }}
                   textSize={textSize}
                   isChatGpt={isChatGpt}
@@ -303,21 +346,18 @@ const ChatMessages: React.FC<ChatMessagesProps> =
               </React.Fragment>
             );
           })}
-          <div ref={messagesEndRef} />
+          <div ref={bottomRef} />
         </div>
-        {showNewMessagePreview && (
-          <div
-            className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-md cursor-pointer z-50 text-sm"
-            onClick={() => {
-              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-              setShowNewMessagePreview(false);
-            }}
-          >
-            ↓ {newMessagePreviewText}
-          </div>
-        )}
       </div>
     );
   };
 
-export default ChatMessages;
+export default React.memo(ChatMessages, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps.chatMessages) === JSON.stringify(nextProps.chatMessages)
+    && prevProps.currentUserId === nextProps.currentUserId
+    && prevProps.customStyles === nextProps.customStyles
+    && prevProps.senderBubbleColor === nextProps.senderBubbleColor
+    && prevProps.receiverBubbleColor === nextProps.receiverBubbleColor
+    && prevProps.senderTextColor === nextProps.senderTextColor
+    && prevProps.receiverTextColor === nextProps.receiverTextColor;
+});
