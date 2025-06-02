@@ -228,7 +228,7 @@ const PatientLoginPage: React.FC = () => {
           {/* 전화번호 입력 */}
           <div className="flex flex-col items-center space-y-2 w-full">
             <div className="flex items-center rounded-lg border border-gray-500 w-full h-[35px]">
-              <label htmlFor="phone" className="w-full pl-3 font-bold text-sm whitespace-nowrap">
+              <label htmlFor="phone" className="pl-3 font-bold text-sm whitespace-nowrap">
                 전화번호
               </label>
               <input

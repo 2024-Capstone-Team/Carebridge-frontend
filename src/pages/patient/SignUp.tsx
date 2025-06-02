@@ -36,9 +36,6 @@ const SignUp: React.FC = () => {
   const [authCode, setAuthCode] = useState("");
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
 
-  
-
-
   // 생일 확인
   const isEightDigitNumber = (input: string) => {
     return /^\d{8}$/.test(input);
