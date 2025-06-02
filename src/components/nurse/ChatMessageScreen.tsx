@@ -4,10 +4,7 @@ import InputSection from "../../components/patient/InputSection";
 import { ChatMessage, Macro, QuickAnswer } from "../../types";
 import useStompClient from "../../hooks/useStompClient";
 import { FaChevronLeft } from "react-icons/fa";
-
-const useUserContext = () => ({
-  nurseId: 1, // for testing
-});
+import { useUserContext } from "../../context/UserContext";
 
 interface ChatScreenProps {
   messages: ChatMessage[];   // Passed from parent
@@ -41,8 +38,10 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   {/* Set constants */}
   // Set nurse ID, hospital ID, patient 
-  const { nurseId } = useUserContext();
-  const hospitalId = 1;
+  const { nurseId: nurseIdStr, hospitalId: hospitalIdStr } = useUserContext();
+  if (!nurseIdStr || !hospitalIdStr) throw new Error("Missing user context values");
+  const nurseId = Number(nurseIdStr);
+  const hospitalId = Number(hospitalIdStr);
   const [patient, setPatient] = useState(patientName);
   // Set nurseId as current userId
   const currentUserId = nurseId;
@@ -269,7 +268,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   {/* Fetch macros when nurseId is available */}
   const fetchMacros = async (nurseId: number) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/macro/list/${nurseId}`);
+      const response = await fetch(`${API_BASE_URL}/api/macro/list/${nurseIdStr}`);
       const data: Macro[] = await response.json();
       const savedFavorites = localStorage.getItem("favoriteMacroIds");
       
@@ -281,7 +280,6 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         );
         setMacros(filteredMacros);
       } else {
-        
         // 즐겨찾기가 없으면 빈 배열로 설정
         setMacros([]);
       }
@@ -293,7 +291,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   {/* Use macro */}
   const handleMacroClick = async (macroName: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/macro/${nurseId}/${macroName}`);
+      const response = await fetch(`${API_BASE_URL}/api/macro/${nurseIdStr}/${macroName}`);
       const data = await response.text();
 
       updateInputHistory(data);
@@ -310,11 +308,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       if (response.ok) {
         const phrase = await response.text(); 
       
-      const updateText = (prev: string) =>
-        position === "prepend" ? `${phrase} ${prev}` : `${prev} ${phrase}`;
+        const updateText = (prev: string) =>
+          position === "prepend" ? `${phrase} ${prev}` : `${prev} ${phrase}`;
       
-      updateInputHistory(updateText(inputText));
-      setInputText(updateText);
+        updateInputHistory(updateText(inputText));
+        setInputText(updateText);
       } else {
         console.error("Failed to fetch phrase from", url);
       }
@@ -325,7 +323,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   const fetchQuickAnswers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hospital-info/list/${hospitalId}`);
+      const response = await fetch(`${API_BASE_URL}/api/hospital-info/list/${hospitalIdStr}`);
       const data: QuickAnswer[] = await response.json();
       const savedFavorites = localStorage.getItem("favoriteQuickAnswerIds");
       if (savedFavorites) {
@@ -342,7 +340,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   useEffect(() => {
     fetchQuickAnswers();
-  }, [hospitalId]);
+  }, [hospitalIdStr]);
 
   const handleQuickAnswerClick = (qa: QuickAnswer) => {
     updateInputHistory(qa.information);
@@ -459,11 +457,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
           { label: "실행취소", onClick: handleUndo },
           {
             label: "인사문구 추가",
-            onClick: () => handlePhraseUpdate(`${API_BASE_URL}/api/macro/phrase-head/${nurseId}`, "prepend"),
+            onClick: () => handlePhraseUpdate(`${API_BASE_URL}/api/macro/phrase-head/${nurseIdStr}`, "prepend"),
           },
           {
             label: "맺음문구 추가",
-            onClick: () => handlePhraseUpdate(`${API_BASE_URL}/api/macro/phrase-tail/${nurseId}`, "append"),
+            onClick: () => handlePhraseUpdate(`${API_BASE_URL}/api/macro/phrase-tail/${nurseIdStr}`, "append"),
           },
         ].map((action, index) => (
           <div

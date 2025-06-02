@@ -14,12 +14,14 @@ const PatientChatPage: React.FC = () => {
 
   {/* Set constants */}
 
-  // const { userId } =  useUserContext();
-  const [userId] = useState<number>(5);
-  const [nurseId] = useState<number>(1);
-  const [hospitalId] = useState<number>(1);
+  // Get userId, nurseId, hospitalId from context
+  const { userId: userIdStr, nurseId: nurseIdStr, hospitalId: hospitalIdStr } = useUserContext();
+  if (!userIdStr || !nurseIdStr || !hospitalIdStr) throw new Error("Missing user context values");
+  const userId = Number(userIdStr);
+  const nurseId = Number(nurseIdStr);
+  const hospitalId = Number(hospitalIdStr);
   const chatMessagesRef = useRef<ChatMessage[]>([]);
-  const roomId = useMemo(() => `${nurseId}_${userId}`, [nurseId, userId]);
+  const roomId = useMemo(() => `${nurseIdStr}_${userIdStr}`, [nurseIdStr, userIdStr]);
 
   {/* State Variables */}
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -187,7 +189,7 @@ const PatientChatPage: React.FC = () => {
         messageContent: inputText,
         timestamp: currentTime,
         readStatus: false,
-        chatRoomId: `${nurseId}_${userId}`,
+        chatRoomId: `${nurseIdStr}_${userIdStr}`,
         senderId: userId,
         isPatient: true,
         isFailed: false,
@@ -204,7 +206,7 @@ const PatientChatPage: React.FC = () => {
         messageContent: inputText,
         timestamp: currentTime,
         readStatus: false,
-        chatRoomId: `${nurseId}_${userId}`,
+        chatRoomId: `${nurseIdStr}_${userIdStr}`,
         senderId: userId,
         isPatient: true,
         hospitalId: hospitalId,
