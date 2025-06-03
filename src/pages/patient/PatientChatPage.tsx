@@ -401,7 +401,8 @@ const PatientChatPage: React.FC = () => {
   
   
   return (
-    <div className="flex flex-col h-full bg-gray-100 text-sm sm:text-base max-w-screen-sm mx-auto px-2 sm:px-4">
+    <div className="bg-gray-100 min-h-screen">
+      <div className="flex flex-col h-screen text-sm sm:text-base max-w-screen-sm mx-auto px-2 sm:px-4">
       {/* Sticky header and favorites */}
       <div className="sticky top-0 z-20 bg-gray-100">
         <PatientChatHeader title="삼성병원 간호간병 콜벨 서비스" showMenu={true} />
@@ -410,7 +411,7 @@ const PatientChatPage: React.FC = () => {
           sendFavoriteRequest={sendFavoriteRequest}
         />
       </div>
-      <div className="flex-grow overflow-y-auto px-3 pt-1 flex flex-col gap-1 sm:px-4 sm:gap-2">
+      <div className="flex-1 overflow-y-auto px-3 pt-1 flex flex-col gap-1 sm:px-4 sm:gap-2 min-h-0">
         <ChatMessages 
           chatMessages={displayedMessages} 
           currentUserId={userId} 
@@ -442,6 +443,7 @@ const PatientChatPage: React.FC = () => {
           increaseTextSize={increaseTextSize}
           decreaseTextSize={decreaseTextSize}
         />
+      </div>
       </div>
     </div>
   );
