@@ -133,7 +133,7 @@ const PatientChatPage: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
   
       if (!response.ok) {
-        throw new Error(`Failed to fetch patient details: ${response.status}`);
+        throw new Error(`Failed to fetch patient ${patientId} details: ${response.status}`);
       }
   
       return await response.json(); // Return patient details
@@ -171,7 +171,8 @@ const PatientChatPage: React.FC = () => {
     if (patient) {
       const exists = await checkIfChatroomExists(userId);
       if (!exists) {
-        await createChatroom(userId, patient.department);
+        console.log("Creating chatroom...");
+        await createChatroom(userId, "내과");
       }
     }
   };
@@ -401,7 +402,7 @@ const PatientChatPage: React.FC = () => {
   
   
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="fixed inset-0 bg-gray-100">
       <div className="flex flex-col h-screen text-sm sm:text-base max-w-screen-sm mx-auto px-2 sm:px-4">
       {/* Sticky header and favorites */}
       <div className="sticky top-0 z-20 bg-gray-100">

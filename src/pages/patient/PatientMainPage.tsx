@@ -131,7 +131,7 @@ const PatientMainPage: React.FC = () => {
   useEffect(() => {
     if (patientDto?.hospitalId) {
       getHospitalName(patientDto.hospitalId);
-      console.log("hospital id: ")
+      console.log("hospital id: ", patientDto.hospitalId)
     }
   }, [patientDto]);
 
