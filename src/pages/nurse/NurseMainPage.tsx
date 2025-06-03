@@ -8,13 +8,14 @@ import NurseMacroList from "../../components/nurse/NurseMacroList"
 import NurseQuickAnswerList from "../../components/nurse/NurseQuickAnswerList"
 import NurseMessaging from "../../components/nurse/NurseMessaging"
 import logo from "../../assets/carebridge_logo.png"
-import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu } from "react-icons/fi"
+import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu, FiX } from "react-icons/fi"
 import { BsStopwatch } from "react-icons/bs"
 import useStompClient from "../../hooks/useStompClient"
 import type { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, MedicalStaff } from "../../types"
 import axios from "axios"
 import { useUserContext } from "../../context/UserContext"
 import { calculateAge, formatGender, formatTime } from "../../utils/commonUtils.ts"
+import Button from "../../components/common/Button.tsx";
 
 const WebSocketContext = createContext(null)
 
@@ -1318,12 +1319,12 @@ const NurseMainPage: React.FC = () => {
                             px-2 py-2 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200
                             ${
                               isPending
-                                ? "bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
+                                ? "bg-gray-100 hover:bg-gray-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
                                 : isInProgress
-                                  ? "bg-[#417BB4] border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                                  ? "text-blue-600 bg-blue-100 hover:bg-blue-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
                                   : isScheduled
-                                    ? "bg-[#C75151] border border-[#B14141] text-white hover:bg-[#a83e3e]"
-                                    : "bg-[#E3E3E3] border border-[#CFC9C9]"
+                                    ? "text-red-600 bg-red-100 hover:bg-red-200 focus:ring-red-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                                    : "text-green-600 bg-green-100 focus:ring-gray-300"
                             }
                             ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
                           `}
@@ -1331,12 +1332,12 @@ const NurseMainPage: React.FC = () => {
                           {displayStatus}
                         </button>
 
-                        <button
-                          className="px-3 py-2 bg-gray-400 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:bg-gray-500"
+                        <Button
                           onClick={() => handleChatClick(request.patientId)}
+                          variant="chat"
                         >
                           채팅
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1350,8 +1351,8 @@ const NurseMainPage: React.FC = () => {
         {isPendingModalOpen && pendingRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
-              <button onClick={closeAllModals} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
-                ✖
+              <button onClick={closeAllModals} className="absolute top-2 right-2 text-black hover:text-gray-400">
+                <FiX />
               </button>
               <div className="text-center">
                 <p className="text-gray-600 mb-1" style={{ fontSize: "var(--font-body)" }}>{formatTime(pendingRequest.requestTime)}</p>
@@ -1453,7 +1454,7 @@ const NurseMainPage: React.FC = () => {
 
           {/* 환자 정보 및 스케줄러 영역 */}
           <div className="w-1/5 flex flex-col space-y-5 h-full">
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
+            <div className="bg-[#DFE6EC] h-3/5 rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
               {selectedPatient !== null ? (
                 <Nurse_DetailedPatientInfo
                   patientId={selectedPatient}
@@ -1464,7 +1465,7 @@ const NurseMainPage: React.FC = () => {
                 <NursePatientInfo onPatientClick={handlePatientClick} />
               )}
             </div>
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 overflow-y-auto">
+            <div className="bg-[#DFE6EC] h-2/5 rounded-lg shadow-lg p-6 overflow-y-auto">
               <NurseSchedule />
             </div>
           </div>

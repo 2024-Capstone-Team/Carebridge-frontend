@@ -5,6 +5,7 @@ import ystar from "../../assets/yellow star.png";
 import NurseQuickAnswerAdd from './NurseQuickAnswerAdd';
 import NurseQuickAnswerEdit from './NurseQuickAnswerEdit';
 import { FaPlus } from 'react-icons/fa';
+import Button from '../common/Button';
 
 interface QuickAnswer {
   id: number;
@@ -138,18 +139,19 @@ const NurseQuickAnswerList: React.FC<NurseQuickAnswerListProps> = ({ hospitalId 
                       onClick={() => toggleStar(qa.id)}
                     />
 
-                    <button 
+                    <Button
                       onClick={() => handleEdit(qa)}
-                      className="px-3 py-1 text-md font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#CFC9C9]"
-                    >
-                      수정
-                    </button>
-                    <button 
+                      variant="edit"
+                      >
+                        수정
+                    </Button>
+
+                    <Button
                       onClick={() => handleDelete(qa.title)}
-                      className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
-                    >
-                      삭제
-                    </button>
+                      variant="delete"
+                      >
+                        삭제
+                    </Button>
                   </div>
                   
                 </div>

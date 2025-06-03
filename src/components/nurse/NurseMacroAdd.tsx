@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Button from "../common/Button";
 
 interface Macro {
   macroId: number;
@@ -69,7 +70,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
         <label className="text-[18px] text-black font-semibold block mb-2">제목</label>
         <input
           type="text"
-          className="w-full border p-2 rounded-lg"
+          className="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
           placeholder="매크로 제목을 입력해주세요."
           value={macroName}
           onChange={(e) => setMacroName(e.target.value)}
@@ -79,7 +80,7 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
       <div className="mb-4">
         <label className="text-[18px] text-black font-semibold block mb-2">내용</label> 
         <textarea
-          className="w-full border p-2 rounded-lg h-[500px] overflow-y-auto resize-none"
+          className="w-full border border-gray-300 bg-gray-50 p-2 rounded-lg h-[500px] overflow-y-auto resize-none focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
           placeholder="스크립트 매크로 내용을 입력해주세요."
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -88,20 +89,22 @@ const NurseMacro: React.FC<NurseMacroProps> = ({ onClose, medicalStaffId }) => {
 
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      <div className="flex justify-center space-x-4">
-        <button 
-            type="button"
-            onClick={onClose}
-            className="px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
-          >
-            취소
-          </button>
-          <button 
-            type="submit"
-            className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
-          >
-            저장
-          </button>
+      <div className="flex justify-center space-x-2">
+        <Button 
+          onClick={onClose}
+          variant="cancel"
+          size='large'
+        >
+          취소
+        </Button>
+              
+        <Button 
+          onClick={handleSave}
+          variant="save"
+          size='large'
+        >
+          저장
+        </Button>
       </div>
       
     </div>

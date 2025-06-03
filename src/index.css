@@ -181,3 +181,7 @@ body {
   height: 100%;
   overflow: hidden;
 }
+
+.password-input {
+  color: black !important;
+}

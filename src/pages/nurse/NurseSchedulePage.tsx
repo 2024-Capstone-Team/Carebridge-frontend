@@ -276,18 +276,20 @@ const NurseSchedulePage: React.FC = () => {
         {/* 날짜 표시 영역 */}
         <div className="flex text-center text-[16px] text-gray-600 mb-2" style={{ marginTop: "-24px" }}>
           <p className="text-black font-semibold mr-2">{formattedDate}</p>
-          <p className="text-gray-600">{formattedTime}</p>
+          <p className="text-gray-600">{formattedTime}</p>  
         </div>
 
-        {/* 병원 정보 표시 영역 */}
-        <p className="text-black text-[16px] font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
-        <p className="text-gray-600 " style={{ fontSize: "var(--font-caption)" }}>
-          {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
-        </p>
+          {/* 병원 정보 표시 영역 */}
+          <div className="mb-4">
+            <p className="text-black text-[16px] font-semibold">{hospitalName ? hospitalName : "Loading..."}</p>
+            <p className="text-gray-600" style={{ fontSize: "var(--font-caption)" }}>
+              {medicalStaffList.length > 0 ? medicalStaffList[0].department : "Loading..."}
+            </p>
+          </div>
 
         {/* 환자 목록 영역 */}
         <div className="mt-2 rounded-lg overflow-hidden shadow-md flex-1 flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+          <div className="px-4 py-3 bg-white border-b border-gray-100 flex justify-between items-center">
             <h2 className="text-gray-800 text-18px font-semibold">환자 목록</h2>
             <button className="bg-transparent p-2  hover:text-gray-400" onClick={handleAddSchedule}>
               <FaPlus />
@@ -312,32 +314,32 @@ const NurseSchedulePage: React.FC = () => {
                 {filteredPatients.map((patient) => {
                   const isSelected = patient.patientId === selectedPatient
 
-                  return (
-                    <li
-                      key={patient.patientId}
-                      className={`p-3 rounded-lg ${
-                        isSelected
-                          ? "bg-gray-50 border-gray-300 border"
-                          : "bg-white border-b border-gray-100 hover:bg-gray-50"
-                      } cursor-pointer transition-all duration-200`}
-                      onClick={() => handlePatientClick(patient.patientId)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold stext-gray-800" style={{ fontSize: "var(--font-body)" }}>{patient.name}</span>
-                        <span className="text-xs text-gray-500">{formatBirthdate(patient.birthDate)}</span>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
+                    return (
+                      <li
+                        key={patient.patientId}
+                        className={`p-3 rounded-lg ${
+                          isSelected
+                            ? "bg-gray-50 border-gray-300 border"
+                            : "bg-white border-b border-gray-100 hover:bg-gray-50"
+                        } cursor-pointer transition-all duration-200`}
+                        onClick={() => handlePatientClick(patient.patientId)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-gray-800" style={{ fontSize: "var(--font-body)" }}>{patient.name}</span>
+                          <span className="text-xs text-gray-500">{formatBirthdate(patient.birthDate)}</span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
       {/* 캘린더 영역 */}
-      <div className="flex-1 bg-[#DFE6EC] rounded-lg shadow-md h-full overflow-hidden">
-        <div className="h-full p-4 overflow-y-auto">
+      <div className="flex-1 bg-[#DFE6EC] rounded-lg shadow-md h-full">
+        <div className="h-full p-4">
           {modeCalendar && <NurseCalendar onEdit={handleEditSchedule} />}
           {modeEdit && editingScheduleId && (
             <ScheduleEditForm scheduleId={Number(editingScheduleId)} onCancel={handleCancel} />
