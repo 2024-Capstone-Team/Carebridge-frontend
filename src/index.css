@@ -176,6 +176,11 @@ h1 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;             /* Chrome, Safari, Opera */
 }
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
 
 .password-input {
   color: black !important;

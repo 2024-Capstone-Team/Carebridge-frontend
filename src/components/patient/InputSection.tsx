@@ -17,6 +17,7 @@ interface InputSectionProps {
   showTextSizeButton?: boolean;
   increaseTextSize?: () => void; 
   decreaseTextSize?: () => void;
+  textSize?: number; // added textSize prop
 }
 
 const InputSection: React.FC<InputSectionProps> = ({
@@ -32,6 +33,7 @@ const InputSection: React.FC<InputSectionProps> = ({
   showTextSizeButton=false,
   increaseTextSize,
   decreaseTextSize,
+  textSize = 14, // default font size
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null); // Ref for the popup
@@ -113,8 +115,8 @@ const InputSection: React.FC<InputSectionProps> = ({
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
             placeholder="메시지를 입력하세요..."
-            className={`w-full px-3 py-1 border-none rounded-3xl focus:outline-none text-black resize-none overflow-y-auto ${color}`}
-            style={{ minHeight, maxHeight, paddingBottom: "20px" }}
+            className={`w-full px-3 pb-[4px] border-none rounded-3xl focus:outline-none text-black resize-none overflow-y-auto align-text-top leading-tight ${color}`}
+            style={{ minHeight, maxHeight, paddingBottom: "20px", fontSize: `${textSize}px` }}
             maxLength={255}
             
           />

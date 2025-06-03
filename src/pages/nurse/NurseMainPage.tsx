@@ -528,7 +528,7 @@ const NurseMainPage: React.FC = () => {
     </div>
   </div>
 
-  const nurseId = "1" // 테스트용 간호사 ID
+  const nurseId = "1"  // temporary for testing
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(true) // Loading state for chat history
   const [rooms, setRooms] = useState<ChatRoom[]>([])
@@ -544,10 +544,15 @@ const NurseMainPage: React.FC = () => {
 
   const updateMessages = useCallback((newMessage: ChatMessage) => {
     setMessages((prevMessages) => {
-      if (prevMessages.some((msg) => msg.messageId === newMessage.messageId)) return prevMessages
-      return [...prevMessages, newMessage]
-    })
-  }, [])
+      const exists = prevMessages.some((msg) => msg.messageId === newMessage.messageId);
+      if (exists) {
+        return prevMessages.map((msg) =>
+          msg.messageId === newMessage.messageId ? { ...msg, ...newMessage } : msg
+        );
+      }
+      return [...prevMessages, newMessage].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    });
+  }, []);
 
   // Get chat history
   const fetchChatHistory = async (patientId: number) => {
@@ -608,9 +613,7 @@ const NurseMainPage: React.FC = () => {
       console.log("Received a chat message:", chatMessage)
       console.log("Current room: ", currentRoomRef.current)
       if (message.chatRoomId == currentRoomRef.current) {
-        // Only messages from patient will be added
-        setMessages((prevMessages) => [...prevMessages, message])
-        console.log("Adding message to array")
+        fetchChatHistory(patientId);
       }
       fetchRooms() // chatroom list 업데이트
     } else if (message.type === "REQUEST") {
@@ -619,12 +622,15 @@ const NurseMainPage: React.FC = () => {
       console.log("Received a request message:", request)
       // 요청 메시지 처리 (알림 띄우기)
       setRequestPopup(message as CallBellRequest) // 요청 메시지를 팝업에 저장
+      fetchRooms() // chatroom list 업데이트
     } else if (message.messageType === "NOTIFICATION") {
       // 읽음 표시 업데이트
       console.log("Update read status")
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) => (!msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg)),
-      )
+      messages.forEach((msg) => {
+        if (!msg.isPatient && !msg.readStatus) {
+          updateMessages({ ...msg, readStatus: true });
+        }
+      });
 
       fetchRooms() // chatroom list 업데이트
     } else {
@@ -739,6 +745,11 @@ const NurseMainPage: React.FC = () => {
     if (!isConnected) return
     subscribeToRoom(`/sub/user/chat/${nurseId}`)
   }, [isConnected])
+
+  useEffect(() => {
+    if (!isConnected || !currentRoom) return;
+    subscribeToRoom(`/sub/chat/room/${currentRoom}`);
+  }, [currentRoom, isConnected]);
 
   // Fetch chat rooms on mount
   useEffect(() => {
@@ -941,6 +952,13 @@ const NurseMainPage: React.FC = () => {
       });
       // 요청 목록 갱신
       fetchUpdatedRequests();
+
+      // After sending, refresh the chat history and room list instead of appending a mock message manually
+      if (chatRoomId === currentRoomRef.current) {
+        await fetchChatHistory(requestPopup.patientId);
+      }
+      await fetchRooms();
+
     } catch (error: any) {
       console.error('요청 처리 중 에러 발생:', error);
       enqueueSnackbar(`요청 처리 중 오류가 발생했습니다: ${error.message}`, { 
@@ -1104,7 +1122,10 @@ const NurseMainPage: React.FC = () => {
                     보류
                   </button>
                   <button 
-                    onClick={() => handleChatClick(requestPopup.patientId)}
+                    onClick={() => {
+                      handleChatClick(requestPopup.patientId);
+                      handleCloseNotification(); // Close the popup to match other chat buttons
+                    }}
                     className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
                     채팅
                   </button>

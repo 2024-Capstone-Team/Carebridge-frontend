@@ -188,23 +188,21 @@ const ChatRoomList: React.FC<ChatRoomListProps> = ({ rooms, currentRoom, onRoomS
               }`}
               onClick={() => onRoomSelect(room.conversationId)}
             >
-              <div className="flex flex-col min-h-[56px]">
+              <div className="flex flex-col min-h-[56px] w-full">
                 <span
-                  className={`font-semibold ${!room.isRead ? 'font-bold' : ''}`} // Bold unread rooms
+                  className={`font-semibold ${!room.isRead ? 'font-bold' : ''}`}
                 >
                   {room.userName}
                 </span>
                 <span className={`text-gray-600 font-semibold ${!room.isRead ? 'font-bold' : ''}`} style={{ fontSize: "var(--font-caption)" }}>
                   {room.previewMessage.length > 30 ? `${room.previewMessage.slice(0, 30)}...` : room.previewMessage}
                 </span>
+                <span
+                  className={`self-end text-gray-400 text-[0.6rem] whitespace-nowrap ${currentRoom === room.conversationId ? 'text-white' : 'text-gray-400'}`}
+                >
+                  {formatTime(room.lastMessageTime)}
+                </span>
               </div>
-              <span
-                className={`text-xxs ${
-                  currentRoom === room.conversationId ? 'text-white' : 'text-gray-400'
-                }`}
-              >
-                <span style={{ fontSize: "var(--font-caption)" }}>{formatTime(room.lastMessageTime)}</span>
-              </span>
             </li>
             );
           })}

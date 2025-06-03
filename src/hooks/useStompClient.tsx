@@ -1,3 +1,4 @@
+import debounce from "lodash/debounce";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { Client, StompSubscription } from "@stomp/stompjs";
 
@@ -6,7 +7,10 @@ interface StompSubscriptionWithUnsubscribe extends StompSubscription {
   unsubscribe: () => void;
 }
 
-const useStompClient = (onMessage: (message: any) => void) => {
+const useStompClient = (
+  onMessage: (message: any) => void,
+  onReconnect?: () => void
+) => {
   const stompClientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const subscribedRooms = useRef<Set<string>>(new Set());
@@ -15,32 +19,47 @@ const useStompClient = (onMessage: (message: any) => void) => {
   // const BASE_URL = "52.79.234.250/"
   const BASE_URL = import.meta.env.VITE_BACKEND_URL.replace(/^https?:\/\//, "").replace(/\/$/, "") + "/";// const BASE_URL = import.meta.env.VITE_API_HOST + "/";
 
-  const initializeStompClient = useCallback(() => {
-    if (stompClientRef.current) return; // Avoid multiple instances
+  const initializeStompClient = useCallback(
+    debounce(() => {
+      if (stompClientRef.current) return; // Avoid multiple instances
 
-    console.log("Initializing STOMP client...");
-    const client = new Client({
-      brokerURL: `wss://${BASE_URL}ws-stomp`,
-      reconnectDelay: 5000, // Handles normal disconnects
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      onConnect: () => {
-        console.log("Connected to WebSocket");
-        setIsConnected(true);
-        resubscribeToRooms();
-      },
-      onDisconnect: () => {
-        console.log("Disconnected from WebSocket");
-        setIsConnected(false);
-        clearAllSubscriptions();
-      },
-      onWebSocketError: (error) => console.error("WebSocket error:", error),
-      onStompError: (frame) => console.error("STOMP error:", frame),
-    });
+      console.log("Initializing STOMP client...");
+      const client = new Client({
+        brokerURL: `wss://${BASE_URL}ws-stomp`,
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        debug: (str) => console.log(`[WS DEBUG] ${str}`),
+        onConnect: () => {
+          console.log("[WS] Connected to WebSocket");
+          setIsConnected(true);
+          resubscribeToRooms();
+          if (onReconnect) onReconnect();
+        },
+        onDisconnect: () => {
+          console.warn("[WS] Disconnected from WebSocket");
+          setIsConnected(false);
+          clearAllSubscriptions();
+        },
+        onWebSocketError: (error) => console.error("[WS] WebSocket error:", error),
+        onStompError: (frame) => {
+          console.error("[WS] STOMP error:", frame);
+          if (frame.headers["message"] === "Session closed.") {
+            console.warn("[WS] STOMP session closed. Reconnecting...");
+            clearAllSubscriptions(); // ✅ Clear subscriptions before reconnecting
+            stompClientRef.current?.deactivate().then(() => {
+              stompClientRef.current = null;
+              initializeStompClient(); // Reconnect
+            });
+          }
+        },
+      });
 
-    stompClientRef.current = client;
-    client.activate();
-  }, []);
+      stompClientRef.current = client;
+      client.activate();
+    }, 500),
+    []
+  );
 
   const forceReconnect = useCallback(() => {
     if (stompClientRef.current) {
@@ -106,35 +125,39 @@ const useStompClient = (onMessage: (message: any) => void) => {
 
   const subscribeToRoom = useCallback(
     (subscriptionPath: string): StompSubscriptionWithUnsubscribe | null => {
-      if (!subscriptionPath || subscribedRooms.current.has(subscriptionPath)) return null;
+      if (!subscriptionPath || activeSubscriptions.current.has(subscriptionPath)) return null;
 
-      // Unsubscribe from all current subscriptions
-      clearAllSubscriptions();
-
-      if (stompClientRef.current && isConnected) {
-        const subscription = stompClientRef.current.subscribe(subscriptionPath, (message) =>
-          onMessage(JSON.parse(message.body))
-        );
-
-        subscribedRooms.current.add(subscriptionPath);
-        console.log(`Subscribed to: ${subscriptionPath}`);
-
-        const subscriptionWithUnsubscribe: StompSubscriptionWithUnsubscribe = {
-          ...subscription,
-          subscriptionPath,
-          unsubscribe: () => {
-            subscription.unsubscribe();
-            subscribedRooms.current.delete(subscriptionPath);
-            activeSubscriptions.current.delete(subscriptionPath);
-          },
-        };
-
-        activeSubscriptions.current.set(subscriptionPath, subscriptionWithUnsubscribe);
-        return subscriptionWithUnsubscribe;
+      if (!stompClientRef.current || !isConnected) {
+        console.warn("STOMP client not connected. Subscription deferred.");
+        return null;
       }
 
-      console.warn("STOMP client not connected. Subscription deferred.");
-      return null;
+      const subscription = stompClientRef.current.subscribe(subscriptionPath, (message) => {
+        console.log("📩 Received STOMP message:", message);
+        try {
+          const parsed = JSON.parse(message.body);
+          console.log("📩 Parsed message body:", parsed);
+          onMessage(parsed);
+        } catch (err) {
+          console.error("❌ Failed to parse message body:", message.body, err);
+        }
+      });
+
+      subscribedRooms.current.add(subscriptionPath);
+      console.log(`Subscribed to: ${subscriptionPath}`);
+
+      const subscriptionWithUnsubscribe: StompSubscriptionWithUnsubscribe = {
+        ...subscription,
+        subscriptionPath,
+        unsubscribe: () => {
+          subscription.unsubscribe();
+          subscribedRooms.current.delete(subscriptionPath);
+          activeSubscriptions.current.delete(subscriptionPath);
+        },
+      };
+
+      activeSubscriptions.current.set(subscriptionPath, subscriptionWithUnsubscribe);
+      return subscriptionWithUnsubscribe;
     },
     [onMessage, isConnected]
   );
@@ -143,6 +166,8 @@ const useStompClient = (onMessage: (message: any) => void) => {
     const subscription = activeSubscriptions.current.get(subscriptionPath);
     if (subscription) {
       subscription.unsubscribe();
+      subscribedRooms.current.delete(subscriptionPath);
+      activeSubscriptions.current.delete(subscriptionPath);
       console.log(`Unsubscribed from: ${subscriptionPath}`);
     }
   }, []);
