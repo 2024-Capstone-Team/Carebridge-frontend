@@ -120,7 +120,7 @@ const NurseDetailedPatientInfo: React.FC<NurseDetailedPatientInfoProps> = ({ pat
     const fetchAllPatients = async () => {
       try {
         const staffId = 1; // 임시 staff_id 값
-        const response = await axios.get(`${API_BASE_URL}/api/api/patient/users/${staffId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/patient/users/${staffId}`);
         const fetchedPatients = response.data.map((p: any) => ({
           patientId: p.patientId,
           name: p.name,
