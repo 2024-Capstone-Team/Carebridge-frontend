@@ -41,8 +41,6 @@ import { FavoriteRequestsProvider } from "./context/FavoriteRequestsContext";
 import { UserProvider } from "./context/UserContext";  
 
 /* Test */
-import HospitalInfoPage from './pages/HospitalInfoPage';
-import NurseChatPage from "./components/nurse/NurseMessaging";
 import ScheduleTest from "./pages/patient/ScheduleTest";
 import { CustomRequestsProvider } from "./context/CustomRequestsContext";
 
