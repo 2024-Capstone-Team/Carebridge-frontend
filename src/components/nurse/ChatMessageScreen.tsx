@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import ChatMessages from "../common/ChatMessages";
 import InputSection from "../../components/patient/InputSection";
 import { ChatMessage, Macro, QuickAnswer } from "../../types";
 import useStompClient from "../../hooks/useStompClient";
 import { FaChevronLeft } from "react-icons/fa";
-
-const useUserContext = () => ({
-  nurseId: 1, // for testing
-});
+import { useUserContext } from "../../context/UserContext";
 
 interface ChatScreenProps {
   messages: ChatMessage[];   // Passed from parent
@@ -41,11 +38,19 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   {/* Set constants */}
   // Set nurse ID, hospital ID, patient 
-  const { nurseId } = useUserContext();
-  const hospitalId = 1;
-  const [patient, setPatient] = useState(patientName);
-  // Set nurseId as current userId
+  const { hospitalId: hospitalIdStr } = useUserContext();
+  const hospitalId = hospitalIdStr ? Number(hospitalIdStr) : 1;
+  const nurseId = hospitalId; // fallback logic: use hospitalId as nurseId
+
+  if (!hospitalIdStr) {
+    console.warn("Missing hospitalId in user context. Falling back to nurseId=1, hospitalId=1");
+  }
+
+  const patientIdSafe = patientId || 5;
+
+  const [patient, setPatient] = useState(patientName || "Unknown Patient");
   const currentUserId = nurseId;
+  const [textSize, setTextSize] = useState("14px");
 
   {/* State Variables */}
   const [inputText, setInputText] = useState("");  // Input text
@@ -74,6 +79,14 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
   const [isComposing, setIsComposing] = useState(false);  // Check composing
+
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    });
+  }, [displayedMessages]);
 
   {/* Handlers and Utility Functions */}
   const handleCompositionStart = () => {
@@ -121,7 +134,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   // }, [pendingMessages]); // This will log whenever pendingMessages changes
 
   const handleSendMessage = async (): Promise<void> => {
-    if (inputText.trim() && patientId) {
+    if (inputText.trim() && patientIdSafe) {
       const now = new Date();
       const currentTime = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().replace("Z", "");  // Korean time
       
@@ -129,7 +142,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   
       const newMessage: ChatMessage = {
         messageId: newMessageId,
-        patientId: patientId,
+        patientId: patientIdSafe,
         medicalStaffId: currentUserId,
         messageContent: inputText,
         timestamp: currentTime,
@@ -145,7 +158,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       setPendingMessages((prev) => [...prev, newMessage]);
   
       const messageToSend = {
-        patientId: patientId,
+        patientId: patientIdSafe,
         medicalStaffId: currentUserId,
         messageContent: inputText,
         timestamp: currentTime,
@@ -160,7 +173,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         await sendMessage(`/pub/chat/message`, messageToSend);
   
         // After sending, update message to reflect successful send
-        updateMessages({ ...newMessage, isPending: false });
+        updateMessages({ ...newMessage, isPending: false, isFailed: false});
   
         // Remove from pendingMessages array
         setPendingMessages((prev) =>
@@ -213,7 +226,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   
     // Message to send over the server
     const messageToSend = {
-      patientId: failedMessage.patientId,
+      patientId: patientIdSafe,
       medicalStaffId: failedMessage.medicalStaffId,
       messageContent: failedMessage.messageContent,
       timestamp: currentTime,
@@ -281,7 +294,6 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
         );
         setMacros(filteredMacros);
       } else {
-        
         // 즐겨찾기가 없으면 빈 배열로 설정
         setMacros([]);
       }
@@ -310,11 +322,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       if (response.ok) {
         const phrase = await response.text(); 
       
-      const updateText = (prev: string) =>
-        position === "prepend" ? `${phrase} ${prev}` : `${prev} ${phrase}`;
+        const updateText = (prev: string) =>
+          position === "prepend" ? `${phrase} ${prev}` : `${prev} ${phrase}`;
       
-      updateInputHistory(updateText(inputText));
-      setInputText(updateText);
+        updateInputHistory(updateText(inputText));
+        setInputText(updateText);
       } else {
         console.error("Failed to fetch phrase from", url);
       }
@@ -325,7 +337,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   const fetchQuickAnswers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/hospital-info/list/${hospitalId}`);
+      const response = await fetch(`${API_BASE_URL}/api/hospital-info/list/${hospitalIdStr}`);
       const data: QuickAnswer[] = await response.json();
       const savedFavorites = localStorage.getItem("favoriteQuickAnswerIds");
       if (savedFavorites) {
@@ -342,7 +354,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
 
   useEffect(() => {
     fetchQuickAnswers();
-  }, [hospitalId]);
+  }, [hospitalIdStr]);
 
   const handleQuickAnswerClick = (qa: QuickAnswer) => {
     updateInputHistory(qa.information);
@@ -354,11 +366,10 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
   {/* Fetch chat history when connection or room changes */}
   useEffect(() => {
     if (!currentRoom || !isConnected) return;
-    // subscribeToRoom(`/sub/user/chat/${nurseId}`);  
-    fetchChatHistory(patientId);
-  
-    return () => {
-    };
+    setIsLoading(true);           // Mark loading true
+    setPendingMessages([]);       // Clear stale pending messages
+    subscribeToRoom(`/sub/user/chat/${nurseId}`);
+    fetchChatHistory(patientIdSafe).finally(() => setIsLoading(false));
   }, [currentRoom, isConnected]);
 
   {/* Mark unread messages from others as read */}
@@ -400,12 +411,14 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
     <div className="flex flex-col h-full bg-primary-100 overflow-hidden">
 
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-6 text-black z-10 relative">
+      <header className="relative flex items-center justify-center pt-6 pb-2 text-black z-10">
         <FaChevronLeft 
-          className="w-[20px] h-[20px] mr-2 cursor-pointer hover:text-gray-400 absolute left-4 top-6" 
+          className="absolute left-4 w-[20px] h-[20px] cursor-pointer hover:text-gray-400" 
           onClick={onBackClick} 
         />
-        <h2 className="text-center flex-1 font-bold" style={{ fontSize: "var(--font-title)" }}>{patient}</h2>
+        <h2 className="font-bold text-center" style={{ fontSize: "var(--font-title)" }}>
+          {patient}
+        </h2>
       </header>
 
       {/* Debug */}
@@ -416,16 +429,22 @@ const ChatScreen: React.FC<ChatScreenProps> = ({
       </div> */}
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col-reverse">
-        <ChatMessages 
-        chatMessages={displayedMessages} 
-        currentUserId={currentUserId} 
-        onResend={handleResendMessage}
-        onCancel={handleCancelMessage}
-        senderBubbleColor="bg-primary-300"
-        receiverBubbleColor="bg-white"
-        senderTextColor="text-white"  
-        />
+      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col" ref={chatContainerRef}>
+        {isLoading ? (
+          <div className="text-center text-gray-400 mt-4">Loading chat...</div>
+        ) : (
+          <ChatMessages 
+            chatMessages={displayedMessages} 
+            currentUserId={currentUserId} 
+            onResend={handleResendMessage}
+            onCancel={handleCancelMessage}
+            senderBubbleColor="bg-primary-300"
+            receiverBubbleColor="bg-white"
+            senderTextColor="text-white"
+            bottomRef={bottomRef}
+            customStyles={{ message: `text-[${textSize}] leading-[${parseInt(textSize) * 1.5}px]` }}
+          />
+        )}
       </div>
 
       {/* Macros Section */}

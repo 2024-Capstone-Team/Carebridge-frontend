@@ -22,15 +22,13 @@ interface UserProviderProps {
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
-  const [hospitalId, setHospitalId] = useState<string | null>(() => localStorage.getItem("hospitalId"));
-  const [nurseId, setNurseId] = useState<string | null>(null);
+  const [hospitalId, setHospitalId] = useState<string | null>(() => localStorage.getItem("hospitalId") || "1");
+  const [nurseId, setNurseId] = useState<string | null>(() => localStorage.getItem("nurseId") || "1");
   const [userId, setUserId] = useState<string | null>(() => {
-
-    return localStorage.getItem("userId");
+    return localStorage.getItem("userId") || "5";
   });
   const [patientId, setPatientId] = useState<string | null>(() => {
-
-    return localStorage.getItem("patientId");
+    return localStorage.getItem("patientId") || "5";
   });
   const [isPatient, setIsPatient] = useState<boolean>(false);
 

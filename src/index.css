@@ -100,7 +100,9 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f0f0f0
+  background-color: #f3f4f6;
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: env(safe-area-inset-top);
 }
 
 h1 {
@@ -176,7 +178,21 @@ h1 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;             /* Chrome, Safari, Opera */
 }
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
 
 .password-input {
   color: black !important;
+}
+.ios-safari-fix {
+  padding-bottom: 0px;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .ios-safari-fix {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+  }
 }

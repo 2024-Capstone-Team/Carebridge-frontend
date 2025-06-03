@@ -14,12 +14,20 @@ const PatientChatPage: React.FC = () => {
 
   {/* Set constants */}
 
-  // const { userId } =  useUserContext();
-  const [userId] = useState<number>(5);
-  const [nurseId] = useState<number>(1);
-  const [hospitalId] = useState<number>(1);
+  // Get userId, nurseId, hospitalId from context
+  const { patientId: userIdStr, nurseId: nurseIdStr, hospitalId: hospitalIdStr } = useUserContext();
+
+  // Provide fallback values if context is missing
+  const userId = userIdStr ? Number(userIdStr) : 5;
+  const nurseId = nurseIdStr ? Number(nurseIdStr) : 1;
+  const hospitalId = hospitalIdStr ? Number(hospitalIdStr) : 1;
+
+  if (!userIdStr || !nurseIdStr || !hospitalIdStr) {
+    // console.warn("Missing user context values. Falling back to default IDs: userId=5, nurseId=1, hospitalId=1");
+  }
   const chatMessagesRef = useRef<ChatMessage[]>([]);
-  const roomId = useMemo(() => `${nurseId}_${userId}`, [nurseId, userId]);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const roomId = useMemo(() => `${nurseIdStr}_${userIdStr}`, [nurseIdStr, userIdStr]);
 
   {/* State Variables */}
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -60,22 +68,45 @@ const PatientChatPage: React.FC = () => {
   };
 
   // Recieve messages
-  const { subscribeToRoom, sendMessage, isConnected } = useStompClient((message: any) => {
-    if (message.type === "MESSAGE") {
-      if (message.senderId !== userId) { // Check if the message is from someone else
-        setChatMessages((prevMessages) => [...prevMessages, message]);
+  const fetchChatHistory = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/chat/message/user?patientId=${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch messages");
+
+      const messages: ChatMessage[] = await response.json();
+      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
+        const reversedMessages = messages.reverse();
+        chatMessagesRef.current = reversedMessages;
+        setChatMessages([...reversedMessages, ...pendingMessages]);
       }
-    } else if (message.messageType === "NOTIFICATION") {  // 읽음 표시 업데이트 
-      console.log("Update read status");
-      setChatMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg
-        )
-      );
-    } else {
-      console.warn("Unknown message type:", message);
+      console.log("Fetched chat history.");
+    } catch (error) {
+      console.error("Error fetching chat history", error);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  }, [userId]);
+
+  const { subscribeToRoom, sendMessage, isConnected } = useStompClient(
+    (message: any) => {
+      if (message.type === "MESSAGE") {
+        if (message.senderId !== userId) { // Check if the message is from someone else
+          setChatMessages((prevMessages) => [...prevMessages, message]);
+        }
+      } else if (message.messageType === "NOTIFICATION") {  // 읽음 표시 업데이트 
+        console.log("Update read status");
+        setChatMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.isPatient && !msg.readStatus ? { ...msg, readStatus: true } : msg
+          )
+        );
+      } else {
+        console.warn("Unknown message type:", message);
+      }
+    },
+    fetchChatHistory
+  );
 
   // Check if chatroom exists
   const checkIfChatroomExists = useCallback(async (patientId: number): Promise<boolean> => {
@@ -88,7 +119,7 @@ const PatientChatPage: React.FC = () => {
       }
   
       const data = await response.json();
-      console.log("Chatroom exists: " + data);
+      console.log(`${patientId}'s Chatroom exists: ${data}`);
       return data; // Returns boolean
     } catch (error) {
       console.error("Error checking chatroom existence:", error);
@@ -103,7 +134,7 @@ const PatientChatPage: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/api/patient/user/${patientId}`);
   
       if (!response.ok) {
-        throw new Error(`Failed to fetch patient details: ${response.status}`);
+        throw new Error(`Failed to fetch patient ${patientId} details: ${response.status}`);
       }
   
       return await response.json(); // Return patient details
@@ -128,6 +159,8 @@ const PatientChatPage: React.FC = () => {
       }
   
       const data = await response.json();
+      console.log(`Created chatroom: ${nurseId}_${patientId}`)
+      fetchChatHistory()
       return data.success; // Assuming the response has a "success" field
     } catch (error) {
       console.error("Error creating chatroom:", error);
@@ -141,33 +174,13 @@ const PatientChatPage: React.FC = () => {
     if (patient) {
       const exists = await checkIfChatroomExists(userId);
       if (!exists) {
-        await createChatroom(userId, patient.department);
+        console.log("Creating chatroom...");
+        await createChatroom(userId, "내과");
       }
     }
   };
 
   {/* Handlers and Utility Functions */}
-
-  // Fetch chat history
-  const fetchChatHistory = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/chat/message/user?patientId=${userId}`);
-      if (!response.ok) throw new Error("Failed to fetch messages");
-
-      const messages: ChatMessage[] = await response.json();
-      if (JSON.stringify(messages) !== JSON.stringify(chatMessagesRef.current)) {
-        chatMessagesRef.current = messages;
-        setChatMessages(messages.reverse());
-      }
-      // add pending
-      setChatMessages((prev) => [...prev, ...pendingMessages]);
-    } catch (error) {
-      console.error("Error fetching chat history", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setInputText(e.target.value);
@@ -187,7 +200,7 @@ const PatientChatPage: React.FC = () => {
         messageContent: inputText,
         timestamp: currentTime,
         readStatus: false,
-        chatRoomId: `${nurseId}_${userId}`,
+        chatRoomId: `${nurseIdStr}_${userIdStr}`,
         senderId: userId,
         isPatient: true,
         isFailed: false,
@@ -203,8 +216,8 @@ const PatientChatPage: React.FC = () => {
         medicalStaffId: nurseId,
         messageContent: inputText,
         timestamp: currentTime,
-        readStatus: false,
-        chatRoomId: `${nurseId}_${userId}`,
+        readStatus: false,  
+        chatRoomId: `${nurseIdStr}_${userIdStr}`,
         senderId: userId,
         isPatient: true,
         hospitalId: hospitalId,
@@ -306,7 +319,10 @@ const PatientChatPage: React.FC = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+
+      if (!isComposing) {
+        handleSendMessage();  // Prevents premature or duplicate sends during Korean input
+      }
     }
   };
 
@@ -357,6 +373,12 @@ const PatientChatPage: React.FC = () => {
     setConnected(isConnected);
   }, [isConnected]);
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [displayedMessages]);
+
 
   useEffect(() => {
     const unreadMessages = chatMessages.filter(
@@ -368,29 +390,41 @@ const PatientChatPage: React.FC = () => {
   // For chat screen text size
   const [textSize, setTextSize] = useState("14px");
   const increaseTextSize = () => {
-    setTextSize((prev) => `${parseInt(prev) + 2}px`);
+    setTextSize((prev) => {
+      const size = parseInt(prev);
+      return size < 18 ? `${size + 2}px` : prev;
+    });
   };
 
   const decreaseTextSize = () => {
-    setTextSize((prev) => `${Math.max(parseInt(prev) - 2, 10)}px`); // Min size 10px
+    setTextSize((prev) => {
+      const size = parseInt(prev);
+      return size > 12 ? `${size - 2}px` : prev;
+    });
   };
   
   
   return (
-    <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
-      <PatientChatHeader title="삼성병원 간호간병 콜벨 서비스" showMenu={true} />
-      <FavoriteRequests
-        requests={favoriteRequests}
-        sendFavoriteRequest={sendFavoriteRequest}
-      />
-      <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col">
+    <div className="fixed inset-0 bg-gray-100">
+      <div className="flex flex-col h-screen text-sm sm:text-base max-w-screen-sm mx-auto px-2 sm:px-4">
+      {/* Sticky header and favorites */}
+      <div className="sticky top-0 z-20 bg-gray-100">
+        <PatientChatHeader title="삼성병원 간호간병 콜벨 서비스" showMenu={true} />
+        <FavoriteRequests
+          requests={favoriteRequests}
+          sendFavoriteRequest={sendFavoriteRequest}
+        />
+      </div>
+      <div className="flex-1 overflow-y-auto px-3 pt-1 flex flex-col gap-1 sm:px-4 sm:gap-2 min-h-0">
         <ChatMessages 
-        chatMessages={displayedMessages} 
-        currentUserId={userId} 
-        onResend={handleResendMessage} 
-        onCancel={handleCancelMessage} 
-        textSize={textSize}
-        senderTextColor="text-white"
+          chatMessages={displayedMessages} 
+          currentUserId={userId} 
+          onResend={handleResendMessage} 
+          onCancel={handleCancelMessage} 
+          textSize={textSize}
+          senderTextColor="text-white"
+          customStyles={{ message: `text-[${textSize}]` }}
+          bottomRef={bottomRef}
         />
       </div>
 
@@ -399,19 +433,22 @@ const PatientChatPage: React.FC = () => {
         {connected ? `Connected - Room ID: ${roomId}` : "Connecting..."}
       </div> */}
 
-      <InputSection
-      inputText={inputText}
-      handleInputChange={handleInputChange}
-      handleSendMessage={handleSendMessage}
-      minHeight="1.5rem"
-      maxHeight="10rem"
-      handleKeyDown={handleKeyDown}
-      handleCompositionStart={handleCompositionStart}
-      handleCompositionEnd={handleCompositionEnd}
-      showTextSizeButton={true}
-      increaseTextSize={increaseTextSize}
-      decreaseTextSize={decreaseTextSize}
-      />
+      <div className="sticky bottom-0 z-10 bg-gray-100 px-2 ios-safari-fix">
+        <InputSection
+          inputText={inputText}
+          handleInputChange={handleInputChange}
+          handleSendMessage={handleSendMessage}
+          minHeight="2rem"
+          maxHeight="8rem"
+          handleKeyDown={handleKeyDown}
+          handleCompositionStart={handleCompositionStart}
+          handleCompositionEnd={handleCompositionEnd}
+          showTextSizeButton={true}
+          increaseTextSize={increaseTextSize}
+          decreaseTextSize={decreaseTextSize}
+        />
+      </div>
+      </div>
     </div>
   );
 };

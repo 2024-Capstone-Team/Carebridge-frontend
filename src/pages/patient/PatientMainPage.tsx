@@ -131,7 +131,7 @@ const PatientMainPage: React.FC = () => {
   useEffect(() => {
     if (patientDto?.hospitalId) {
       getHospitalName(patientDto.hospitalId);
-      console.log("hospital id: ")
+      console.log("hospital id: ", patientDto.hospitalId)
     }
   }, [patientDto]);
 
@@ -150,7 +150,7 @@ const PatientMainPage: React.FC = () => {
   useEffect(() => {
     const fetchMedicalStaff = async () => {
       try {
-        const response = await axios.get<MedicalStaff[]>(`${API_BASE_URL}/api/medical-staff/${patientDto?.hospitalId}`);
+        const response = await axios.get<MedicalStaff[]>(`${API_BASE_URL}/api/medical-staff/1`);
         setMedicalStaffList(response.data);
         console.log("medicalstafflist: ", response);
       } catch (error){

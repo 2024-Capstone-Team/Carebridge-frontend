@@ -110,6 +110,7 @@ const PatientLoginPage: React.FC = () => {
       const { userId, patientId, phoneNumber, accessToken, refreshToken } = loginResponse.data;
 
       setPatientId(patientId);
+      console.log("Patient ID set: ", patientId);
       setUserId(userId);
       localStorage.setItem("patientId", String(patientId));
       localStorage.setItem("userId", String(userId));
@@ -130,7 +131,7 @@ const PatientLoginPage: React.FC = () => {
             token,
             userId,
           });
-          console.log("FCM 토큰 등록 성공");
+          console.log("FCM 토큰 등록 성공!");
         }
       } catch (error) {
         console.error("FCM 토큰 등록 실패:", error);

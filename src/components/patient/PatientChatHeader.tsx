@@ -8,7 +8,7 @@ interface PatientChatHeaderProps {
 }
 
 const PatientChatHeader: React.FC<PatientChatHeaderProps> = ({ title, showMenu = false }) => (
-  <header className="flex items-center justify-between px-4 py-6 bg-gradient-to-b from-gray-100 to-transparent text-black z-10">
+  <header className="flex items-center justify-between px-4 py-6 bg-gray-100 text-black z-10">
     <IconButton
       iconSrc="/icons/back-icon.png"
       altText="Back"

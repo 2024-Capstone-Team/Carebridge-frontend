@@ -10,5 +10,5 @@ self.addEventListener("activate", (e) => {
 
 // Fetch 이벤트
 self.addEventListener("fetch", (e) => {
-  console.log("[Service Worker] fetched resource " + e.request.url);
+  // console.log("[Service Worker] fetched resource " + e.request.url);
 });
