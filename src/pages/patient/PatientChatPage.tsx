@@ -15,7 +15,7 @@ const PatientChatPage: React.FC = () => {
   {/* Set constants */}
 
   // Get userId, nurseId, hospitalId from context
-  const { userId: userIdStr, nurseId: nurseIdStr, hospitalId: hospitalIdStr } = useUserContext();
+  const { patientId: userIdStr, nurseId: nurseIdStr, hospitalId: hospitalIdStr } = useUserContext();
 
   // Provide fallback values if context is missing
   const userId = userIdStr ? Number(userIdStr) : 5;
@@ -80,6 +80,7 @@ const PatientChatPage: React.FC = () => {
         chatMessagesRef.current = reversedMessages;
         setChatMessages([...reversedMessages, ...pendingMessages]);
       }
+      console.log("Fetched chat history.");
     } catch (error) {
       console.error("Error fetching chat history", error);
     } finally {
@@ -118,7 +119,7 @@ const PatientChatPage: React.FC = () => {
       }
   
       const data = await response.json();
-      console.log("Chatroom exists: " + data);
+      console.log(`${patientId}'s Chatroom exists: ${data}`);
       return data; // Returns boolean
     } catch (error) {
       console.error("Error checking chatroom existence:", error);
@@ -159,6 +160,7 @@ const PatientChatPage: React.FC = () => {
   
       const data = await response.json();
       console.log(`Created chatroom: ${nurseId}_${patientId}`)
+      fetchChatHistory()
       return data.success; // Assuming the response has a "success" field
     } catch (error) {
       console.error("Error creating chatroom:", error);
@@ -431,7 +433,7 @@ const PatientChatPage: React.FC = () => {
         {connected ? `Connected - Room ID: ${roomId}` : "Connecting..."}
       </div> */}
 
-      <div className="sticky bottom-0 z-10 bg-gray-100 px-2 pb-[env(safe-area-inset-bottom)]">
+      <div className="sticky bottom-0 z-10 bg-gray-100 px-2 ios-safari-fix">
         <InputSection
           inputText={inputText}
           handleInputChange={handleInputChange}
