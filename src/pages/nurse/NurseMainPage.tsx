@@ -73,7 +73,7 @@ const NurseMainPage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const { hospitalId } = useUserContext()
+  const hospitalId = Number(useUserContext()?.hospitalId || 1);
   const medicalStaffId = 1
 
   // 병원 이름 API 호출
