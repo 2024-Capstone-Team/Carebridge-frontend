@@ -158,6 +158,7 @@ const PatientChatPage: React.FC = () => {
       }
   
       const data = await response.json();
+      console.log(`Created chatroom: ${nurseId}_${patientId}`)
       return data.success; // Assuming the response has a "success" field
     } catch (error) {
       console.error("Error creating chatroom:", error);
