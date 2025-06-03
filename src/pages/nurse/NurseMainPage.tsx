@@ -218,7 +218,7 @@ const NurseMainPage: React.FC = () => {
     if (patient) {
       const exists = await checkIfChatroomExists(patientId)
       if (!exists) {
-        await createChatroom(patientId, patient.department)
+        await createChatroom(patientId, "내과")
       }
     }
 
