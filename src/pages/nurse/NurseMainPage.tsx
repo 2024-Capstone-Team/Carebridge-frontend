@@ -1116,24 +1116,30 @@ const NurseMainPage: React.FC = () => {
               ) : (
                 // 기본 모드 UI
                 <div className="flex justify-end space-x-3 w-full">
-                  <button 
+                  <Button 
                     onClick={() => handlePending(requestPopup.requestId)}
-                    className="px-3 py-2 bg-[#E3E3E3] text-black rounded-lg border-[1.3px] border-[#A5A1A1] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-[#8B8787] hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                    variant="cancel"
+                    size='large'
+                  >
                     보류
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={() => {
                       handleChatClick(requestPopup.patientId);
                       handleCloseNotification(); // Close the popup to match other chat buttons
                     }}
-                    className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                    variant="chat"
+                    size='large'
+                  >
                     채팅
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     onClick={handleAcceptClick}
-                    className="px-3 py-2 bg-white text-black border-[1.3px] border-[#A5A1A1] rounded-lg shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:bg-gray-50 hover:shadow-[0_5px_15px_rgba(0,0,0,0.35)] transition-all duration-200">
+                    variant="save"
+                    size='large'
+                  >
                     수락
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -1323,8 +1329,8 @@ const NurseMainPage: React.FC = () => {
                                 : isInProgress
                                   ? "text-blue-600 bg-blue-100 hover:bg-blue-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
                                   : isScheduled
-                                    ? "text-red-600 bg-red-100 hover:bg-red-200 focus:ring-red-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                                    : "text-green-600 bg-green-100 focus:ring-gray-300"
+                                    ? "text-red-600 bg-red-100"
+                                    : "text-green-600 bg-green-100"
                             }
                             ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
                           `}
@@ -1407,17 +1413,20 @@ const NurseMainPage: React.FC = () => {
                 />
               </div>
               <div className="flex justify-end space-x-2">
-                <button onClick={closeAllModals} className="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                <Button 
+                  onClick={closeAllModals}
+                  variant="cancel"
+                  size='large'
+                >
                   취소
-                </button>
-                <button
-                  onClick={() => {
-                    handleScheduleConfirm()
-                  }}
-                  className="px-4 py-1 bg-[#C75151] border border-[#B14141] text-white rounded hover:bg-red-600"
+                </Button>
+                <Button 
+                  onClick={() => {handleScheduleConfirm()}}
+                  variant="save"
+                  size='large'
                 >
                   확인
-                </button>
+                </Button>
               </div>
             </div>
           </div>
