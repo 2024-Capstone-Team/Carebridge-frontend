@@ -131,7 +131,7 @@ const PatientLoginPage: React.FC = () => {
             token,
             userId,
           });
-          console.log("FCM 토큰 등록 성공");
+          console.log("FCM 토큰 등록 성공!");
         }
       } catch (error) {
         console.error("FCM 토큰 등록 실패:", error);
