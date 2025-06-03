@@ -5,6 +5,7 @@ import axios from 'axios';
 import NurseMacro from './NurseMacroAdd';
 import NurseMacroEdit from './NurseMacroEdit';
 import { FaPlus } from 'react-icons/fa';
+import Button from '../common/Button';
 
 interface Macro {
   macroId: number;
@@ -134,19 +135,20 @@ const NurseMacroList: React.FC<NurseMacroListProps> = ({ medicalStaffId }) => {
                       className="h-[20px] w-[20px] mt-2 mr-1 cursor-pointer"
                       onClick={() => toggleStar(macro.macroId)}
                     />
-                    
-                    <button 
+
+                    <Button
                       onClick={() => handleEdit(macro)}
-                      className="px-3 py-1 text-md font-medium rounded-md whitespace-nowrap transition-all duration-200 bg-[#E3E3E3] border border-[#CFC9C9]"
-                    >
-                      수정
-                    </button>
-                    <button 
+                      variant="edit"
+                      >
+                        수정
+                    </Button>
+
+                    <Button
                       onClick={() => handleDelete(macro.macroName)}
-                      className="bg-[#6990B6] px-3 py-1 text-lg font-medium rounded-md whitespace-nowrap transition-all duration-200 border border-[#306292] text-white hover:bg-[#2c5a8c]"
-                    >
-                      삭제
-                    </button>
+                      variant="delete"
+                      >
+                        삭제
+                    </Button>
                   </div>
                   
                 </div>

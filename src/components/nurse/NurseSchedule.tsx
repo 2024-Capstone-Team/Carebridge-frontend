@@ -148,7 +148,7 @@ const NurseSchedule: React.FC = () => {
     <div className="h-full flex flex-col cursor-pointer" onClick={() => navigateToSchedule()}>
       
       <div className="flex items-center">
-        <p className="font-semibold text-gray-800 mb-2" style={{ fontSize: "var(--font-title)" }}>스케줄</p>
+        <h2 className="font-semibold text-gray-800 mb-2" style={{ fontSize: "var(--font-title)" }}>스케줄</h2>
       </div>
 
       <div className="flex items-center justify-between">
@@ -184,9 +184,9 @@ const NurseSchedule: React.FC = () => {
                       <span className="text-gray-500" style={{ fontSize: "var(--font-caption)" }}>환자</span>
                     </div>
                   </div>
-
+                  
                   <button
-                    className="text-[11px] text-gray-500"
+                    className="text-[11px] px-2 py-1.5 text-black bg-gray-100 hover:bg-gray-200 focus:ring-gray-200 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
                     onClick={(e) => handleEditSchedule(schedule.id, e)}
                   >
                     수정

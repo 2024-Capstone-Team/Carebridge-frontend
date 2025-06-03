@@ -8,13 +8,14 @@ import NurseMacroList from "../../components/nurse/NurseMacroList"
 import NurseQuickAnswerList from "../../components/nurse/NurseQuickAnswerList"
 import NurseMessaging from "../../components/nurse/NurseMessaging"
 import logo from "../../assets/carebridge_logo.png"
-import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu } from "react-icons/fi"
+import { FiMenu, FiChevronsDown, FiHome, FiCalendar, FiCpu, FiX } from "react-icons/fi"
 import { BsStopwatch } from "react-icons/bs"
 import useStompClient from "../../hooks/useStompClient"
 import type { ChatMessage, CallBellRequest, PatientDetail, ChatRoom, MedicalStaff } from "../../types"
 import axios from "axios"
 import { useUserContext } from "../../context/UserContext"
 import { calculateAge, formatGender, formatTime } from "../../utils/commonUtils.ts"
+import Button from "../../components/common/Button.tsx";
 
 const WebSocketContext = createContext(null)
 
@@ -825,6 +826,16 @@ const NurseMainPage: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [unreadNotifications, requests, currentNotification, requestPopup]);
 
+  // 요청 목록 최신화 함수
+  const fetchUpdatedRequests = async () => {
+    try {
+      const res = await axios.get<CallBellRequest[]>(`${API_BASE_URL}/api/call-bell/request/staff/${medicalStaffId}`);
+      setRequests(res.data);
+    } catch (err) {
+      console.error("요청 목록 갱신 실패:", err);
+    }
+  };
+
   // 알림 처리 완료 시 호출되는 함수들 수정
   const handlePending = async (requestId: number) => {
     try {
@@ -855,7 +866,8 @@ const NurseMainPage: React.FC = () => {
         variant: 'success',
         autoHideDuration: 2000,
       });
-      
+      // 요청 목록 갱신
+      fetchUpdatedRequests();
     } catch (error) {
       console.error('보류 상태 변경 중 에러 발생:', error);
       enqueueSnackbar('요청 처리 중 오류가 발생했습니다.', { 
@@ -927,7 +939,8 @@ const NurseMainPage: React.FC = () => {
         variant: 'success',
         autoHideDuration: 2000,
       });
-      
+      // 요청 목록 갱신
+      fetchUpdatedRequests();
     } catch (error: any) {
       console.error('요청 처리 중 에러 발생:', error);
       enqueueSnackbar(`요청 처리 중 오류가 발생했습니다: ${error.message}`, { 
@@ -980,7 +993,7 @@ const NurseMainPage: React.FC = () => {
 
   return (
     /* 전체 창*/
-    <div className="flex h-screen bg-gray-100 p-6">
+    <div className="flex h-screen bg-gray-100 p-2">
        {/* ===== 요청 메시지 팝업 컨테이너 ===== */}
       {requestPopup && patientDetails[requestPopup.patientId] && (
         <>
@@ -1119,8 +1132,8 @@ const NurseMainPage: React.FC = () => {
       </div>*/}
 
       {/* 메뉴바 아이콘 */}
-      <div className="h-full w-1/5 p-6 mr-4 rounded-lg overflow-hidden bg-[#F0F4FA]">
-        <div className="flex items-center mb-4" style={{ marginTop: "-60px" }}>
+      <div className="h-full w-1/5 p-3 mr-2 rounded-lg overflow-hidden bg-[#F0F4FA] flex flex-col">
+        <div className="flex items-center mb-2" style={{ marginTop: "-40px" }}>
           {isDropdownVisible ? (
             <FiChevronsDown className="relative w-[2.3em] h-[2.3em] mr-2 cursor-pointer" onClick={handleMenuClick} />
           ) : (
@@ -1200,7 +1213,7 @@ const NurseMainPage: React.FC = () => {
         </div>
 
         {/* 날짜 표시 영역 */}
-        <div className="flex text-center text-[16px] text-gray-600 mb-4" style={{ marginTop: "-40px" }}>
+        <div className="flex text-center text-[16px] text-gray-600 mb-2" style={{ marginTop: "-24px" }}>
           <p className="text-black font-semibold mr-2">{formattedDate}</p>
           <p className="text-gray-600">{formattedTime}</p>
         </div>
@@ -1212,7 +1225,7 @@ const NurseMainPage: React.FC = () => {
         </p>
 
         {/* 콜벨 서비스 영역 */}
-        <div className="mt-4 rounded-lg overflow-hidden shadow-sm">
+        <div className="mt-2 rounded-lg overflow-hidden shadow-md flex-1 flex flex-col">
           <div className="flex justify-between items-center bg-white w-full h-[50px] px-4 py-3 rounded-t-lg border-b border-gray-200">
             <h2 className="text-black text-18px font-semibold">요청 사항 목록</h2>
             <select
@@ -1230,7 +1243,7 @@ const NurseMainPage: React.FC = () => {
           </div>
 
           {/* 콜벨 요청 리스트 */}
-          <div className="flex-col px-2 py-2 max-h-[calc(100vh-280px)] overflow-y-auto scrollbar-hide bg-white">
+          <div className="flex flex-col flex-1 px-2 py-2 overflow-y-auto scrollbar-hide bg-white">
             {filteredRequests.length === 0 ? (
               <div className="p-4 text-center text-gray-500" style={{ fontSize: "var(--font-body)" }}>요청 사항이 없습니다</div>
             ) : (
@@ -1285,12 +1298,12 @@ const NurseMainPage: React.FC = () => {
                             px-2 py-2 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200
                             ${
                               isPending
-                                ? "bg-[#F8F8F8] border border-[#E3E3E3] hover:bg-gray-200"
+                                ? "bg-gray-100 hover:bg-gray-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
                                 : isInProgress
-                                  ? "bg-[#417BB4] border border-[#306292] text-white hover:bg-[#2c5a8c]"
+                                  ? "text-blue-600 bg-blue-100 hover:bg-blue-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
                                   : isScheduled
-                                    ? "bg-[#C75151] border border-[#B14141] text-white hover:bg-[#a83e3e]"
-                                    : "bg-[#E3E3E3] border border-[#CFC9C9]"
+                                    ? "text-red-600 bg-red-100 hover:bg-red-200 focus:ring-red-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                                    : "text-green-600 bg-green-100 focus:ring-gray-300"
                             }
                             ${isPending || isInProgress ? "cursor-pointer" : "cursor-default"}
                           `}
@@ -1298,12 +1311,12 @@ const NurseMainPage: React.FC = () => {
                           {displayStatus}
                         </button>
 
-                        <button
-                          className="px-3 py-2 bg-gray-400 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:bg-gray-500"
+                        <Button
                           onClick={() => handleChatClick(request.patientId)}
+                          variant="chat"
                         >
                           채팅
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1317,8 +1330,8 @@ const NurseMainPage: React.FC = () => {
         {isPendingModalOpen && pendingRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
-              <button onClick={closeAllModals} className="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
-                ✖
+              <button onClick={closeAllModals} className="absolute top-2 right-2 text-black hover:text-gray-400">
+                <FiX />
               </button>
               <div className="text-center">
                 <p className="text-gray-600 mb-1" style={{ fontSize: "var(--font-body)" }}>{formatTime(pendingRequest.requestTime)}</p>
@@ -1392,11 +1405,11 @@ const NurseMainPage: React.FC = () => {
 
       {/* 매크로, 빠른 답변 화면 전환 */}
       {isMacroMode ? (
-        <div className="flex-1 relative w-full">
+        <div className="flex-1 relative w-[79%]">
           <NurseMacroList medicalStaffId={Number(medicalStaffId)} />
         </div>
       ) : isQAMode ? (
-        <div className="flex-1 relative w-full">
+        <div className="flex-1 relative w-[79%]">
           <NurseQuickAnswerList hospitalId={Number(hospitalId)} />
         </div>
       ) : (
@@ -1420,7 +1433,7 @@ const NurseMainPage: React.FC = () => {
 
           {/* 환자 정보 및 스케줄러 영역 */}
           <div className="w-1/5 flex flex-col space-y-5 h-full">
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
+            <div className="bg-[#DFE6EC] h-3/5 rounded-lg shadow-lg p-6 flex-1 overflow-y-auto">
               {selectedPatient !== null ? (
                 <Nurse_DetailedPatientInfo
                   patientId={selectedPatient}
@@ -1431,7 +1444,7 @@ const NurseMainPage: React.FC = () => {
                 <NursePatientInfo onPatientClick={handlePatientClick} />
               )}
             </div>
-            <div className="bg-[#DFE6EC] rounded-lg shadow-lg p-6 overflow-y-auto">
+            <div className="bg-[#DFE6EC] h-2/5 rounded-lg shadow-lg p-6 overflow-y-auto">
               <NurseSchedule />
             </div>
           </div>

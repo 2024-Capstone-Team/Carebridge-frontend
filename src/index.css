@@ -176,3 +176,7 @@ h1 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;             /* Chrome, Safari, Opera */
 }
+
+.password-input {
+  color: black !important;
+}
