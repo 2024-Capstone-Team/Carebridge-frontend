@@ -110,6 +110,7 @@ const PatientLoginPage: React.FC = () => {
       const { userId, patientId, phoneNumber, accessToken, refreshToken } = loginResponse.data;
 
       setPatientId(patientId);
+      console.log("Patient ID set: ", patientId);
       setUserId(userId);
       localStorage.setItem("patientId", String(patientId));
       localStorage.setItem("userId", String(userId));
