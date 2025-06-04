@@ -592,14 +592,24 @@ const NurseMainPage: React.FC = () => {
       if (id && !patientDetails[id]) {
         axios
           .get<PatientDetail>(`${API_BASE_URL}/api/patient/user/${id}`)
-          .then((res) => {
-            setPatientDetails((prev) => ({
-              ...prev,
-              [id]: res.data,
-            }))
+          .then(async (res) => {
+            try {
+              const diseaseRes = await axios.get(`${API_BASE_URL}/api/medical-record/${id}`);
+              const patientWithDisease = { ...res.data, disease: diseaseRes.data || "정보 없음" };
+              setPatientDetails((prev) => ({
+                ...prev,
+                [id]: patientWithDisease,
+              }));
+            } catch (error) {
+              console.error(`질병 정보 조회 실패 (ID=${id}):`, error);
+              setPatientDetails((prev) => ({
+                ...prev,
+                [id]: { ...res.data, disease: "정보 없음" },
+              }));
+            }
           })
           .catch((err) => {
-            console.error(`환자 상세정보 조회 실패 (ID=${id}):`, err)
+            console.error(`환자 상세 정보 조회 실패 (ID=${id}):`, err)
           })
       }
     })
@@ -1046,7 +1056,7 @@ const NurseMainPage: React.FC = () => {
               {"  "}
               {formatGender(patientDetails[requestPopup.patientId].gender)}
               {"  "}
-              {patientDetails[requestPopup.patientId].disease || "질병명 로딩중..."}
+              {patientDetails[requestPopup.patientId]?.disease || "질병명 로딩중"}
             </p>
 
             {/* ----- 환자 이름 ----- */}
