@@ -188,11 +188,11 @@ body {
   color: black !important;
 }
 .ios-safari-fix {
-  padding-bottom: 0px;
+  padding-bottom: 28px;
 }
 
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .ios-safari-fix {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 28px);
   }
 }
