@@ -1009,6 +1009,10 @@ const NurseMainPage: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+  console.log("patientDetails updated:", patientDetails);
+}, [patientDetails]);
+
   return (
     /* 전체 창*/
     <div className="flex h-screen bg-gray-100 p-2">
